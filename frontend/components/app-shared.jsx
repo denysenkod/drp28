@@ -1,4 +1,4 @@
-// Shared atoms + data for all three Hairstyle Finder directions.
+// Shared atoms + data for the Salon frontend.
 
 // ── Hairstyle catalog ──────────────────────────────────────────────────────
 // Gender-inclusive. Aspect ratio drives masonry variety.

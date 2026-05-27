@@ -4,6 +4,7 @@
   "main": "server.ts",
   "scripts": {
     "deploy": "npx wrangler deploy",
+    "dev:local": "node local-dev.mjs",
     "start": "npx wrangler dev",
     "test": "node --test"
   },
