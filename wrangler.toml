@@ -5,3 +5,9 @@ compatibility_date = "2026-05-27"
 [assets]
 directory = "./public"
 binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "drp28"
+database_id = "1bb13160-c9d6-41f3-80b4-124c36940d26"
+migrations_dir = "migrations"

@@ -7,6 +7,7 @@ Minimal Cloudflare Worker backend serving the Salon frontend.
 - `server.ts` handles Worker backend routes.
 - `public/index.html` and `public/app.jsx` are the served frontend.
 - `/api/status` is the backend health/status endpoint.
+- `/api/gallery`, `/api/quiz-responses`, and `/api/user-photos` are D1-backed storage endpoints.
 - `local-dev.mjs` is a fallback local server for machines with `node` but no `npm` or `npx`.
 
 ## Local Start Without npm
@@ -28,6 +29,8 @@ Backend endpoint:
 ```text
 http://localhost:8787/api/status
 ```
+
+The fallback server stores API data in memory only. Restarting it clears local gallery, quiz, and photo data.
 
 To use a different port:
 
@@ -69,6 +72,44 @@ If npm is available:
 npm test
 ```
 
+## D1 Database Setup
+
+There is no deployed database until you create one in Cloudflare.
+
+Create the D1 database:
+
+```bash
+npx wrangler d1 create drp28
+```
+
+Copy the returned `database_id` into `wrangler.toml`:
+
+```toml
+[[d1_databases]]
+binding = "DB"
+database_name = "drp28"
+database_id = "PASTE_DATABASE_ID_HERE"
+migrations_dir = "migrations"
+```
+
+Apply migrations locally:
+
+```bash
+npm run db:migrate:local
+```
+
+Apply migrations to Cloudflare:
+
+```bash
+npm run db:migrate:remote
+```
+
+List D1 databases:
+
+```bash
+npm run db:list
+```
+
 ## Deploy
 
 Manual deploy with npm available:
@@ -103,6 +144,12 @@ compatibility_date = "2026-05-27"
 [assets]
 directory = "./public"
 binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "drp28"
+database_id = "PASTE_DATABASE_ID_HERE"
+migrations_dir = "migrations"
 ```
 
 ## GitHub Actions CI
@@ -121,6 +168,8 @@ git status --short
 node --test
 node local-dev.mjs
 npm start
+npm run db:migrate:local
+npm run db:migrate:remote
 npm run deploy
 ```
 
@@ -128,4 +177,6 @@ npm run deploy
 
 - Do not use `apt install npm` on lab machines unless you are an administrator.
 - If `npx` is missing locally, use `node local-dev.mjs`.
+- Replace `REPLACE_WITH_D1_DATABASE_ID` in `wrangler.toml` before deploying with D1.
 - Cloudflare’s build environment has npm, so CI/CD can still use `npm test` and `npx wrangler deploy`.
+- D1 is fine for prototype photo data and metadata. For large production image files, use R2 for the binary image and keep only the URL/metadata/features in D1.
