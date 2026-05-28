@@ -608,6 +608,8 @@ function openDetail(id) {
   if (!style) return;
   currentDetailId = style.id;
 
+  if (!els.favouritesOverlay.hidden) els.favouritesOverlay.hidden = true;
+
   els.detailName.textContent = style.name;
 
   els.detailImages.innerHTML = "";
