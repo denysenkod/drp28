@@ -166,9 +166,18 @@ function inferLength(title, features = []) {
 
 function inferGender(title, features = []) {
   const text = `${slugWords(title)} ${features.join(" ")}`.toLowerCase();
+  if (/(glamour|womens-hair|women-hair|\bwomens\b|\bwomen\b|\bfemale\b)/.test(text)) return "Women";
   if (/(mens-hair|men-hair|\bmens\b|\bmen\b|\bmale\b|barber|beard|edgar|crew cut|buzz)/.test(text)) return "Men";
-  if (/(womens-hair|women-hair|\bwomens\b|\bwomen\b|\bfemale\b|pixie|bob)/.test(text)) return "Women";
+  if (/(pixie|bob)/.test(text)) return "Women";
   return "Unisex";
+}
+
+function normalizeGender(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (normalized === "men" || normalized === "man" || normalized === "male") return "Men";
+  if (normalized === "women" || normalized === "woman" || normalized === "female") return "Women";
+  if (normalized === "unisex") return "Unisex";
+  return "";
 }
 
 function inferHairType(title, features = []) {
@@ -239,7 +248,7 @@ function galleryItemToStyle(item, index) {
   const features = Array.isArray(item.features) ? item.features : [];
   const length = inferLength(title, features);
   const hairType = inferHairType(title, features);
-  const gender = inferGender(title, features);
+  const gender = normalizeGender(item.gender) || inferGender(title, features);
   const detail = detailsForStyle(title, length, hairType, item.description || "");
 
   return {
@@ -295,6 +304,7 @@ const els = {
   detailStars:        $("#detail-stars"),
   detailLength:       $("#detail-length"),
   detailHairtype:     $("#detail-hairtype"),
+  detailGender:       $("#detail-gender"),
   detailMaintenance:  $("#detail-maintenance"),
   detailProducts:     $("#detail-products"),
   detailHairdressers: $("#detail-hairdressers"),
@@ -412,8 +422,7 @@ function renderActiveFilters() {
       else if (item.kind === "category") state.activeCategories.delete(item.value);
       else if (item.kind === "dropdown") {
         delete state.activeDropdownFilters[item.key];
-        const sel = document.querySelector(`select[data-filter="${item.key}"]`);
-        if (sel) sel.value = "";
+        $$(`select[data-filter="${item.key}"]`).forEach((sel) => { sel.value = ""; });
       }
       renderLabelChips();
       renderCategoryChips();
@@ -430,6 +439,7 @@ function styleMatches(style) {
     style.description,
     style.length,
     style.hairType,
+    style.gender,
     ...(style.labels || []),
     ...(style.features || [])
   ].join(" ").toLowerCase();
@@ -504,7 +514,15 @@ function buildStyleCard(style, { compact = false, showBarber = false } = {}) {
     const name = document.createElement("span");
     name.className = "style-card-name";
     name.textContent = style.name;
-    footer.appendChild(name);
+    const text = document.createElement("div");
+    text.className = "style-card-text";
+    text.appendChild(name);
+
+    const meta = document.createElement("span");
+    meta.className = "style-card-meta";
+    meta.textContent = `${style.gender} · ${style.length}`;
+    text.appendChild(meta);
+    footer.appendChild(text);
 
     const actions = document.createElement("div");
 
@@ -649,6 +667,7 @@ function openDetail(id) {
   renderStars(els.detailStars, style.maintainability);
   els.detailLength.textContent = style.length;
   els.detailHairtype.textContent = style.hairType;
+  els.detailGender.textContent = style.gender;
   els.detailMaintenance.textContent = style.maintenance;
 
   els.detailProducts.innerHTML = "";
@@ -807,6 +826,9 @@ function init() {
     sel.addEventListener("change", () => {
       const key = sel.dataset.filter;
       state.activeDropdownFilters[key] = sel.value;
+      $$(`select[data-filter="${key}"]`).forEach((other) => {
+        if (other !== sel) other.value = sel.value;
+      });
       renderActiveFilters();
       renderResults();
     });

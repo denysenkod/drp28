@@ -48,12 +48,6 @@
     <section class="filters-panel" id="filters-panel" hidden>
       <h2 class="section-label">Filters</h2>
       <div class="dropdown-grid">
-        <select data-filter="gender">
-          <option value="">Gender</option>
-          <option>Men</option>
-          <option>Women</option>
-          <option>Unisex</option>
-        </select>
         <select data-filter="ethnicity">
           <option value="">Ethnicity</option>
           <option>Asian</option>
@@ -112,6 +106,7 @@
     <section class="recommended">
       <h2 class="section-label">Recommended:</h2>
       <div class="dropdown-grid recommended-grid">
+        <select data-filter="gender"><option value="">Gender</option><option>Men</option><option>Women</option><option>Unisex</option></select>
         <select><option>Ethnicity</option><option>Asian</option><option>Black</option><option>Caucasian</option></select>
         <select><option>Natural colour</option><option>Brunette</option><option>Blonde</option><option>Black</option></select>
         <select><option>Face shape</option><option>Oval</option><option>Round</option><option>Square</option></select>
@@ -157,6 +152,10 @@
         <div class="attribute-row">
           <span class="attribute-key">Hair Type</span>
           <span class="attribute-value" id="detail-hairtype"></span>
+        </div>
+        <div class="attribute-row">
+          <span class="attribute-key">Gender</span>
+          <span class="attribute-value" id="detail-gender"></span>
         </div>
       </div>
 

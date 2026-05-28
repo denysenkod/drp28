@@ -339,6 +339,18 @@ select, input {
   font-weight: 500;
 }
 
+.style-card-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.style-card-meta {
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .icon-btn {
   background: transparent;
   border: none;

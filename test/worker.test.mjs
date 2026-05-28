@@ -61,7 +61,8 @@ function createMockD1() {
               title: values[1],
               description: values[2],
               image_url: values[3],
-              features_json: values[4],
+              gender: values[4],
+              features_json: values[5],
               created_at: now()
             });
           }
@@ -247,6 +248,7 @@ test('stores and lists gallery images in D1', async () => {
       title: 'Soft Curtain Bangs',
       description: 'Face-framing medium cut.',
       imageUrl: 'https://example.com/curtain.webp',
+      gender: 'Women',
       features: ['medium', 'wavy']
     })
   }), env);
@@ -254,6 +256,7 @@ test('stores and lists gallery images in D1', async () => {
 
   assert.equal(createResponse.status, 201);
   assert.equal(created.item.title, 'Soft Curtain Bangs');
+  assert.equal(created.item.gender, 'Women');
   assert.deepEqual(created.item.features, ['medium', 'wavy']);
 
   const listResponse = await worker.fetch(new Request('https://example.com/api/gallery'), env);
@@ -262,6 +265,7 @@ test('stores and lists gallery images in D1', async () => {
   assert.equal(listResponse.status, 200);
   assert.equal(list.items.length, 1);
   assert.equal(list.items[0].id, created.item.id);
+  assert.equal(list.items[0].gender, 'Women');
 });
 
 test('stores quiz responses and user photos in D1', async () => {
@@ -359,7 +363,11 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(app.includes('favorites: "/api/favorites"'));
   assert.ok(app.includes('userPhotos: "/api/user-photos"'));
   assert.ok(app.includes('imageUrl'));
+  assert.ok(app.includes('normalizeGender(item.gender)'));
+  assert.ok(app.includes('inferGender'));
   assert.ok(app.includes('toggleFavourite'));
+  assert.ok(index.includes('data-filter="gender"'));
+  assert.ok(index.includes('id="detail-gender"'));
   assert.ok(index.includes('id="results-grid"'));
   assert.ok(index.includes('app.js'));
 });
