@@ -164,6 +164,13 @@ function inferLength(title, features = []) {
   return "Medium";
 }
 
+function inferGender(title, features = []) {
+  const text = `${slugWords(title)} ${features.join(" ")}`.toLowerCase();
+  if (/(mens-hair|men-hair|\bmens\b|\bmen\b|\bmale\b|barber|beard|edgar|crew cut|buzz)/.test(text)) return "Men";
+  if (/(womens-hair|women-hair|\bwomens\b|\bwomen\b|\bfemale\b|pixie|bob)/.test(text)) return "Women";
+  return "Unisex";
+}
+
 function inferHairType(title, features = []) {
   const text = `${slugWords(title)} ${features.join(" ")}`;
   if (/(afro|curl|curly|coily)/.test(text)) return "Curly Hair";
@@ -232,6 +239,7 @@ function galleryItemToStyle(item, index) {
   const features = Array.isArray(item.features) ? item.features : [];
   const length = inferLength(title, features);
   const hairType = inferHairType(title, features);
+  const gender = inferGender(title, features);
   const detail = detailsForStyle(title, length, hairType, item.description || "");
 
   return {
@@ -242,6 +250,7 @@ function galleryItemToStyle(item, index) {
     labels: [...new Set([...inferLabels(title, features), length.toLowerCase()])],
     hairType,
     length,
+    gender,
     maintainability: inferMaintainability(title, length),
     groupKey: getGroupKey(item),
     features,
@@ -437,7 +446,8 @@ function styleMatches(style) {
     const v = value.toLowerCase();
     if (key === "length" && style.length.toLowerCase() !== v) return false;
     if (key === "hair-type" && style.hairType.toLowerCase() !== v) return false;
-    if (key !== "length" && key !== "hair-type" && !haystack.includes(v)) return false;
+    if (key === "gender" && style.gender.toLowerCase() !== v) return false;
+    if (key !== "length" && key !== "hair-type" && key !== "gender" && !haystack.includes(v)) return false;
   }
 
   return true;
