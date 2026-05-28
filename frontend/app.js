@@ -597,12 +597,6 @@ function renderStars(container, score) {
 }
 
 // ---------- Detail overlay ----------
-function getRelatedStyles(style, limit = 3) {
-  const sameGroup = state.styles.filter((s) => s.id !== style.id && s.groupKey === style.groupKey);
-  const sameType = state.styles.filter((s) => s.id !== style.id && s.groupKey !== style.groupKey && s.hairType === style.hairType);
-  return [style, ...sameGroup, ...sameType].slice(0, limit);
-}
-
 function openDetail(id) {
   const style = state.styles.find((s) => s.id === String(id));
   if (!style) return;
@@ -613,11 +607,13 @@ function openDetail(id) {
   els.detailName.textContent = style.name;
 
   els.detailImages.innerHTML = "";
-  const relatedImages = getRelatedStyles(style);
-  for (const [index, related] of relatedImages.entries()) {
+  const front = document.createElement("div");
+  front.className = "detail-img";
+  appendImage(front, style, "Front");
+  els.detailImages.appendChild(front);
+  for (let i = 0; i < 2; i++) {
     const d = document.createElement("div");
     d.className = "detail-img";
-    appendImage(d, related, index === 0 ? "Main" : `Reference ${index + 1}`);
     els.detailImages.appendChild(d);
   }
 
