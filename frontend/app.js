@@ -331,13 +331,21 @@ async function loadGallery() {
   }
 }
 
+const pendingFavouriteOps = new Map();
+
 async function loadFavourites() {
   try {
     const data = await apiJson(`${API.favorites}?sessionId=${encodeURIComponent(state.sessionId)}`);
     if (Array.isArray(data.items)) {
-      state.favourites = new Set(data.items.map((item) => String(item.imageId)).filter(Boolean));
+      const serverSet = new Set(data.items.map((item) => String(item.imageId)).filter(Boolean));
+      for (const [imageId, op] of pendingFavouriteOps) {
+        if (op === "add") serverSet.add(imageId);
+        else serverSet.delete(imageId);
+      }
+      state.favourites = serverSet;
       updateFavouriteCount();
       renderResults();
+      if (!els.favouritesOverlay.hidden) renderFavourites();
     }
   } catch {
     updateFavouriteCount();
@@ -555,6 +563,7 @@ async function toggleFavourite(id) {
 
   if (shouldSave) state.favourites.add(imageId);
   else state.favourites.delete(imageId);
+  pendingFavouriteOps.set(imageId, shouldSave ? "add" : "delete");
 
   updateFavouriteCount();
   renderResults();
@@ -566,7 +575,9 @@ async function toggleFavourite(id) {
       method: shouldSave ? "POST" : "DELETE",
       body: JSON.stringify({ sessionId: state.sessionId, imageId })
     });
+    pendingFavouriteOps.delete(imageId);
   } catch {
+    pendingFavouriteOps.delete(imageId);
     if (shouldSave) state.favourites.delete(imageId);
     else state.favourites.add(imageId);
     updateFavouriteCount();
