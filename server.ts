@@ -90,6 +90,14 @@ function rowToUserPhoto(row: any): Record<string, unknown> {
   };
 }
 
+function rowToFavoriteImage(row: any): Record<string, unknown> {
+  return {
+    sessionId: row.session_id,
+    imageId: row.image_id,
+    createdAt: row.created_at
+  };
+}
+
 async function listGallery(db: any): Promise<Response> {
   const { results } = await db
     .prepare('SELECT * FROM gallery_images ORDER BY created_at DESC')
@@ -204,6 +212,69 @@ async function createUserPhoto(request: Request, db: any): Promise<Response> {
   return json({ ok: true, item: rowToUserPhoto(row) }, { status: 201 });
 }
 
+async function listFavoriteImages(url: URL, db: any): Promise<Response> {
+  const sessionId = url.searchParams.get('sessionId');
+
+  if (!sessionId || !sessionId.trim()) {
+    return error('Favorite image sessionId is required.');
+  }
+
+  const { results } = await db
+    .prepare('SELECT * FROM favorite_images WHERE session_id = ? ORDER BY created_at DESC')
+    .bind(sessionId.trim())
+    .all();
+
+  return json({ ok: true, items: results.map(rowToFavoriteImage) });
+}
+
+async function createFavoriteImage(request: Request, db: any): Promise<Response> {
+  const body = await readJson(request);
+
+  if (!body || typeof body.sessionId !== 'string' || !body.sessionId.trim()) {
+    return error('Favorite image sessionId is required.');
+  }
+
+  if (typeof body.imageId !== 'string' || !body.imageId.trim()) {
+    return error('Favorite image imageId is required.');
+  }
+
+  await db
+    .prepare(
+      `INSERT OR IGNORE INTO favorite_images (session_id, image_id)
+       VALUES (?, ?)`
+    )
+    .bind(body.sessionId.trim(), body.imageId.trim())
+    .run();
+
+  const row = await db
+    .prepare('SELECT * FROM favorite_images WHERE session_id = ? AND image_id = ?')
+    .bind(body.sessionId.trim(), body.imageId.trim())
+    .first();
+
+  return json({ ok: true, item: rowToFavoriteImage(row) }, { status: 201 });
+}
+
+async function deleteFavoriteImage(request: Request, url: URL, db: any): Promise<Response> {
+  const body = await readJson(request);
+  const sessionId = typeof body?.sessionId === 'string' ? body.sessionId : url.searchParams.get('sessionId');
+  const imageId = typeof body?.imageId === 'string' ? body.imageId : url.searchParams.get('imageId');
+
+  if (!sessionId || !sessionId.trim()) {
+    return error('Favorite image sessionId is required.');
+  }
+
+  if (!imageId || !imageId.trim()) {
+    return error('Favorite image imageId is required.');
+  }
+
+  await db
+    .prepare('DELETE FROM favorite_images WHERE session_id = ? AND image_id = ?')
+    .bind(sessionId.trim(), imageId.trim())
+    .run();
+
+  return json({ ok: true });
+}
+
 async function handleApi(request: Request, env: Env, url: URL): Promise<Response | null> {
   if (url.pathname === '/api/status') {
     return json({
@@ -239,6 +310,12 @@ async function handleApi(request: Request, env: Env, url: URL): Promise<Response
   if (url.pathname === '/api/user-photos') {
     if (request.method === 'GET') return listUserPhotos(url, db);
     if (request.method === 'POST') return createUserPhoto(request, db);
+  }
+
+  if (url.pathname === '/api/favorites') {
+    if (request.method === 'GET') return listFavoriteImages(url, db);
+    if (request.method === 'POST') return createFavoriteImage(request, db);
+    if (request.method === 'DELETE') return deleteFavoriteImage(request, url, db);
   }
 
   return error('API route not found.', 404);

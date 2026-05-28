@@ -3,7 +3,7 @@ main = "server.ts"
 compatibility_date = "2026-05-27"
 
 [assets]
-directory = "./public"
+directory = "./frontend"
 binding = "ASSETS"
 
 [[d1_databases]]

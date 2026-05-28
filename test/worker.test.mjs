@@ -37,7 +37,8 @@ function createMockD1() {
   const tables = {
     gallery_images: [],
     quiz_responses: [],
-    user_photos: []
+    user_photos: [],
+    favorite_images: []
   };
 
   const clone = (row) => ({ ...row });
@@ -86,6 +87,25 @@ function createMockD1() {
             });
           }
 
+          if (sql.includes('INSERT OR IGNORE INTO favorite_images')) {
+            const exists = tables.favorite_images.some(
+              (row) => row.session_id === values[0] && row.image_id === values[1]
+            );
+            if (!exists) {
+              tables.favorite_images.push({
+                session_id: values[0],
+                image_id: values[1],
+                created_at: now()
+              });
+            }
+          }
+
+          if (sql.includes('DELETE FROM favorite_images')) {
+            tables.favorite_images = tables.favorite_images.filter(
+              (row) => row.session_id !== values[0] || row.image_id !== values[1]
+            );
+          }
+
           return { success: true };
         },
         async first() {
@@ -99,6 +119,12 @@ function createMockD1() {
 
           if (sql.includes('FROM user_photos WHERE id = ?')) {
             return clone(tables.user_photos.find((row) => row.id === values[0]));
+          }
+
+          if (sql.includes('FROM favorite_images WHERE session_id = ? AND image_id = ?')) {
+            return clone(tables.favorite_images.find(
+              (row) => row.session_id === values[0] && row.image_id === values[1]
+            ));
           }
 
           return null;
@@ -132,6 +158,14 @@ function createMockD1() {
             return { results: orderByCreatedAt(tables.user_photos).map(clone) };
           }
 
+          if (sql.includes('FROM favorite_images WHERE session_id = ?')) {
+            return {
+              results: orderByCreatedAt(tables.favorite_images)
+                .filter((row) => row.session_id === values[0])
+                .map(clone)
+            };
+          }
+
           return { results: [] };
         }
       };
@@ -140,8 +174,9 @@ function createMockD1() {
 }
 
 async function createAssetEnv() {
-  const index = await readFile(new URL('../public/index.html', import.meta.url), 'utf8');
-  const app = await readFile(new URL('../public/app.jsx', import.meta.url), 'utf8');
+  const index = await readFile(new URL('../frontend/index.html', import.meta.url), 'utf8');
+  const app = await readFile(new URL('../frontend/app.js', import.meta.url), 'utf8');
+  const styles = await readFile(new URL('../frontend/styles.css', import.meta.url), 'utf8');
 
   return {
     DB: createMockD1(),
@@ -155,9 +190,15 @@ async function createAssetEnv() {
           });
         }
 
-        if (pathname === '/app.jsx') {
+        if (pathname === '/app.js') {
           return new Response(app, {
-            headers: { 'content-type': 'text/babel; charset=utf-8' }
+            headers: { 'content-type': 'text/javascript; charset=utf-8' }
+          });
+        }
+
+        if (pathname === '/styles.css') {
+          return new Response(styles, {
+            headers: { 'content-type': 'text/css; charset=utf-8' }
           });
         }
 
@@ -177,8 +218,9 @@ test('serves the frontend on the root route', async () => {
 
   assert.equal(response.status, 200);
   assert.equal(response.headers.get('content-type'), 'text/html; charset=utf-8');
-  assert.match(body, /id="root"/);
-  assert.ok(body.includes('src="/app.jsx"'));
+  assert.match(body, /id="results-grid"/);
+  assert.match(body, /src="app\.js(?:\?v=[^"]+)?"/);
+  assert.match(body, /href="styles\.css(?:\?v=[^"]+)?"/);
 });
 
 test('serves backend status as JSON', async () => {
@@ -261,6 +303,46 @@ test('stores quiz responses and user photos in D1', async () => {
   assert.equal(list.items[0].id, photo.item.id);
 });
 
+test('stores and removes favorite images in D1', async () => {
+  const { default: worker } = await loadWorker();
+  const env = await createAssetEnv();
+
+  const createResponse = await worker.fetch(new Request('https://example.com/api/favorites', {
+    method: 'POST',
+    body: JSON.stringify({
+      sessionId: 'session-1',
+      imageId: 'curtain'
+    })
+  }), env);
+  const created = await createResponse.json();
+
+  assert.equal(createResponse.status, 201);
+  assert.equal(created.item.sessionId, 'session-1');
+  assert.equal(created.item.imageId, 'curtain');
+
+  const listResponse = await worker.fetch(new Request('https://example.com/api/favorites?sessionId=session-1'), env);
+  const list = await listResponse.json();
+
+  assert.equal(listResponse.status, 200);
+  assert.equal(list.items.length, 1);
+  assert.equal(list.items[0].imageId, 'curtain');
+
+  const deleteResponse = await worker.fetch(new Request('https://example.com/api/favorites', {
+    method: 'DELETE',
+    body: JSON.stringify({
+      sessionId: 'session-1',
+      imageId: 'curtain'
+    })
+  }), env);
+
+  assert.equal(deleteResponse.status, 200);
+
+  const emptyResponse = await worker.fetch(new Request('https://example.com/api/favorites?sessionId=session-1'), env);
+  const empty = await emptyResponse.json();
+
+  assert.equal(empty.items.length, 0);
+});
+
 test('returns 404 for unknown routes', async () => {
   const { default: worker } = await loadWorker();
   const response = await worker.fetch(new Request('https://example.com/missing'), await createAssetEnv());
@@ -269,22 +351,17 @@ test('returns 404 for unknown routes', async () => {
   assert.equal(await response.text(), 'Not found');
 });
 
-test('combined frontend bundle includes only Salon and backend wiring', async () => {
-  const app = await readFile(new URL('../public/app.jsx', import.meta.url), 'utf8');
-  const removedComponentNames = [
-    'At' + 'elierApp',
-    'Mir' + 'rorApp'
-  ];
+test('new static frontend is wired to image and database APIs', async () => {
+  const app = await readFile(new URL('../frontend/app.js', import.meta.url), 'utf8');
+  const index = await readFile(new URL('../frontend/index.html', import.meta.url), 'utf8');
 
-  assert.ok(app.includes('window.SalonApp = SalonApp'));
-  for (const componentName of removedComponentNames) {
-    assert.ok(!app.includes(`window.${componentName}`));
-    assert.ok(!app.includes(componentName));
-  }
-  assert.ok(app.includes('Object.assign(window, {'));
-  assert.ok(!app.includes("fetch('/api/status')"));
-  assert.ok(!app.includes('shell-bar'));
-  assert.ok(app.includes('ReactDOM.createRoot'));
+  assert.ok(app.includes('gallery: "/api/gallery"'));
+  assert.ok(app.includes('favorites: "/api/favorites"'));
+  assert.ok(app.includes('userPhotos: "/api/user-photos"'));
+  assert.ok(app.includes('imageUrl'));
+  assert.ok(app.includes('toggleFavourite'));
+  assert.ok(index.includes('id="results-grid"'));
+  assert.ok(index.includes('app.js'));
 });
 
 test('wrangler deploys the TypeScript worker entry', async () => {
@@ -293,7 +370,7 @@ test('wrangler deploys the TypeScript worker entry', async () => {
   assert.match(config, /^name = "drp28"$/m);
   assert.match(config, /^main = "server\.ts"$/m);
   assert.match(config, /^\[assets\]$/m);
-  assert.match(config, /^directory = "\.\/public"$/m);
+  assert.match(config, /^directory = "\.\/frontend"$/m);
   assert.match(config, /^\[\[d1_databases\]\]$/m);
   assert.match(config, /^binding = "DB"$/m);
   assert.match(config, /^migrations_dir = "migrations"$/m);

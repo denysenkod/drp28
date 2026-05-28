@@ -5,9 +5,9 @@ Minimal Cloudflare Worker backend serving the Salon frontend.
 ## What Runs
 
 - `server.ts` handles Worker backend routes.
-- `public/index.html` and `public/app.jsx` are the served frontend.
+- `frontend/index.html`, `frontend/styles.css`, and `frontend/app.js` are the served frontend.
 - `/api/status` is the backend health/status endpoint.
-- `/api/gallery`, `/api/quiz-responses`, and `/api/user-photos` are D1-backed storage endpoints.
+- `/api/gallery`, `/api/quiz-responses`, `/api/user-photos`, and `/api/favorites` are D1-backed storage endpoints.
 - `local-dev.mjs` is a fallback local server for machines with `node` but no `npm` or `npx`.
 
 ## Local Start Without npm
@@ -30,7 +30,7 @@ Backend endpoint:
 http://localhost:8787/api/status
 ```
 
-The fallback server stores API data in memory only. Restarting it clears local gallery, quiz, and photo data.
+The fallback server stores API data in memory only. Restarting it clears local gallery, quiz, photo, and favorites data.
 
 To use a different port:
 
@@ -75,6 +75,7 @@ npm test
 ## D1 Database Setup
 
 There is no deployed database until you create one in Cloudflare.
+The migrations also seed the gallery with British GQ men's hair trend image URLs.
 
 Create the D1 database:
 
@@ -142,7 +143,7 @@ main = "server.ts"
 compatibility_date = "2026-05-27"
 
 [assets]
-directory = "./public"
+directory = "./frontend"
 binding = "ASSETS"
 
 [[d1_databases]]

@@ -6,7 +6,7 @@ import { randomUUID } from 'node:crypto';
 
 const PORT = Number(process.env.PORT || 8787);
 const ROOT = fileURLToPath(new URL('.', import.meta.url));
-const PUBLIC_DIR = join(ROOT, 'public');
+const PUBLIC_DIR = join(ROOT, 'frontend');
 const API_STATUS = {
   ok: true,
   app: 'DRP28',
@@ -16,7 +16,8 @@ const API_STATUS = {
 const store = {
   gallery: [],
   quizResponses: [],
-  userPhotos: []
+  userPhotos: [],
+  favorites: []
 };
 
 const MIME_TYPES = {
@@ -162,6 +163,66 @@ async function handleApi(req, res, url) {
       });
       store.userPhotos.unshift(item);
       sendJson(res, 201, { ok: true, item });
+      return true;
+    }
+  }
+
+  if (url.pathname === '/api/favorites') {
+    if (req.method === 'GET') {
+      const sessionId = url.searchParams.get('sessionId');
+      if (!sessionId || !sessionId.trim()) {
+        sendJson(res, 400, { ok: false, error: 'Favorite image sessionId is required.' });
+        return true;
+      }
+
+      const items = store.favorites
+        .filter((item) => item.sessionId === sessionId.trim())
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+      sendJson(res, 200, { ok: true, items });
+      return true;
+    }
+
+    if (req.method === 'POST') {
+      const body = await readJson(req);
+      if (!body || typeof body.sessionId !== 'string' || !body.sessionId.trim()) {
+        sendJson(res, 400, { ok: false, error: 'Favorite image sessionId is required.' });
+        return true;
+      }
+      if (typeof body.imageId !== 'string' || !body.imageId.trim()) {
+        sendJson(res, 400, { ok: false, error: 'Favorite image imageId is required.' });
+        return true;
+      }
+
+      const sessionId = body.sessionId.trim();
+      const imageId = body.imageId.trim();
+      let item = store.favorites.find((fav) => fav.sessionId === sessionId && fav.imageId === imageId);
+      if (!item) {
+        item = createItem({ sessionId, imageId });
+        store.favorites.unshift(item);
+      }
+
+      sendJson(res, 201, { ok: true, item });
+      return true;
+    }
+
+    if (req.method === 'DELETE') {
+      const body = await readJson(req);
+      const sessionId = typeof body?.sessionId === 'string' ? body.sessionId : url.searchParams.get('sessionId');
+      const imageId = typeof body?.imageId === 'string' ? body.imageId : url.searchParams.get('imageId');
+
+      if (!sessionId || !sessionId.trim()) {
+        sendJson(res, 400, { ok: false, error: 'Favorite image sessionId is required.' });
+        return true;
+      }
+      if (!imageId || !imageId.trim()) {
+        sendJson(res, 400, { ok: false, error: 'Favorite image imageId is required.' });
+        return true;
+      }
+
+      store.favorites = store.favorites.filter(
+        (item) => item.sessionId !== sessionId.trim() || item.imageId !== imageId.trim()
+      );
+      sendJson(res, 200, { ok: true });
       return true;
     }
   }
