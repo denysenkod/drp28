@@ -75,7 +75,7 @@ npm test
 ## D1 Database Setup
 
 There is no deployed database until you create one in Cloudflare.
-The migrations also seed the gallery with British GQ men's hair trend image URLs.
+The migrations also seed the gallery with British GQ men's hair trend image URLs and Glamour women's haircut image URLs. Gallery rows include a `gender` column; seeded GQ rows are backfilled as `Men`, and seeded Glamour rows are backfilled as `Women`.
 
 Create the D1 database:
 
@@ -119,9 +119,11 @@ Manual deploy with npm available:
 npm run deploy
 ```
 
-Equivalent direct command:
+This applies the remote D1 migrations and then deploys. The equivalent
+direct commands are:
 
 ```bash
+npx wrangler d1 migrations apply DB --remote
 npx wrangler deploy
 ```
 
@@ -131,9 +133,15 @@ In Cloudflare Workers Builds, use:
 
 ```text
 Build command: npm test
-Deploy command: npx wrangler deploy
+Deploy command: npm run deploy
 Root directory: blank
 ```
+
+The `npm run deploy` script applies the remote D1 migrations
+(`npx wrangler d1 migrations apply DB --remote`) before running
+`npx wrangler deploy`, so seed migrations are pushed to the live
+database as part of every deploy. The Cloudflare build environment
+already provides `CLOUDFLARE_API_TOKEN`, so no extra setup is needed.
 
 The deploy uses `wrangler.toml`:
 

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "server.ts",
   "scripts": {
-    "deploy": "npx wrangler deploy",
+    "deploy": "npx wrangler d1 migrations apply DB --remote && npx wrangler deploy",
     "db:list": "npx wrangler d1 list",
     "db:migrate:local": "npx wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "npx wrangler d1 migrations apply DB --remote",

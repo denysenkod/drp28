@@ -67,6 +67,15 @@ function parseRecord(value) {
   return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 }
 
+function normalizeGender(value) {
+  if (typeof value !== 'string') return 'Unisex';
+
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'men' || normalized === 'man' || normalized === 'male') return 'Men';
+  if (normalized === 'women' || normalized === 'woman' || normalized === 'female') return 'Women';
+  return 'Unisex';
+}
+
 function createItem(data) {
   return {
     id: randomUUID(),
@@ -98,6 +107,7 @@ async function handleApi(req, res, url) {
         title: body.title.trim(),
         description: typeof body.description === 'string' ? body.description : '',
         imageUrl: typeof body.imageUrl === 'string' ? body.imageUrl : '',
+        gender: normalizeGender(body.gender),
         features: parseList(body.features)
       });
       store.gallery.unshift(item);
