@@ -170,6 +170,20 @@ select, input {
 .all-filters-btn.is-open { background: var(--text); color: #fff; }
 .filter-icon { font-size: 12px; }
 
+/* Quick filter (inline, e.g. gender) shown in the search row */
+.quick-filter {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 10px 30px 10px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  font-size: 14px;
+  background: var(--surface)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%231f1f1f' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E")
+    no-repeat right 12px center;
+  cursor: pointer;
+}
+
 /* ===== Active filter chips ===== */
 .active-filters {
   display: flex;
@@ -208,6 +222,11 @@ select, input {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 8px;
+}
+
+/* Keep every recommended dropdown on a single row */
+.recommended-grid {
+  grid-template-columns: repeat(6, 1fr);
 }
 
 .dropdown-grid select {

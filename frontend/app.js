@@ -393,6 +393,14 @@ function renderCategoryChips() {
   }
 }
 
+// Keep every <select> sharing the same data-filter key in sync (e.g. the
+// quick gender selector in the search row and the one in the filters panel).
+function syncFilterSelects(key, value) {
+  $$(`select[data-filter="${key}"]`).forEach((sel) => {
+    if (sel.value !== value) sel.value = value;
+  });
+}
+
 function renderActiveFilters() {
   els.activeFilters.innerHTML = "";
 
@@ -412,8 +420,7 @@ function renderActiveFilters() {
       else if (item.kind === "category") state.activeCategories.delete(item.value);
       else if (item.kind === "dropdown") {
         delete state.activeDropdownFilters[item.key];
-        const sel = document.querySelector(`select[data-filter="${item.key}"]`);
-        if (sel) sel.value = "";
+        syncFilterSelects(item.key, "");
       }
       renderLabelChips();
       renderCategoryChips();
@@ -807,6 +814,7 @@ function init() {
     sel.addEventListener("change", () => {
       const key = sel.dataset.filter;
       state.activeDropdownFilters[key] = sel.value;
+      syncFilterSelects(key, sel.value);
       renderActiveFilters();
       renderResults();
     });
