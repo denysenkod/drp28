@@ -24,6 +24,9 @@
 
   <main class="app-shell" id="app">
     <section class="results-grid" id="results-grid" hidden></section>
+    <select data-filter="gender" hidden aria-hidden="true" tabindex="-1">
+      <option value="">Gender</option>
+    </select>
   </main>
 
   <div class="overlay" id="detail-overlay" hidden>
@@ -50,6 +53,10 @@
             <div>
               <dt>Texture</dt>
               <dd id="detail-hairtype"></dd>
+            </div>
+            <div>
+              <dt>Gender</dt>
+              <dd id="detail-gender"></dd>
             </div>
             <div>
               <dt>Upkeep</dt>

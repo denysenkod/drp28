@@ -332,8 +332,16 @@ function inferLength(title, features = []) {
 function inferGender(title, features = []) {
   const text = `${slugWords(title)} ${features.join(" ")}`.toLowerCase();
   if (/(mens-hair|men-hair|\bmens\b|\bmen\b|\bmale\b|barber|beard|edgar|crew cut|buzz)/.test(text)) return "Men";
-  if (/(womens-hair|women-hair|\bwomens\b|\bwomen\b|\bfemale\b|pixie|bob|bang|lob)/.test(text)) return "Women";
+  if (/(glamour|womens-hair|women-hair|\bwomens\b|\bwomen\b|\bfemale\b|pixie|bob|bang|lob)/.test(text)) return "Women";
   return "Unisex";
+}
+
+function normalizeGender(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (normalized === "men" || normalized === "man" || normalized === "male") return "Men";
+  if (normalized === "women" || normalized === "woman" || normalized === "female") return "Women";
+  if (normalized === "unisex") return "Unisex";
+  return "";
 }
 
 function inferHairType(title, features = []) {
@@ -398,7 +406,7 @@ function galleryItemToStyle(item, index) {
   const features = Array.isArray(item.features) ? item.features : [];
   const length = inferLength(title, features);
   const hairType = inferHairType(title, features);
-  const gender = inferGender(title, features);
+  const gender = normalizeGender(item.gender) || inferGender(title, features);
   const detail = detailsForStyle(title, length, hairType, item.description || "");
 
   return {
@@ -450,6 +458,7 @@ const els = {
   detailBarberOpen: $("#detail-barber-open"),
   detailLength: $("#detail-length"),
   detailHairtype: $("#detail-hairtype"),
+  detailGender: $("#detail-gender"),
   detailMaintenanceLevel: $("#detail-maintenance-level"),
   detailMaintenance: $("#detail-maintenance"),
   detailLabels: $("#detail-labels"),
@@ -1198,6 +1207,7 @@ function openDetail(id) {
   els.detailDescription.textContent = style.description || "A reference style from the current gallery.";
   els.detailLength.textContent = style.length;
   els.detailHairtype.textContent = style.hairType;
+  els.detailGender.textContent = style.gender;
   els.detailMaintenanceLevel.textContent = style.maintenanceLevel;
   els.detailMaintenance.textContent = style.maintenance;
   els.detailLabels.innerHTML = style.labels.map((label) => `<span>${escapeHtml(label)}</span>`).join("");

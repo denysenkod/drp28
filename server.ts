@@ -58,12 +58,22 @@ function decodeJson(value: unknown, fallback: unknown): unknown {
   }
 }
 
+function normalizeGender(value: unknown): string {
+  if (typeof value !== 'string') return 'Unisex';
+
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'men' || normalized === 'man' || normalized === 'male') return 'Men';
+  if (normalized === 'women' || normalized === 'woman' || normalized === 'female') return 'Women';
+  return 'Unisex';
+}
+
 function rowToGalleryImage(row: any): Record<string, unknown> {
   return {
     id: row.id,
     title: row.title,
     description: row.description,
     imageUrl: row.image_url,
+    gender: normalizeGender(row.gender),
     features: decodeJson(row.features_json, []),
     createdAt: row.created_at
   };
@@ -116,14 +126,15 @@ async function createGalleryImage(request: Request, db: any): Promise<Response> 
   const id = crypto.randomUUID();
   const description = typeof body.description === 'string' ? body.description : '';
   const imageUrl = typeof body.imageUrl === 'string' ? body.imageUrl : '';
+  const gender = normalizeGender(body.gender);
   const features = parseList(body.features);
 
   await db
     .prepare(
-      `INSERT INTO gallery_images (id, title, description, image_url, features_json)
-       VALUES (?, ?, ?, ?, ?)`
+      `INSERT INTO gallery_images (id, title, description, image_url, gender, features_json)
+       VALUES (?, ?, ?, ?, ?, ?)`
     )
-    .bind(id, body.title.trim(), description, imageUrl, JSON.stringify(features))
+    .bind(id, body.title.trim(), description, imageUrl, gender, JSON.stringify(features))
     .run();
 
   const row = await db

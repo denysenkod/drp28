@@ -75,7 +75,7 @@ npm test
 ## D1 Database Setup
 
 There is no deployed database until you create one in Cloudflare.
-The migrations also seed the gallery with British GQ men's hair trend image URLs.
+The migrations also seed the gallery with British GQ men's hair trend image URLs and Glamour women's haircut image URLs. Gallery rows include a `gender` column; seeded GQ rows are backfilled as `Men`, and seeded Glamour rows are backfilled as `Women`.
 
 Create the D1 database:
 
