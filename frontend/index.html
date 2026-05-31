@@ -3,215 +3,97 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Find Your Style</title>
-  <link rel="stylesheet" href="styles.css?v=2026-05-28-1" />
+  <title>HairMatch</title>
+  <link rel="stylesheet" href="styles.css?v=2026-05-31-1" />
 </head>
 <body>
   <header class="topbar">
-    <button class="favourites-btn" id="favourites-btn" type="button">
-      <span class="heart">♡</span> Favourites
-      <span class="fav-count" id="fav-count">0</span>
-    </button>
+    <button class="brand-btn" id="home-btn" type="button">HairMatch</button>
+    <nav class="top-actions" aria-label="Primary">
+      <button class="nav-btn" id="search-nav-btn" type="button">Search</button>
+      <button class="favourites-btn" id="favourites-btn" type="button">
+        <span aria-hidden="true">&hearts;</span>
+        <span>Saved</span>
+        <span class="fav-count" id="fav-count">0</span>
+      </button>
+    </nav>
   </header>
 
-  <main class="page">
-    <h1 class="page-title">Looking for the right Style?</h1>
-
-    <div class="search-row">
-      <label class="upload-btn" id="upload-btn" title="Upload a photo to inform search">
-        <span class="upload-icon" aria-hidden="true">📷</span>
-        <span class="upload-label">Upload Photo</span>
-        <input type="file" id="upload-input" accept="image/*" hidden />
-      </label>
-      <div class="search-input-wrap">
-        <span class="search-icon">⌕</span>
-        <input
-          type="search"
-          id="search-input"
-          placeholder="Anything specific hairstyles?"
-          autocomplete="off"
-        />
-      </div>
-      <button class="all-filters-btn" id="all-filters-btn" type="button">
-        All Filters <span class="filter-icon">⌄</span>
-      </button>
-    </div>
-
-    <div class="upload-preview" id="upload-preview" hidden>
-      <span class="upload-preview-label">Searching using your photo:</span>
-      <span class="upload-preview-name" id="upload-preview-name"></span>
-      <button class="upload-clear" id="upload-clear" type="button" aria-label="Clear photo">×</button>
-    </div>
-
-    <div class="active-filters" id="active-filters"></div>
-
-    <section class="filters-panel" id="filters-panel" hidden>
-      <h2 class="section-label">Filters</h2>
-      <div class="dropdown-grid">
-        <select data-filter="gender">
-          <option value="">Gender</option>
-          <option>Men</option>
-          <option>Women</option>
-          <option>Unisex</option>
-        </select>
-        <select data-filter="ethnicity">
-          <option value="">Ethnicity</option>
-          <option>Asian</option>
-          <option>Black</option>
-          <option>Caucasian</option>
-          <option>Hispanic</option>
-          <option>Middle Eastern</option>
-        </select>
-        <select data-filter="colour">
-          <option value="">Colour</option>
-          <option>Black</option>
-          <option>Brunette</option>
-          <option>Blonde</option>
-          <option>Red</option>
-          <option>Grey</option>
-        </select>
-        <select data-filter="hair-type">
-          <option value="">Hair Type</option>
-          <option>Straight Hair</option>
-          <option>Wavy Hair</option>
-          <option>Curly Hair</option>
-          <option>Coily Hair</option>
-        </select>
-        <select data-filter="length">
-          <option value="">Length</option>
-          <option>Short</option>
-          <option>Medium</option>
-          <option>Long</option>
-        </select>
-        <select data-filter="face-shape">
-          <option value="">Face Shape</option>
-          <option>Oval</option>
-          <option>Round</option>
-          <option>Square</option>
-          <option>Heart</option>
-          <option>Long</option>
-        </select>
-        <select data-filter="density">
-          <option value="">Hair Density</option>
-          <option>Thin</option>
-          <option>Medium</option>
-          <option>Thick</option>
-        </select>
-        <select data-filter="movement">
-          <option value="">Natural Movement</option>
-          <option>None</option>
-          <option>Some</option>
-          <option>A lot</option>
-        </select>
-      </div>
-
-      <h2 class="section-label">Labels:</h2>
-      <div class="label-chips" id="label-chips"></div>
-    </section>
-
-    <section class="recommended">
-      <h2 class="section-label">Recommended:</h2>
-      <div class="dropdown-grid recommended-grid">
-        <select><option>Ethnicity</option><option>Asian</option><option>Black</option><option>Caucasian</option></select>
-        <select><option>Natural colour</option><option>Brunette</option><option>Blonde</option><option>Black</option></select>
-        <select><option>Face shape</option><option>Oval</option><option>Round</option><option>Square</option></select>
-        <select><option>Straight Hair</option><option>Wavy</option><option>Curly</option></select>
-        <select><option>Maintenance</option><option>Low</option><option>Medium</option><option>High</option></select>
-        <select><option>Length</option><option>Short</option><option>Medium</option><option>Long</option></select>
-      </div>
-    </section>
-
-    <section class="try-these">
-      <h2 class="section-label">Try These Styles:</h2>
-      <div class="category-chips" id="category-chips"></div>
-    </section>
-
-    <section class="results-grid" id="results-grid"></section>
+  <main class="app-shell" id="app">
+    <section class="results-grid" id="results-grid" hidden></section>
   </main>
 
-  <!-- Detail overlay -->
   <div class="overlay" id="detail-overlay" hidden>
     <div class="overlay-card">
-      <button class="close-btn" id="close-detail" type="button" aria-label="Close">×</button>
+      <button class="close-btn" id="close-detail" type="button" aria-label="Close">&times;</button>
 
-      <div class="detail-images" id="detail-images"></div>
+      <div class="detail-layout">
+        <div class="detail-image" id="detail-image"></div>
+        <div class="detail-copy">
+          <p class="eyebrow" id="detail-meta">Style</p>
+          <h2 id="detail-name">Style</h2>
+          <p class="detail-description" id="detail-description"></p>
 
-      <div class="detail-header">
-        <h2 id="detail-name">—</h2>
-        <div class="detail-actions">
-          <button class="icon-btn icon-btn-heart" id="detail-like" type="button" aria-label="Save to favourites">♡</button>
-        </div>
-      </div>
+          <div class="detail-actions">
+            <button class="primary-btn" id="detail-like" type="button">Save style</button>
+            <button class="secondary-btn" id="detail-barber-open" type="button">Barber notes</button>
+          </div>
 
-      <button class="see-more-btn" type="button">See More like this →</button>
+          <dl class="detail-specs">
+            <div>
+              <dt>Length</dt>
+              <dd id="detail-length"></dd>
+            </div>
+            <div>
+              <dt>Texture</dt>
+              <dd id="detail-hairtype"></dd>
+            </div>
+            <div>
+              <dt>Upkeep</dt>
+              <dd id="detail-maintenance-level"></dd>
+            </div>
+          </dl>
 
-      <div class="attributes" id="detail-attributes">
-        <div class="attribute-row">
-          <span class="attribute-key">Maintainability</span>
-          <span class="attribute-value stars" id="detail-stars"></span>
-        </div>
-        <div class="attribute-row">
-          <span class="attribute-key">Length</span>
-          <span class="attribute-value" id="detail-length"></span>
-        </div>
-        <div class="attribute-row">
-          <span class="attribute-key">Hair Type</span>
-          <span class="attribute-value" id="detail-hairtype"></span>
-        </div>
-      </div>
-
-      <div class="expandables" id="detail-expandables">
-        <details class="expandable">
-          <summary>How to maintain this style</summary>
-          <div class="expandable-body">
+          <section class="detail-section">
+            <h3>How to maintain it</h3>
             <p id="detail-maintenance"></p>
-            <h4 class="expandable-sub">Recommended hair products</h4>
-            <ul id="detail-products"></ul>
-          </div>
-        </details>
-        <details class="expandable expandable-barber">
-          <summary>Where do I get this cut?</summary>
-          <div class="expandable-body">
-            <h4 class="expandable-sub">Recommended types of hairdressers</h4>
-            <ul id="detail-hairdressers"></ul>
-            <h4 class="expandable-sub">What to tell the barber</h4>
-            <p id="detail-barber"></p>
-          </div>
-        </details>
+          </section>
+
+          <section class="detail-section">
+            <h3>Labels</h3>
+            <div class="detail-labels" id="detail-labels"></div>
+          </section>
+        </div>
       </div>
 
-      <h3 class="section-label">Labels:</h3>
-      <div class="detail-labels" id="detail-labels"></div>
-
-      <h3 class="section-label">Similar Results:</h3>
-      <div class="similar-carousel">
-        <button class="carousel-arrow" id="similar-prev" type="button" aria-label="Previous">‹</button>
+      <section class="similar-section">
+        <h3>More like this</h3>
         <div class="similar-results" id="similar-results"></div>
-        <button class="carousel-arrow" id="similar-next" type="button" aria-label="Next">›</button>
-      </div>
+      </section>
     </div>
   </div>
 
-  <!-- Favourites overlay -->
   <div class="overlay" id="favourites-overlay" hidden>
     <div class="overlay-card">
-      <button class="close-btn" id="close-favourites" type="button" aria-label="Close">×</button>
-      <h2>Favourites</h2>
+      <button class="close-btn" id="close-favourites" type="button" aria-label="Close">&times;</button>
+      <div class="overlay-heading">
+        <p class="eyebrow">Your profile</p>
+        <h2>Saved styles</h2>
+      </div>
       <div class="results-grid" id="favourites-grid"></div>
-      <p class="empty-state" id="favourites-empty">No favourites yet. Tap the heart on any style to save it.</p>
+      <p class="empty-state" id="favourites-empty">No saved styles yet. Like photos in search or results to build your profile.</p>
     </div>
   </div>
 
-  <!-- Barber instructions overlay -->
   <div class="overlay" id="barber-overlay" hidden>
     <div class="overlay-card overlay-card-small">
-      <button class="close-btn" id="close-barber" type="button" aria-label="Close">×</button>
-      <h2 id="barber-title">What to tell the barber</h2>
-      <p class="barber-style-name" id="barber-style-name"></p>
+      <button class="close-btn" id="close-barber" type="button" aria-label="Close">&times;</button>
+      <p class="eyebrow">Barber notes</p>
+      <h2 id="barber-style-name">Style</h2>
       <p class="barber-text" id="barber-text"></p>
     </div>
   </div>
 
-  <script src="app.js?v=2026-05-28-1"></script>
+  <script src="app.js?v=2026-05-31-1"></script>
 </body>
 </html>

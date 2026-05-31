@@ -6,6 +6,26 @@ const API = {
 };
 
 const SESSION_KEY = "drp28.frontend.sessionId";
+const VIEW_KEY = "drp28.frontend.view";
+const ANSWERS_KEY = "drp28.frontend.answers";
+const STEP_KEY = "drp28.frontend.quizStep";
+
+function readStored(key, fallback) {
+  try {
+    const raw = window.localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeStored(key, value) {
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Storage can be unavailable in private browsing.
+  }
+}
 
 function getSessionId() {
   try {
@@ -37,16 +57,67 @@ async function apiJson(url, options = {}) {
   return data;
 }
 
+// ---------- Icons ----------
+const iconAttrs = 'fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"';
+
+function iconSearch() {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" ${iconAttrs}/><path d="M16 16l4 4" ${iconAttrs}/></svg>`;
+}
+
+function iconArrow() {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" ${iconAttrs}/></svg>`;
+}
+
+function iconCheck() {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7" ${iconAttrs}/></svg>`;
+}
+
+function textureIcon(kind) {
+  const columns = [8, 16, 24].map((x) => x * 2);
+  if (kind === "straight") {
+    return `<svg viewBox="0 0 64 64" aria-hidden="true">${columns.map((x) => `<line x1="${x}" y1="10" x2="${x}" y2="54" ${iconAttrs}/>`).join("")}</svg>`;
+  }
+  if (kind === "wavy") {
+    return `<svg viewBox="0 0 64 64" aria-hidden="true">${columns.map((x) => `<path d="M${x} 10 q7 8 0 16 q-7 8 0 16 q7 8 0 12" ${iconAttrs}/>`).join("")}</svg>`;
+  }
+  if (kind === "curly") {
+    return `<svg viewBox="0 0 64 64" aria-hidden="true">${columns.map((x) => `<path d="M${x} 11 c9 3 9 11 0 13 c-9 2 -9 10 0 13 c9 3 9 11 0 13" ${iconAttrs}/>`).join("")}</svg>`;
+  }
+  if (kind === "coily") {
+    return `<svg viewBox="0 0 64 64" aria-hidden="true">${columns.map((x) => `<path d="M${x - 4} 11 l8 5 l-8 5 l8 5 l-8 5 l8 5 l-8 5 l8 5" ${iconAttrs}/>`).join("")}</svg>`;
+  }
+  if (kind === "fine") {
+    return `<svg viewBox="0 0 64 64" aria-hidden="true"><line x1="26" y1="10" x2="26" y2="54" ${iconAttrs} stroke-width="1"/><line x1="38" y1="10" x2="38" y2="54" ${iconAttrs} stroke-width="1"/></svg>`;
+  }
+  if (kind === "thick") {
+    return `<svg viewBox="0 0 64 64" aria-hidden="true">${[14, 22, 30, 38, 46].map((x) => `<line x1="${x}" y1="10" x2="${x}" y2="54" ${iconAttrs} stroke-width="2.4"/>`).join("")}</svg>`;
+  }
+  return `<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="20" ${iconAttrs}/><path d="M28 25a5 5 0 1 1 6 4.8c-1.5.7-2 1.8-2 4.2M32 43h.01" ${iconAttrs}/></svg>`;
+}
+
+function faceIcon(kind) {
+  const shapes = {
+    oval: `<ellipse cx="32" cy="32" rx="16" ry="22" ${iconAttrs}/>`,
+    round: `<circle cx="32" cy="32" r="20" ${iconAttrs}/>`,
+    square: `<rect x="13" y="13" width="38" height="38" rx="7" ${iconAttrs}/>`,
+    heart: `<path d="M32 52C16 40 12 28 12 22a9 9 0 0 1 20-3 9 9 0 0 1 20 3c0 6-4 18-20 30Z" ${iconAttrs}/>`,
+    diamond: `<path d="M32 10l20 22-20 22-20-22Z" ${iconAttrs}/>`,
+    oblong: `<rect x="17" y="9" width="30" height="46" rx="13" ${iconAttrs}/>`,
+    triangle: `<path d="M32 11l19 42H13Z" ${iconAttrs}/>`,
+    unknown: `<circle cx="32" cy="32" r="20" ${iconAttrs}/><path d="M28 26a5 5 0 1 1 6 4.8c-1.5.7-2 1.8-2 4.2M32 43h.01" ${iconAttrs}/>`
+  };
+  return `<svg viewBox="0 0 64 64" aria-hidden="true">${shapes[kind] || shapes.unknown}</svg>`;
+}
+
+function lengthIcon(level) {
+  if (level >= 6) {
+    return `<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="16" r="8" ${iconAttrs}/><path d="M16 40q16-12 32 0M16 48q16-12 32 0" ${iconAttrs}/></svg>`;
+  }
+  const len = [4, 12, 20, 28, 38, 48][level] || 20;
+  return `<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="16" r="8" ${iconAttrs}/><path d="M24 16q-6 4-6 ${len}M40 16q6 4 6 ${len}" ${iconAttrs}/></svg>`;
+}
+
 // ---------- Data ----------
-const LABEL_OPTIONS = [
-  "classic", "edgy", "bold", "sleek", "effortless",
-  "fringe", "buzz cut", "crop", "mullet", "shag",
-  "side part", "centre part", "short", "medium", "long",
-  "straight", "wavy", "curly", "low maintenance"
-];
-
-const CATEGORIES = ["Fringe", "Buzz cut", "Crop", "Mullet", "Shag", "Side part", "Long styles"];
-
 const FALLBACK_STYLES = [
   {
     id: "gq-2026-clean-grow-out-1",
@@ -134,6 +205,107 @@ const FALLBACK_STYLES = [
   }
 ];
 
+const QUIZ = [
+  {
+    id: "style",
+    title: "What style are you looking for?",
+    sub: "Pick any that feel right. Show me everything selects all three style directions.",
+    layout: "image",
+    options: [
+      { value: "masculine", label: "Masculine styles", gender: "Men" },
+      { value: "feminine", label: "Feminine styles", gender: "Women" },
+      { value: "androgynous", label: "Androgynous / gender-neutral styles", gender: "Unisex" },
+      { value: "__all", label: "Show me everything", selectAll: true }
+    ]
+  },
+  {
+    id: "texture",
+    title: "What is your natural hair texture?",
+    layout: "icon",
+    options: [
+      { value: "straight", label: "Straight", icon: textureIcon("straight"), hairType: "Straight Hair" },
+      { value: "wavy", label: "Wavy", icon: textureIcon("wavy"), hairType: "Wavy Hair" },
+      { value: "curly", label: "Curly", icon: textureIcon("curly"), hairType: "Curly Hair" },
+      { value: "coily", label: "Coily / kinky", icon: textureIcon("coily"), hairType: "Curly Hair" },
+      { value: "fine", label: "Fine / thin", icon: textureIcon("fine") },
+      { value: "thick", label: "Thick / dense", icon: textureIcon("thick") },
+      { value: "unsure", label: "Not sure", icon: textureIcon("unsure"), exclusive: true }
+    ]
+  },
+  {
+    id: "ethnicity",
+    title: "Would you like photos featuring people of a specific ethnicity for inspiration?",
+    sub: "This only affects reference inspiration. You can skip it.",
+    layout: "text",
+    options: [
+      { value: "black", label: "Black / African descent" },
+      { value: "asian", label: "Asian / East Asian" },
+      { value: "south-asian", label: "South Asian" },
+      { value: "latino", label: "Latino / Hispanic" },
+      { value: "middle-eastern", label: "Middle Eastern" },
+      { value: "white", label: "White / Caucasian" },
+      { value: "mixed", label: "Mixed / Multiracial" },
+      { value: "none", label: "No preference", exclusive: true }
+    ]
+  },
+  {
+    id: "face",
+    title: "What is your face shape?",
+    sub: "Not sure? Choose the helper option and we will show a quick guide.",
+    layout: "icon",
+    options: [
+      { value: "oval", label: "Oval", icon: faceIcon("oval") },
+      { value: "round", label: "Round", icon: faceIcon("round") },
+      { value: "square", label: "Square", icon: faceIcon("square") },
+      { value: "heart", label: "Heart / inverted triangle", icon: faceIcon("heart") },
+      { value: "diamond", label: "Diamond", icon: faceIcon("diamond") },
+      { value: "oblong", label: "Oblong / rectangle", icon: faceIcon("oblong") },
+      { value: "triangle", label: "Triangle / pear", icon: faceIcon("triangle") },
+      { value: "unknown", label: "I do not know my face shape", icon: faceIcon("unknown"), exclusive: true }
+    ]
+  },
+  {
+    id: "length",
+    title: "How long are you thinking?",
+    layout: "icon",
+    options: [
+      { value: "buzz", label: "Buzz / very short", desc: "Skin-close to 1 inch", icon: lengthIcon(0), length: "Short" },
+      { value: "short", label: "Short", desc: "Above the ears", icon: lengthIcon(1), length: "Short" },
+      { value: "medium-short", label: "Medium-short", desc: "Ear to chin length", icon: lengthIcon(2), length: "Medium" },
+      { value: "medium", label: "Medium", desc: "Chin to shoulder", icon: lengthIcon(3), length: "Medium" },
+      { value: "long", label: "Long", desc: "Shoulder to mid-back", icon: lengthIcon(4), length: "Long" },
+      { value: "very-long", label: "Very long", desc: "Below mid-back", icon: lengthIcon(5), length: "Long" },
+      { value: "open", label: "I am open to anything", desc: "No preference", icon: lengthIcon(6), exclusive: true }
+    ]
+  },
+  {
+    id: "lifestyle",
+    title: "What best describes your lifestyle?",
+    layout: "text",
+    options: [
+      { value: "active", label: "Very active / sporty", keywords: ["low maintenance", "buzz", "crew"] },
+      { value: "professional", label: "Professional / corporate", keywords: ["classic", "side part", "centre part", "polished"] },
+      { value: "creative", label: "Creative / artistic", keywords: ["edgy", "bold", "shag", "mullet"] },
+      { value: "casual", label: "Casual / relaxed", keywords: ["effortless", "grow out", "fringe"] },
+      { value: "mixed", label: "Mixed / varies", exclusive: true }
+    ]
+  },
+  {
+    id: "vibe",
+    title: "Which words best describe the vibe you are going for?",
+    layout: "text",
+    options: [
+      { value: "classic", label: "Classic & timeless", keywords: ["classic", "side part", "centre part"] },
+      { value: "trendy", label: "Trendy & modern", keywords: ["modern", "mod", "crop"] },
+      { value: "bold", label: "Bold & edgy", keywords: ["bold", "edgy", "mullet", "dyed", "frosted"] },
+      { value: "soft", label: "Soft & romantic", keywords: ["soft", "curtain", "fringe", "long"] },
+      { value: "natural", label: "Natural & effortless", keywords: ["natural", "effortless", "grow out", "wavy"] },
+      { value: "professional", label: "Professional & polished", keywords: ["professional", "classic", "crew", "side"] },
+      { value: "playful", label: "Playful & fun", keywords: ["playful", "frosted", "dyed", "shag"] }
+    ]
+  }
+];
+
 function slugWords(value) {
   return String(value || "")
     .toLowerCase()
@@ -150,40 +322,33 @@ function titleCase(value) {
     .trim();
 }
 
-function getGroupKey(item) {
-  const features = Array.isArray(item.features) ? item.features : [];
-  const styleFeature = features.find((feature) => !["gq", "mens-hair-trends"].includes(feature));
-  if (styleFeature) return styleFeature;
-  return slugWords(item.title || item.name).replace(/\s+/g, "-");
-}
-
 function inferLength(title, features = []) {
   const text = `${slugWords(title)} ${features.join(" ")}`;
   if (/(buzz|crop|crew|edgar|afro|pixie|bob)/.test(text)) return "Short";
-  if (/(sweep|grow out|wall street|art dealer|beard|long)/.test(text)) return "Long";
+  if (/(sweep|grow out|wall street|art dealer|beard|long|layer)/.test(text)) return "Long";
   return "Medium";
 }
 
 function inferGender(title, features = []) {
   const text = `${slugWords(title)} ${features.join(" ")}`.toLowerCase();
   if (/(mens-hair|men-hair|\bmens\b|\bmen\b|\bmale\b|barber|beard|edgar|crew cut|buzz)/.test(text)) return "Men";
-  if (/(womens-hair|women-hair|\bwomens\b|\bwomen\b|\bfemale\b|pixie|bob)/.test(text)) return "Women";
+  if (/(womens-hair|women-hair|\bwomens\b|\bwomen\b|\bfemale\b|pixie|bob|bang|lob)/.test(text)) return "Women";
   return "Unisex";
 }
 
 function inferHairType(title, features = []) {
   const text = `${slugWords(title)} ${features.join(" ")}`;
-  if (/(afro|curl|curly|coily)/.test(text)) return "Curly Hair";
+  if (/(afro|curl|curly|coily|kinky)/.test(text)) return "Curly Hair";
   if (/(wave|wavy|shag|mullet|fringe|grow out|sweep)/.test(text)) return "Wavy Hair";
   return "Straight Hair";
 }
 
 function inferMaintainability(title, length) {
   const text = slugWords(title);
-  if (/(buzz|crew|crop|afro)/.test(text)) return 2;
-  if (/(frosted|dyed|mullet|rockstar|rat tail)/.test(text)) return 4;
-  if (length === "Long") return 3;
-  return 3;
+  if (/(buzz|crew|crop|afro)/.test(text)) return "Low";
+  if (/(frosted|dyed|mullet|rockstar|rat tail|bang)/.test(text)) return "Higher";
+  if (length === "Long") return "Medium";
+  return "Medium";
 }
 
 function inferLabels(title, features = []) {
@@ -194,8 +359,8 @@ function inferLabels(title, features = []) {
     ["edgy", /(edgar|mullet|shag|mod|rockstar|rat tail|tiktok)/],
     ["bold", /(buzz|dyed|frosted|mullet|edgar|afro)/],
     ["sleek", /(crop|buzz|crew|side|centre)/],
-    ["effortless", /(grow out|fringe|sweep)/],
-    ["fringe", /(fringe|curtain)/],
+    ["effortless", /(grow out|fringe|sweep|layer)/],
+    ["fringe", /(fringe|curtain|bang)/],
     ["buzz cut", /(buzz)/],
     ["crop", /(crop|crew|edgar)/],
     ["mullet", /(mullet)/],
@@ -219,18 +384,12 @@ function inferLabels(title, features = []) {
 function detailsForStyle(title, length, hairType, description) {
   const low = length === "Short";
   const maintenance = low
-    ? "Keep the outline clean with a trim every 3-5 weeks. Use a small amount of matte paste or cream to control shape without making it stiff."
-    : "Refresh the shape every 6-8 weeks. Dry with fingers or a vent brush first, then add light texture or smoothing product only where needed.";
+    ? "Keep the outline clean with a trim every 3 to 5 weeks. Use a small amount of matte paste or cream to control shape without making it stiff."
+    : "Refresh the shape every 6 to 8 weeks. Dry with fingers or a vent brush first, then add light texture or smoothing product only where needed.";
 
   return {
-    maintenance: description || maintenance,
-    products: low
-      ? ["Matte styling paste", "Light hold cream", "Daily shampoo or scalp rinse"]
-      : ["Texture spray", "Heat protectant", "Lightweight finishing cream"],
-    hairdressers: low
-      ? ["Barber confident with scissor-over-comb", "Stylist comfortable with short textured cuts"]
-      : ["Stylist experienced with layered shape", "Salon comfortable with texture and face-framing"],
-    barber: `Ask for ${title.toLowerCase()} with a ${length.toLowerCase()} overall length and a finish that works with ${hairType.toLowerCase()}. Bring the reference image and ask them to keep the silhouette close while adapting it to your hair density and growth pattern.`
+    maintenance,
+    barber: `Ask for ${title.toLowerCase()} with a ${length.toLowerCase()} overall length and a finish that works with ${hairType.toLowerCase()}. Bring the reference image and ask them to adapt the silhouette to your density and growth pattern.`
   };
 }
 
@@ -247,12 +406,11 @@ function galleryItemToStyle(item, index) {
     name: title,
     imageUrl: item.imageUrl || "",
     description: item.description || "",
-    labels: [...new Set([...inferLabels(title, features), length.toLowerCase()])],
+    labels: [...new Set([...inferLabels(title, features), length.toLowerCase(), hairType.toLowerCase(), gender.toLowerCase()])],
     hairType,
     length,
     gender,
-    maintainability: inferMaintainability(title, length),
-    groupKey: getGroupKey(item),
+    maintenanceLevel: inferMaintainability(title, length),
     features,
     ...detail
   };
@@ -262,60 +420,67 @@ function galleryItemToStyle(item, index) {
 const state = {
   sessionId: getSessionId(),
   styles: FALLBACK_STYLES.map(galleryItemToStyle),
+  view: readStored(VIEW_KEY, "welcome"),
+  quizStep: readStored(STEP_KEY, 0),
+  answers: readStored(ANSWERS_KEY, {}),
   searchQuery: "",
-  activeLabels: new Set(),
-  activeCategories: new Set(),
-  activeDropdownFilters: {},
   favourites: new Set(),
-  filtersPanelOpen: false,
   uploadedPhotoName: null
 };
 
-// ---------- DOM refs ----------
+const pendingFavouriteOps = new Map();
+let currentDetailId = null;
+
 const $ = (sel) => document.querySelector(sel);
-const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
 const els = {
-  searchInput:        $("#search-input"),
-  uploadInput:        $("#upload-input"),
-  uploadPreview:      $("#upload-preview"),
-  uploadPreviewName:  $("#upload-preview-name"),
-  uploadClear:        $("#upload-clear"),
-  allFiltersBtn:      $("#all-filters-btn"),
-  filtersPanel:       $("#filters-panel"),
-  activeFilters:      $("#active-filters"),
-  labelChips:         $("#label-chips"),
-  categoryChips:      $("#category-chips"),
-  resultsGrid:        $("#results-grid"),
-  detailOverlay:      $("#detail-overlay"),
-  detailImages:       $("#detail-images"),
-  detailName:         $("#detail-name"),
-  detailLike:         $("#detail-like"),
-  detailLabels:       $("#detail-labels"),
-  detailStars:        $("#detail-stars"),
-  detailLength:       $("#detail-length"),
-  detailHairtype:     $("#detail-hairtype"),
-  detailMaintenance:  $("#detail-maintenance"),
-  detailProducts:     $("#detail-products"),
-  detailHairdressers: $("#detail-hairdressers"),
-  detailBarber:       $("#detail-barber"),
-  similarResults:     $("#similar-results"),
-  similarPrev:        $("#similar-prev"),
-  similarNext:        $("#similar-next"),
-  closeDetail:        $("#close-detail"),
-  favouritesBtn:      $("#favourites-btn"),
-  favouritesOverlay:  $("#favourites-overlay"),
-  favouritesGrid:     $("#favourites-grid"),
-  favouritesEmpty:    $("#favourites-empty"),
-  closeFavourites:    $("#close-favourites"),
-  favCount:           $("#fav-count"),
-  barberOverlay:      $("#barber-overlay"),
-  barberStyleName:    $("#barber-style-name"),
-  barberText:         $("#barber-text"),
-  closeBarber:        $("#close-barber")
+  app: $("#app"),
+  homeBtn: $("#home-btn"),
+  searchNavBtn: $("#search-nav-btn"),
+  favouritesBtn: $("#favourites-btn"),
+  favCount: $("#fav-count"),
+  detailOverlay: $("#detail-overlay"),
+  detailImage: $("#detail-image"),
+  detailMeta: $("#detail-meta"),
+  detailName: $("#detail-name"),
+  detailDescription: $("#detail-description"),
+  detailLike: $("#detail-like"),
+  detailBarberOpen: $("#detail-barber-open"),
+  detailLength: $("#detail-length"),
+  detailHairtype: $("#detail-hairtype"),
+  detailMaintenanceLevel: $("#detail-maintenance-level"),
+  detailMaintenance: $("#detail-maintenance"),
+  detailLabels: $("#detail-labels"),
+  similarResults: $("#similar-results"),
+  closeDetail: $("#close-detail"),
+  favouritesOverlay: $("#favourites-overlay"),
+  favouritesGrid: $("#favourites-grid"),
+  favouritesEmpty: $("#favourites-empty"),
+  closeFavourites: $("#close-favourites"),
+  barberOverlay: $("#barber-overlay"),
+  barberStyleName: $("#barber-style-name"),
+  barberText: $("#barber-text"),
+  closeBarber: $("#close-barber")
 };
 
-let currentDetailId = null;
+function setView(view) {
+  state.view = view;
+  writeStored(VIEW_KEY, view);
+  render();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function setQuizStep(step) {
+  state.quizStep = Math.max(0, Math.min(QUIZ.length - 1, step));
+  writeStored(STEP_KEY, state.quizStep);
+  render();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function setAnswers(next) {
+  state.answers = next;
+  writeStored(ANSWERS_KEY, next);
+}
 
 // ---------- Data loading ----------
 async function loadGallery() {
@@ -323,15 +488,13 @@ async function loadGallery() {
     const data = await apiJson(API.gallery);
     if (Array.isArray(data.items) && data.items.length > 0) {
       state.styles = data.items.map(galleryItemToStyle);
-      renderResults();
+      render();
       if (!els.favouritesOverlay.hidden) renderFavourites();
     }
   } catch {
     // Keep bundled fallback styles when the API is unavailable.
   }
 }
-
-const pendingFavouriteOps = new Map();
 
 async function loadFavourites() {
   try {
@@ -343,217 +506,448 @@ async function loadFavourites() {
         else serverSet.delete(imageId);
       }
       state.favourites = serverSet;
-      updateFavouriteCount();
-      renderResults();
-      if (!els.favouritesOverlay.hidden) renderFavourites();
     }
   } catch {
-    updateFavouriteCount();
+    // The local memory fallback and D1 both support this, but do not block UI if it fails.
   }
+  updateFavouriteCount();
+  render();
 }
 
-function updateFavouriteCount() {
-  els.favCount.textContent = state.favourites.size;
+// ---------- Quiz helpers ----------
+function getQuestionById(id) {
+  return QUIZ.find((q) => q.id === id);
 }
 
-// ---------- Rendering ----------
-function renderLabelChips() {
-  els.labelChips.innerHTML = "";
-  for (const label of LABEL_OPTIONS) {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "label-chip" + (state.activeLabels.has(label) ? " is-active" : "");
-    btn.textContent = label;
-    btn.addEventListener("click", () => {
-      if (state.activeLabels.has(label)) state.activeLabels.delete(label);
-      else state.activeLabels.add(label);
-      renderLabelChips();
-      renderActiveFilters();
-      renderResults();
-    });
-    els.labelChips.appendChild(btn);
-  }
+function getOptionLabel(questionId, value) {
+  const question = getQuestionById(questionId);
+  const option = question?.options.find((item) => item.value === value);
+  return option?.label || value;
 }
 
-function renderCategoryChips() {
-  els.categoryChips.innerHTML = "";
-  for (const cat of CATEGORIES) {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "category-chip" + (state.activeCategories.has(cat) ? " is-active" : "");
-    btn.textContent = cat;
-    btn.addEventListener("click", () => {
-      if (state.activeCategories.has(cat)) state.activeCategories.delete(cat);
-      else state.activeCategories.add(cat);
-      renderCategoryChips();
-      renderActiveFilters();
-      renderResults();
-    });
-    els.categoryChips.appendChild(btn);
-  }
+function selectedFor(question) {
+  return Array.isArray(state.answers[question.id]) ? state.answers[question.id] : [];
 }
 
-function renderActiveFilters() {
-  els.activeFilters.innerHTML = "";
+function toggleQuizOption(question, option) {
+  const current = new Set(selectedFor(question));
+  const realValues = question.options
+    .filter((item) => !item.selectAll && !item.exclusive)
+    .map((item) => item.value);
 
-  const items = [];
-  for (const label of state.activeLabels) items.push({ kind: "label", value: label });
-  for (const cat of state.activeCategories) items.push({ kind: "category", value: cat });
-  for (const [k, v] of Object.entries(state.activeDropdownFilters)) {
-    if (v) items.push({ kind: "dropdown", key: k, value: v });
+  let next;
+  if (option.selectAll) {
+    const allOn = realValues.every((value) => current.has(value)) && current.has(option.value);
+    next = allOn ? [] : [...realValues, option.value];
+  } else if (option.exclusive) {
+    next = current.has(option.value) ? [] : [option.value];
+  } else {
+    current.delete("__all");
+    question.options.filter((item) => item.exclusive).forEach((item) => current.delete(item.value));
+    if (current.has(option.value)) current.delete(option.value);
+    else current.add(option.value);
+    next = [...current];
   }
 
-  for (const item of items) {
-    const chip = document.createElement("span");
-    chip.className = "active-filter-chip";
-    chip.innerHTML = `${item.value} <span class="x" aria-label="Remove">x</span>`;
-    chip.querySelector(".x").addEventListener("click", () => {
-      if (item.kind === "label") state.activeLabels.delete(item.value);
-      else if (item.kind === "category") state.activeCategories.delete(item.value);
-      else if (item.kind === "dropdown") {
-        delete state.activeDropdownFilters[item.key];
-        const sel = document.querySelector(`select[data-filter="${item.key}"]`);
-        if (sel) sel.value = "";
-      }
-      renderLabelChips();
-      renderCategoryChips();
-      renderActiveFilters();
-      renderResults();
-    });
-    els.activeFilters.appendChild(chip);
-  }
+  setAnswers({ ...state.answers, [question.id]: next });
+  render();
 }
 
-function styleMatches(style) {
+function getRepresentativeImages() {
+  const men = state.styles.find((style) => style.gender === "Men")?.imageUrl;
+  const women = state.styles.find((style) => style.gender === "Women")?.imageUrl;
+  const unisex = state.styles.find((style) => style.gender === "Unisex")?.imageUrl;
+  const backup = state.styles.map((style) => style.imageUrl).filter(Boolean);
+  return {
+    masculine: men || backup[0],
+    feminine: women || backup[1] || backup[0],
+    androgynous: unisex || backup[2] || backup[0],
+    collage: [men, women, unisex, backup[3], backup[4]].filter(Boolean)
+  };
+}
+
+function getQuizOptionMedia(question, option) {
+  if (question.id === "style") {
+    const reps = getRepresentativeImages();
+    if (option.selectAll) {
+      const images = reps.collage.length ? reps.collage : state.styles.slice(0, 4).map((style) => style.imageUrl).filter(Boolean);
+      return `<div class="option-collage">${images.slice(0, 4).map((src) => `<img src="${src}" alt="" loading="lazy" referrerpolicy="no-referrer">`).join("")}</div>`;
+    }
+    const src = reps[option.value];
+    if (src) return `<img src="${src}" alt="" loading="lazy" referrerpolicy="no-referrer">`;
+  }
+  if (option.icon) return option.icon;
+  return iconCheck();
+}
+
+function summarizeAnswers() {
+  const chips = [];
+  for (const question of QUIZ) {
+    const selected = selectedFor(question);
+    if (!selected.length) continue;
+    if (question.id === "style" && selected.includes("__all")) {
+      chips.push({ label: "Style", value: "Everything" });
+      continue;
+    }
+    const values = selected.filter((value) => value !== "__all").map((value) => getOptionLabel(question.id, value));
+    if (values.length) chips.push({ label: shortQuestionLabel(question.id), value: values.join(", ") });
+  }
+  return chips;
+}
+
+function shortQuestionLabel(id) {
+  return {
+    style: "Style",
+    texture: "Texture",
+    ethnicity: "Inspiration",
+    face: "Face",
+    length: "Length",
+    lifestyle: "Lifestyle",
+    vibe: "Vibe"
+  }[id] || id;
+}
+
+function answerOptions(questionId) {
+  const question = getQuestionById(questionId);
+  const selected = state.answers[questionId] || [];
+  return selected.map((value) => question?.options.find((option) => option.value === value)).filter(Boolean);
+}
+
+function scoreStyle(style) {
+  let score = 0;
   const haystack = [
     style.name,
     style.description,
     style.length,
     style.hairType,
+    style.gender,
+    style.maintenanceLevel,
     ...(style.labels || []),
     ...(style.features || [])
   ].join(" ").toLowerCase();
 
-  const q = state.searchQuery.trim().toLowerCase();
-  if (q && !haystack.includes(q)) return false;
-
-  for (const label of state.activeLabels) {
-    if (!haystack.includes(label.toLowerCase())) return false;
+  for (const option of answerOptions("style")) {
+    if (option.selectAll) score += 1;
+    else if (style.gender === option.gender || style.gender === "Unisex") score += 8;
   }
 
-  if (state.activeCategories.size > 0) {
-    const inCat = [...state.activeCategories].some((cat) => {
-      const c = cat.toLowerCase().replace(" styles", "");
-      return haystack.includes(c) || (c === "fringe" && haystack.includes("curtain"));
-    });
-    if (!inCat) return false;
+  for (const option of answerOptions("texture")) {
+    if (option.hairType && style.hairType === option.hairType) score += 5;
+    if (["fine", "thick"].includes(option.value) && haystack.includes(option.value)) score += 2;
   }
 
-  for (const [key, value] of Object.entries(state.activeDropdownFilters)) {
-    if (!value) continue;
-    const v = value.toLowerCase();
-    if (key === "length" && style.length.toLowerCase() !== v) return false;
-    if (key === "hair-type" && style.hairType.toLowerCase() !== v) return false;
-    if (key === "gender" && style.gender.toLowerCase() !== v) return false;
-    if (key !== "length" && key !== "hair-type" && key !== "gender" && !haystack.includes(v)) return false;
+  for (const option of answerOptions("length")) {
+    if (option.length && style.length === option.length) score += 5;
   }
 
-  return true;
-}
-
-function appendImage(frame, style, label = "") {
-  frame.innerHTML = "";
-
-  if (style.imageUrl) {
-    const image = document.createElement("img");
-    image.src = style.imageUrl;
-    image.alt = style.name;
-    image.loading = "lazy";
-    image.referrerPolicy = "no-referrer";
-    image.addEventListener("error", () => {
-      image.remove();
-      frame.classList.add("image-failed");
-      const fallback = document.createElement("span");
-      fallback.className = "image-fallback-label";
-      fallback.textContent = label || style.name;
-      frame.appendChild(fallback);
-    });
-    frame.appendChild(image);
-  } else {
-    const fallback = document.createElement("span");
-    fallback.className = "image-fallback-label";
-    fallback.textContent = label || style.name;
-    frame.appendChild(fallback);
-  }
-}
-
-function buildStyleCard(style, { compact = false, showBarber = false } = {}) {
-  const card = document.createElement("article");
-  card.className = "style-card";
-  card.dataset.id = style.id;
-
-  const img = document.createElement("div");
-  img.className = "style-card-image";
-  appendImage(img, style, compact ? "" : style.name);
-  card.appendChild(img);
-
-  if (!compact) {
-    const footer = document.createElement("div");
-    footer.className = "style-card-footer";
-
-    const name = document.createElement("span");
-    name.className = "style-card-name";
-    name.textContent = style.name;
-    footer.appendChild(name);
-
-    const actions = document.createElement("div");
-
-    if (showBarber) {
-      const barberBtn = document.createElement("button");
-      barberBtn.type = "button";
-      barberBtn.className = "icon-btn icon-btn-barber";
-      barberBtn.textContent = "✂";
-      barberBtn.setAttribute("aria-label", "What to tell the barber");
-      barberBtn.title = "What to tell the barber";
-      barberBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        openBarber(style.id);
-      });
-      actions.appendChild(barberBtn);
+  for (const option of answerOptions("lifestyle")) {
+    for (const keyword of option.keywords || []) {
+      if (haystack.includes(keyword)) score += 2;
     }
-
-    const like = document.createElement("button");
-    like.type = "button";
-    like.className = "icon-btn icon-btn-heart" + (state.favourites.has(style.id) ? " is-liked" : "");
-    like.textContent = state.favourites.has(style.id) ? "♥" : "♡";
-    like.setAttribute("aria-label", "Save to favourites");
-    like.addEventListener("click", (e) => {
-      e.stopPropagation();
-      toggleFavourite(style.id);
-    });
-    actions.appendChild(like);
-
-    footer.appendChild(actions);
-    card.appendChild(footer);
   }
 
-  card.addEventListener("click", () => openDetail(style.id));
-  return card;
+  for (const option of answerOptions("vibe")) {
+    for (const keyword of option.keywords || []) {
+      if (haystack.includes(keyword)) score += 2;
+    }
+  }
+
+  for (const option of answerOptions("ethnicity")) {
+    if (option.value !== "none" && haystack.includes(option.value.replace("-", " "))) score += 2;
+  }
+
+  return score;
 }
 
-function renderResults() {
-  els.resultsGrid.innerHTML = "";
-  const matches = state.styles.filter(styleMatches);
-  if (matches.length === 0) {
-    const msg = document.createElement("p");
-    msg.className = "empty-state";
-    msg.textContent = "No styles match your filters. Try removing some.";
-    els.resultsGrid.appendChild(msg);
-    return;
+function scoredStyles() {
+  const styleAnswers = answerOptions("style").filter((option) => !option.selectAll);
+  const hardFiltered = styleAnswers.length
+    ? state.styles.filter((style) => styleAnswers.some((option) => style.gender === option.gender || style.gender === "Unisex"))
+    : state.styles;
+  const source = hardFiltered.length ? hardFiltered : state.styles;
+  return [...source].sort((a, b) => scoreStyle(b) - scoreStyle(a));
+}
+
+// ---------- Rendering ----------
+function render() {
+  els.searchNavBtn.classList.toggle("is-active", state.view === "search");
+  updateFavouriteCount();
+
+  if (state.view === "quiz") renderQuiz();
+  else if (state.view === "search") renderSearch();
+  else if (state.view === "results") renderResultsPage();
+  else renderWelcome();
+}
+
+function renderWelcome() {
+  els.app.innerHTML = `
+    <section class="welcome-screen">
+      <p class="eyebrow">Welcome</p>
+      <h1>Find a haircut that feels like you.</h1>
+      <p class="welcome-copy">Start with a guided match, or jump straight into search and save the photos that sharpen your profile.</p>
+      <div class="welcome-options">
+        <button class="choice-card" id="find-style-btn" type="button">
+          <span class="choice-icon">${iconCheck()}</span>
+          <span class="choice-title">Find me a style</span>
+          <span class="choice-copy">Answer one question at a time. We will build a set of results around your hair, lifestyle, and vibe.</span>
+          <span class="choice-action">Start questions ${iconArrow()}</span>
+        </button>
+        <button class="choice-card" id="have-mind-btn" type="button">
+          <span class="choice-icon">${iconSearch()}</span>
+          <span class="choice-title">I have something in mind</span>
+          <span class="choice-copy">Go to the search page, browse freely, and like pictures to build up your profile.</span>
+          <span class="choice-action">Search styles ${iconArrow()}</span>
+        </button>
+      </div>
+    </section>
+  `;
+  $("#find-style-btn").addEventListener("click", () => {
+    state.quizStep = 0;
+    writeStored(STEP_KEY, state.quizStep);
+    setView("quiz");
+  });
+  $("#have-mind-btn").addEventListener("click", () => setView("search"));
+}
+
+function renderQuiz() {
+  const question = QUIZ[state.quizStep] || QUIZ[0];
+  const selected = selectedFor(question);
+  const progress = Math.round(((state.quizStep + 1) / QUIZ.length) * 100);
+  const isLast = state.quizStep === QUIZ.length - 1;
+
+  els.app.innerHTML = `
+    <section class="quiz-screen">
+      <div class="quiz-top">
+        <button class="text-btn" id="quiz-back-btn" type="button">${state.quizStep === 0 ? "Welcome" : "Back"}</button>
+        <div class="progress-wrap" aria-label="Question ${state.quizStep + 1} of ${QUIZ.length}">
+          <div class="progress-meta">
+            <span>Question <b>${state.quizStep + 1}</b> of ${QUIZ.length}</span>
+            <span>${progress}%</span>
+          </div>
+          <div class="progress-track"><div style="width: ${progress}%"></div></div>
+        </div>
+        <button class="text-btn" id="quiz-skip-btn" type="button">Skip</button>
+      </div>
+
+      <div class="quiz-question">
+        <p class="eyebrow">${String(state.quizStep + 1).padStart(2, "0")} / ${String(QUIZ.length).padStart(2, "0")}</p>
+        <h1>${question.title}</h1>
+        ${question.sub ? `<p>${question.sub}</p>` : ""}
+      </div>
+
+      <div class="option-grid ${question.layout === "text" ? "is-text" : ""}">
+        ${question.options.map((option) => renderOption(question, option, selected.includes(option.value))).join("")}
+      </div>
+
+      ${question.id === "face" && selected.includes("unknown") ? renderFaceHelper() : ""}
+
+      <div class="quiz-footer">
+        <span>${selected.length ? `<b>${selected.filter((value) => value !== "__all").length || selected.length}</b> selected` : "Select any that apply, or skip"}</span>
+        <button class="primary-btn" id="quiz-next-btn" type="button">${isLast ? "Show me results" : "Continue"} ${iconArrow()}</button>
+      </div>
+    </section>
+  `;
+
+  $("#quiz-back-btn").addEventListener("click", () => {
+    if (state.quizStep === 0) setView("welcome");
+    else setQuizStep(state.quizStep - 1);
+  });
+  $("#quiz-skip-btn").addEventListener("click", () => {
+    if (isLast) setView("results");
+    else setQuizStep(state.quizStep + 1);
+  });
+  $("#quiz-next-btn").addEventListener("click", () => {
+    if (isLast) setView("results");
+    else setQuizStep(state.quizStep + 1);
+  });
+  document.querySelectorAll("[data-option-value]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const option = question.options.find((item) => item.value === button.dataset.optionValue);
+      if (option) toggleQuizOption(question, option);
+    });
+  });
+}
+
+function renderOption(question, option, on) {
+  const media = question.layout === "text"
+    ? ""
+    : `<span class="option-media ${option.icon ? "is-icon" : ""}">${getQuizOptionMedia(question, option)}</span>`;
+  return `
+    <button class="option-card ${question.layout === "text" ? "is-text" : ""} ${on ? "is-on" : ""}" type="button" data-option-value="${option.value}" aria-pressed="${on}">
+      ${media}
+      <span class="option-body">
+        <span class="option-label">${option.label}</span>
+        ${option.desc ? `<span class="option-desc">${option.desc}</span>` : ""}
+      </span>
+      <span class="option-check">${on ? iconCheck() : ""}</span>
+    </button>
+  `;
+}
+
+function renderFaceHelper() {
+  return `
+    <section class="helper-panel">
+      <h2>Quick face shape guide</h2>
+      <p>Pull your hair back, face a mirror, and compare the widest part of your face with your jaw and overall length.</p>
+      <ul>
+        <li><b>Oval:</b> longer than wide, gently rounded jaw.</li>
+        <li><b>Round:</b> similar width and length with softer angles.</li>
+        <li><b>Square:</b> forehead and jaw are similar widths with a stronger jawline.</li>
+        <li><b>Heart:</b> wider forehead tapering toward the chin.</li>
+        <li><b>Oblong:</b> noticeably longer than it is wide.</li>
+      </ul>
+    </section>
+  `;
+}
+
+function renderSearch() {
+  const matches = filteredSearchStyles();
+  els.app.innerHTML = `
+    <section class="search-screen">
+      <div class="screen-heading">
+        <p class="eyebrow">Search</p>
+        <h1>I have something in mind</h1>
+        <p>Browse freely and like photos. Each save gives your profile a clearer direction.</p>
+      </div>
+
+      <div class="search-tools">
+        <label class="upload-btn" title="Upload a photo to inform search">
+          <span aria-hidden="true">${iconCheck()}</span>
+          <span>Upload photo</span>
+          <input type="file" id="upload-input" accept="image/*" hidden>
+        </label>
+        <label class="search-input-wrap">
+          <span aria-hidden="true">${iconSearch()}</span>
+          <input type="search" id="search-input" placeholder="Search by length, texture, vibe, or style name" value="${escapeAttr(state.searchQuery)}" autocomplete="off">
+        </label>
+      </div>
+
+      ${state.uploadedPhotoName ? `<div class="upload-preview"><span>Photo saved:</span><b>${escapeHtml(state.uploadedPhotoName)}</b><button id="upload-clear" type="button" aria-label="Clear uploaded photo">&times;</button></div>` : ""}
+
+      <div class="profile-strip">
+        <span><b>${state.favourites.size}</b> saved styles</span>
+        <span>Saved photos become your working profile.</span>
+      </div>
+
+      <section class="results-grid" id="search-results-grid">
+        ${matches.length ? matches.map((style) => buildStyleCardHtml(style)).join("") : `<p class="empty-state">No styles match that search. Try a shorter keyword.</p>`}
+      </section>
+    </section>
+  `;
+
+  $("#search-input").addEventListener("input", (event) => {
+    state.searchQuery = event.target.value;
+    renderSearchGrid();
+  });
+  $("#upload-input").addEventListener("change", (event) => {
+    const file = event.target.files && event.target.files[0];
+    handleUpload(file);
+  });
+  const clear = $("#upload-clear");
+  if (clear) {
+    clear.addEventListener("click", () => {
+      state.uploadedPhotoName = null;
+      renderSearch();
+    });
   }
-  for (const style of matches) {
-    els.resultsGrid.appendChild(buildStyleCard(style));
-  }
+  wireCards();
+}
+
+function renderSearchGrid() {
+  const grid = $("#search-results-grid");
+  if (!grid) return;
+  const matches = filteredSearchStyles();
+  grid.innerHTML = matches.length
+    ? matches.map((style) => buildStyleCardHtml(style)).join("")
+    : `<p class="empty-state">No styles match that search. Try a shorter keyword.</p>`;
+  wireCards(grid);
+}
+
+function renderResultsPage() {
+  const results = scoredStyles();
+  const chips = summarizeAnswers();
+
+  els.app.innerHTML = `
+    <section class="results-screen">
+      <div class="results-summary">
+        <div>
+          <p class="eyebrow">Curated for you</p>
+          <h1>${results.length} styles to try</h1>
+          <p>These are ranked from the answers you gave. Like anything that feels close.</p>
+        </div>
+        <div class="results-actions">
+          <button class="secondary-btn" id="refine-btn" type="button">Refine answers</button>
+          <button class="secondary-btn" id="restart-btn" type="button">Start over</button>
+        </div>
+      </div>
+
+      ${chips.length ? `<div class="summary-chips">${chips.map((chip) => `<span><b>${chip.label}:</b> ${escapeHtml(chip.value)}</span>`).join("")}</div>` : ""}
+
+      <section class="results-grid" id="results-grid">
+        ${results.length ? results.map((style) => buildStyleCardHtml(style)).join("") : `<p class="empty-state">No exact matches yet. Search all styles instead.</p>`}
+      </section>
+    </section>
+  `;
+
+  $("#refine-btn").addEventListener("click", () => setView("quiz"));
+  $("#restart-btn").addEventListener("click", () => {
+    setAnswers({});
+    state.quizStep = 0;
+    writeStored(STEP_KEY, state.quizStep);
+    setView("welcome");
+  });
+  wireCards();
+}
+
+function filteredSearchStyles() {
+  const q = state.searchQuery.trim().toLowerCase();
+  if (!q) return state.styles;
+  const tokens = q.split(/[\s,]+/).filter(Boolean);
+  return state.styles.filter((style) => {
+    const haystack = [
+      style.name,
+      style.description,
+      style.gender,
+      style.length,
+      style.hairType,
+      style.maintenanceLevel,
+      ...(style.labels || []),
+      ...(style.features || [])
+    ].join(" ").toLowerCase();
+    return tokens.every((token) => haystack.includes(token));
+  });
+}
+
+function buildStyleCardHtml(style, compact = false) {
+  const liked = state.favourites.has(style.id);
+  return `
+    <article class="style-card ${compact ? "is-compact" : ""}" data-style-id="${style.id}">
+      <button class="style-card-image" type="button" data-open-style="${style.id}" aria-label="Open ${escapeAttr(style.name)}">
+        ${style.imageUrl ? `<img src="${style.imageUrl}" alt="${escapeAttr(style.name)}" loading="lazy" referrerpolicy="no-referrer">` : `<span>${escapeHtml(style.name)}</span>`}
+      </button>
+      ${compact ? "" : `
+        <div class="style-card-footer">
+          <div>
+            <h2>${escapeHtml(style.name)}</h2>
+            <p>${style.length} - ${style.hairType}</p>
+          </div>
+          <button class="heart-btn ${liked ? "is-liked" : ""}" type="button" data-like-style="${style.id}" aria-label="${liked ? "Remove from saved" : "Save style"}">${liked ? "&hearts;" : "&#9825;"}</button>
+        </div>
+      `}
+    </article>
+  `;
+}
+
+function wireCards(scope = document) {
+  scope.querySelectorAll("[data-open-style]").forEach((button) => {
+    button.addEventListener("click", () => openDetail(button.dataset.openStyle));
+  });
+  scope.querySelectorAll("[data-like-style]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      toggleFavourite(button.dataset.likeStyle);
+    });
+  });
 }
 
 // ---------- Favourites ----------
@@ -566,7 +960,7 @@ async function toggleFavourite(id) {
   pendingFavouriteOps.set(imageId, shouldSave ? "add" : "delete");
 
   updateFavouriteCount();
-  renderResults();
+  render();
   if (!els.favouritesOverlay.hidden) renderFavourites();
   if (currentDetailId === imageId) updateDetailLike(imageId);
 
@@ -581,118 +975,71 @@ async function toggleFavourite(id) {
     if (shouldSave) state.favourites.delete(imageId);
     else state.favourites.add(imageId);
     updateFavouriteCount();
-    renderResults();
+    render();
     if (!els.favouritesOverlay.hidden) renderFavourites();
     if (currentDetailId === imageId) updateDetailLike(imageId);
   }
 }
 
+function updateFavouriteCount() {
+  els.favCount.textContent = state.favourites.size;
+}
+
 function renderFavourites() {
-  els.favouritesGrid.innerHTML = "";
-  const items = state.styles.filter((s) => state.favourites.has(s.id));
+  const items = state.styles.filter((style) => state.favourites.has(style.id));
+  els.favouritesGrid.innerHTML = items.map((style) => buildStyleCardHtml(style)).join("");
   els.favouritesEmpty.hidden = items.length > 0;
-  for (const s of items) {
-    els.favouritesGrid.appendChild(buildStyleCard(s, { showBarber: true }));
-  }
-}
-
-function updateDetailLike(id) {
-  const liked = state.favourites.has(id);
-  els.detailLike.classList.toggle("is-liked", liked);
-  els.detailLike.textContent = liked ? "♥" : "♡";
-}
-
-// ---------- Stars helper ----------
-function renderStars(container, score) {
-  container.innerHTML = "";
-  const max = 5;
-  for (let i = 1; i <= max; i++) {
-    const span = document.createElement("span");
-    if (i <= score) span.textContent = "★";
-    else {
-      span.textContent = "★";
-      span.className = "star-empty";
-    }
-    container.appendChild(span);
-  }
+  wireCards(els.favouritesGrid);
 }
 
 // ---------- Detail overlay ----------
+function appendImage(frame, style) {
+  frame.innerHTML = style.imageUrl
+    ? `<img src="${style.imageUrl}" alt="${escapeAttr(style.name)}" loading="lazy" referrerpolicy="no-referrer">`
+    : `<span>${escapeHtml(style.name)}</span>`;
+}
+
 function openDetail(id) {
-  const style = state.styles.find((s) => s.id === String(id));
+  const style = state.styles.find((item) => item.id === String(id));
   if (!style) return;
   currentDetailId = style.id;
 
-  if (!els.favouritesOverlay.hidden) els.favouritesOverlay.hidden = true;
-
+  appendImage(els.detailImage, style);
+  els.detailMeta.textContent = `${style.gender} - ${style.length}`;
   els.detailName.textContent = style.name;
-
-  els.detailImages.innerHTML = "";
-  const front = document.createElement("div");
-  front.className = "detail-img";
-  appendImage(front, style, "Front");
-  els.detailImages.appendChild(front);
-  for (let i = 0; i < 2; i++) {
-    const d = document.createElement("div");
-    d.className = "detail-img";
-    els.detailImages.appendChild(d);
-  }
-
-  els.detailLabels.innerHTML = "";
-  for (const l of style.labels) {
-    const chip = document.createElement("span");
-    chip.className = "detail-label-chip";
-    chip.textContent = l;
-    els.detailLabels.appendChild(chip);
-  }
-
-  renderStars(els.detailStars, style.maintainability);
+  els.detailDescription.textContent = style.description || "A reference style from the current gallery.";
   els.detailLength.textContent = style.length;
   els.detailHairtype.textContent = style.hairType;
+  els.detailMaintenanceLevel.textContent = style.maintenanceLevel;
   els.detailMaintenance.textContent = style.maintenance;
+  els.detailLabels.innerHTML = style.labels.map((label) => `<span>${escapeHtml(label)}</span>`).join("");
 
-  els.detailProducts.innerHTML = "";
-  for (const p of style.products) {
-    const li = document.createElement("li");
-    li.textContent = p;
-    els.detailProducts.appendChild(li);
-  }
+  const similar = state.styles
+    .filter((item) => item.id !== style.id && (item.length === style.length || item.hairType === style.hairType || item.gender === style.gender))
+    .slice(0, 8);
+  els.similarResults.innerHTML = similar.map((item) => buildStyleCardHtml(item, true)).join("");
+  wireCards(els.similarResults);
 
-  els.detailHairdressers.innerHTML = "";
-  for (const h of style.hairdressers) {
-    const li = document.createElement("li");
-    li.textContent = h;
-    els.detailHairdressers.appendChild(li);
-  }
-
-  els.detailBarber.textContent = style.barber;
-
-  els.detailOverlay.querySelectorAll("details").forEach((d) => { d.open = false; });
   updateDetailLike(style.id);
-
-  els.similarResults.innerHTML = "";
-  const similar = state.styles.filter((s) => s.id !== style.id && (
-    s.groupKey === style.groupKey ||
-    s.hairType === style.hairType ||
-    s.length === style.length
-  ));
-  for (const s of similar.slice(0, 12)) {
-    els.similarResults.appendChild(buildStyleCard(s, { compact: true }));
-  }
-
+  els.detailBarberOpen.onclick = () => openBarber(style.id);
   els.detailOverlay.hidden = false;
   document.body.style.overflow = "hidden";
 }
 
 function closeDetail() {
   els.detailOverlay.hidden = true;
-  document.body.style.overflow = "";
   currentDetailId = null;
+  if (els.favouritesOverlay.hidden && els.barberOverlay.hidden) document.body.style.overflow = "";
 }
 
-// ---------- Barber overlay ----------
+function updateDetailLike(id) {
+  const liked = state.favourites.has(id);
+  els.detailLike.classList.toggle("is-saved", liked);
+  els.detailLike.textContent = liked ? "Saved" : "Save style";
+}
+
 function openBarber(id) {
-  const style = state.styles.find((s) => s.id === String(id));
+  const style = state.styles.find((item) => item.id === String(id));
   if (!style) return;
   els.barberStyleName.textContent = style.name;
   els.barberText.textContent = style.barber;
@@ -702,9 +1049,7 @@ function openBarber(id) {
 
 function closeBarber() {
   els.barberOverlay.hidden = true;
-  if (els.favouritesOverlay.hidden && els.detailOverlay.hidden) {
-    document.body.style.overflow = "";
-  }
+  if (els.favouritesOverlay.hidden && els.detailOverlay.hidden) document.body.style.overflow = "";
 }
 
 // ---------- Upload handler ----------
@@ -737,19 +1082,19 @@ async function imageFileToDataUrl(file) {
 }
 
 function selectedFeatures() {
-  return [
-    ...state.activeLabels,
-    ...state.activeCategories,
-    ...Object.values(state.activeDropdownFilters).filter(Boolean)
-  ];
+  const features = [];
+  for (const question of QUIZ) {
+    for (const value of selectedFor(question)) {
+      if (value !== "__all") features.push(value);
+    }
+  }
+  return features;
 }
 
 async function handleUpload(file) {
   if (!file) return;
-
   state.uploadedPhotoName = file.name;
-  els.uploadPreviewName.textContent = `${file.name} - saving`;
-  els.uploadPreview.hidden = false;
+  renderSearch();
 
   try {
     const imageData = await imageFileToDataUrl(file);
@@ -763,103 +1108,72 @@ async function handleUpload(file) {
         features: selectedFeatures()
       })
     });
-    els.uploadPreviewName.textContent = `${file.name} - saved`;
   } catch {
-    els.uploadPreviewName.textContent = `${file.name} - not saved`;
+    // Keep the selected filename visible even if upload persistence fails.
   }
 }
 
-function clearUpload() {
-  state.uploadedPhotoName = null;
-  els.uploadInput.value = "";
-  els.uploadPreview.hidden = true;
+// ---------- Utilities ----------
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function escapeAttr(value) {
+  return escapeHtml(value);
 }
 
 // ---------- Wire up ----------
 function init() {
-  renderLabelChips();
-  renderCategoryChips();
-  renderActiveFilters();
-  renderResults();
-  updateFavouriteCount();
-  loadGallery();
-  loadFavourites();
-
-  els.searchInput.addEventListener("input", (e) => {
-    state.searchQuery = e.target.value;
-    renderResults();
-  });
-
-  els.uploadInput.addEventListener("change", (e) => {
-    const file = e.target.files && e.target.files[0];
-    handleUpload(file);
-  });
-
-  els.uploadClear.addEventListener("click", clearUpload);
-
-  els.allFiltersBtn.addEventListener("click", () => {
-    state.filtersPanelOpen = !state.filtersPanelOpen;
-    els.filtersPanel.hidden = !state.filtersPanelOpen;
-    els.allFiltersBtn.classList.toggle("is-open", state.filtersPanelOpen);
-  });
-
-  $$("select[data-filter]").forEach((sel) => {
-    sel.addEventListener("change", () => {
-      const key = sel.dataset.filter;
-      state.activeDropdownFilters[key] = sel.value;
-      renderActiveFilters();
-      renderResults();
-    });
-  });
-
-  els.closeDetail.addEventListener("click", closeDetail);
-  els.detailOverlay.addEventListener("click", (e) => {
-    if (e.target === els.detailOverlay) closeDetail();
-  });
-
-  els.detailLike.addEventListener("click", () => {
-    if (currentDetailId == null) return;
-    toggleFavourite(currentDetailId);
-  });
-
-  els.similarPrev.addEventListener("click", () => {
-    els.similarResults.scrollBy({ left: -160, behavior: "smooth" });
-  });
-  els.similarNext.addEventListener("click", () => {
-    els.similarResults.scrollBy({ left: 160, behavior: "smooth" });
-  });
-
+  els.homeBtn.addEventListener("click", () => setView("welcome"));
+  els.searchNavBtn.addEventListener("click", () => setView("search"));
   els.favouritesBtn.addEventListener("click", () => {
     renderFavourites();
     els.favouritesOverlay.hidden = false;
     document.body.style.overflow = "hidden";
   });
+
+  els.closeDetail.addEventListener("click", closeDetail);
+  els.detailOverlay.addEventListener("click", (event) => {
+    if (event.target === els.detailOverlay) closeDetail();
+  });
+  els.detailLike.addEventListener("click", () => {
+    if (currentDetailId) toggleFavourite(currentDetailId);
+  });
+
   els.closeFavourites.addEventListener("click", () => {
     els.favouritesOverlay.hidden = true;
-    if (els.barberOverlay.hidden) document.body.style.overflow = "";
+    if (els.detailOverlay.hidden && els.barberOverlay.hidden) document.body.style.overflow = "";
   });
-  els.favouritesOverlay.addEventListener("click", (e) => {
-    if (e.target === els.favouritesOverlay) {
+  els.favouritesOverlay.addEventListener("click", (event) => {
+    if (event.target === els.favouritesOverlay) {
       els.favouritesOverlay.hidden = true;
-      if (els.barberOverlay.hidden) document.body.style.overflow = "";
+      if (els.detailOverlay.hidden && els.barberOverlay.hidden) document.body.style.overflow = "";
     }
   });
 
   els.closeBarber.addEventListener("click", closeBarber);
-  els.barberOverlay.addEventListener("click", (e) => {
-    if (e.target === els.barberOverlay) closeBarber();
+  els.barberOverlay.addEventListener("click", (event) => {
+    if (event.target === els.barberOverlay) closeBarber();
   });
 
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      if (!els.barberOverlay.hidden) closeBarber();
-      else if (!els.detailOverlay.hidden) closeDetail();
-      else if (!els.favouritesOverlay.hidden) {
-        els.favouritesOverlay.hidden = true;
-        document.body.style.overflow = "";
-      }
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    if (!els.barberOverlay.hidden) closeBarber();
+    else if (!els.detailOverlay.hidden) closeDetail();
+    else if (!els.favouritesOverlay.hidden) {
+      els.favouritesOverlay.hidden = true;
+      document.body.style.overflow = "";
     }
   });
+
+  render();
+  loadGallery();
+  loadFavourites();
 }
 
 init();
