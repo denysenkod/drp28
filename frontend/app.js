@@ -425,7 +425,9 @@ const state = {
   answers: readStored(ANSWERS_KEY, {}),
   searchQuery: "",
   favourites: new Set(),
-  uploadedPhotoName: null
+  uploadedPhotoName: null,
+  filterPanelOpen: false,
+  openFilterGroups: new Set()
 };
 
 const pendingFavouriteOps = new Map();
@@ -465,6 +467,10 @@ const els = {
 
 function setView(view) {
   state.view = view;
+  if (!["results", "search"].includes(view)) {
+    state.filterPanelOpen = false;
+    state.openFilterGroups.clear();
+  }
   writeStored(VIEW_KEY, view);
   render();
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -480,6 +486,15 @@ function setQuizStep(step) {
 function setAnswers(next) {
   state.answers = next;
   writeStored(ANSWERS_KEY, next);
+}
+
+function startOver() {
+  setAnswers({});
+  state.quizStep = 0;
+  state.filterPanelOpen = false;
+  state.openFilterGroups.clear();
+  writeStored(STEP_KEY, state.quizStep);
+  setView("welcome");
 }
 
 // ---------- Data loading ----------
@@ -529,7 +544,7 @@ function selectedFor(question) {
   return Array.isArray(state.answers[question.id]) ? state.answers[question.id] : [];
 }
 
-function toggleQuizOption(question, option) {
+function selectQuizOption(question, option) {
   const current = new Set(selectedFor(question));
   const realValues = question.options
     .filter((item) => !item.selectAll && !item.exclusive)
@@ -550,6 +565,10 @@ function toggleQuizOption(question, option) {
   }
 
   setAnswers({ ...state.answers, [question.id]: next });
+}
+
+function toggleQuizOption(question, option) {
+  selectQuizOption(question, option);
   render();
 }
 
@@ -593,6 +612,10 @@ function summarizeAnswers() {
     if (values.length) chips.push({ label: shortQuestionLabel(question.id), value: values.join(", ") });
   }
   return chips;
+}
+
+function selectedAnswerCount() {
+  return QUIZ.reduce((total, question) => total + selectedFor(question).filter((value) => value !== "__all").length, 0);
 }
 
 function shortQuestionLabel(id) {
@@ -668,6 +691,25 @@ function scoredStyles() {
   return [...source].sort((a, b) => scoreStyle(b) - scoreStyle(a));
 }
 
+function stylePassesAnswerFilters(style) {
+  const styleAnswers = answerOptions("style").filter((option) => !option.selectAll);
+  if (styleAnswers.length && !styleAnswers.some((option) => style.gender === option.gender || style.gender === "Unisex")) {
+    return false;
+  }
+
+  const textureAnswers = answerOptions("texture").map((option) => option.hairType).filter(Boolean);
+  if (textureAnswers.length && !textureAnswers.includes(style.hairType)) {
+    return false;
+  }
+
+  const lengthAnswers = answerOptions("length").map((option) => option.length).filter(Boolean);
+  if (lengthAnswers.length && !lengthAnswers.includes(style.length)) {
+    return false;
+  }
+
+  return true;
+}
+
 // ---------- Rendering ----------
 function render() {
   document.body.dataset.view = state.view;
@@ -728,7 +770,10 @@ function renderQuiz() {
           </div>
           <div class="progress-track"><div style="width: ${progress}%"></div></div>
         </div>
-        <button class="text-btn" id="quiz-skip-btn" type="button">Skip</button>
+        <div class="quiz-top-actions">
+          <button class="text-btn" id="quiz-start-over-btn" type="button">Start over</button>
+          <button class="text-btn" id="quiz-skip-btn" type="button">Skip</button>
+        </div>
       </div>
 
       <div class="quiz-question">
@@ -754,6 +799,7 @@ function renderQuiz() {
     if (state.quizStep === 0) setView("welcome");
     else setQuizStep(state.quizStep - 1);
   });
+  $("#quiz-start-over-btn").addEventListener("click", startOver);
   $("#quiz-skip-btn").addEventListener("click", () => {
     if (isLast) setView("results");
     else setQuizStep(state.quizStep + 1);
@@ -804,12 +850,17 @@ function renderFaceHelper() {
 
 function renderSearch() {
   const matches = filteredSearchStyles();
+  const chips = summarizeAnswers();
+  const selectedCount = selectedAnswerCount();
   els.app.innerHTML = `
     <section class="search-screen">
-      <div class="screen-heading">
-        <p class="eyebrow">Search</p>
-        <h1>I have something in mind</h1>
-        <p>Browse freely and like photos. Each save gives your profile a clearer direction.</p>
+      <div class="screen-heading discovery-heading">
+        <div>
+          <p class="eyebrow">Search</p>
+          <h1>I have something in mind</h1>
+          <p>Browse freely and like photos. Each save gives your profile a clearer direction.</p>
+        </div>
+        ${renderDiscoveryActions(selectedCount)}
       </div>
 
       <div class="search-tools">
@@ -825,6 +876,10 @@ function renderSearch() {
       </div>
 
       ${state.uploadedPhotoName ? `<div class="upload-preview"><span>Photo saved:</span><b>${escapeHtml(state.uploadedPhotoName)}</b><button id="upload-clear" type="button" aria-label="Clear uploaded photo">&times;</button></div>` : ""}
+
+      ${chips.length ? renderSummaryChips(chips) : ""}
+
+      ${state.filterPanelOpen ? renderAnswerFilterDrawer(selectedCount) : ""}
 
       <div class="profile-strip">
         <span><b>${state.favourites.size}</b> saved styles</span>
@@ -852,6 +907,7 @@ function renderSearch() {
       renderSearch();
     });
   }
+  wireDiscoveryControls();
   wireCards();
 }
 
@@ -868,6 +924,7 @@ function renderSearchGrid() {
 function renderResultsPage() {
   const results = scoredStyles();
   const chips = summarizeAnswers();
+  const selectedCount = selectedAnswerCount();
 
   els.app.innerHTML = `
     <section class="results-screen">
@@ -877,13 +934,12 @@ function renderResultsPage() {
           <h1>${results.length} styles to try</h1>
           <p>These are ranked from the answers you gave. Like anything that feels close.</p>
         </div>
-        <div class="results-actions">
-          <button class="secondary-btn" id="refine-btn" type="button">Refine answers</button>
-          <button class="secondary-btn" id="restart-btn" type="button">Start over</button>
-        </div>
+        ${renderDiscoveryActions(selectedCount)}
       </div>
 
-      ${chips.length ? `<div class="summary-chips">${chips.map((chip) => `<span><b>${chip.label}:</b> ${escapeHtml(chip.value)}</span>`).join("")}</div>` : ""}
+      ${chips.length ? renderSummaryChips(chips) : ""}
+
+      ${state.filterPanelOpen ? renderAnswerFilterDrawer(selectedCount) : ""}
 
       <section class="results-grid" id="results-grid">
         ${results.length ? results.map((style) => buildStyleCardHtml(style)).join("") : `<p class="empty-state">No exact matches yet. Search all styles instead.</p>`}
@@ -891,21 +947,144 @@ function renderResultsPage() {
     </section>
   `;
 
-  $("#refine-btn").addEventListener("click", () => setView("quiz"));
-  $("#restart-btn").addEventListener("click", () => {
-    setAnswers({});
-    state.quizStep = 0;
-    writeStored(STEP_KEY, state.quizStep);
-    setView("welcome");
-  });
+  wireDiscoveryControls();
   wireCards();
+}
+
+function renderDiscoveryActions(selectedCount) {
+  return `
+    <div class="results-actions">
+      <button class="secondary-btn filter-toggle-btn" id="filters-btn" type="button" aria-expanded="${state.filterPanelOpen}">
+        Filters
+        ${selectedCount ? `<span class="filter-count">${selectedCount}</span>` : ""}
+      </button>
+      <button class="secondary-btn" id="refine-btn" type="button">Edit step by step</button>
+      <button class="secondary-btn" id="restart-btn" type="button">Start over</button>
+    </div>
+  `;
+}
+
+function renderSummaryChips(chips) {
+  return `<div class="summary-chips">${chips.map((chip) => `<span><b>${chip.label}:</b> ${escapeHtml(chip.value)}</span>`).join("")}</div>`;
+}
+
+function wireDiscoveryControls() {
+  $("#filters-btn").addEventListener("click", () => {
+    state.filterPanelOpen = !state.filterPanelOpen;
+    if (state.filterPanelOpen) state.openFilterGroups.clear();
+    renderCurrentDiscoveryView();
+  });
+  $("#refine-btn").addEventListener("click", () => setView("quiz"));
+  $("#restart-btn").addEventListener("click", startOver);
+  const closeFilters = $("#close-filters-btn");
+  if (closeFilters) {
+    closeFilters.addEventListener("click", () => {
+      state.filterPanelOpen = false;
+      state.openFilterGroups.clear();
+      renderCurrentDiscoveryView();
+    });
+  }
+  const clearFilters = $("#clear-filters-btn");
+  if (clearFilters) {
+    clearFilters.addEventListener("click", () => {
+      setAnswers({});
+      state.openFilterGroups.clear();
+      renderCurrentDiscoveryView({ preserveFilterScroll: true });
+    });
+  }
+  const drawerStartOver = $("#drawer-start-over-btn");
+  if (drawerStartOver) drawerStartOver.addEventListener("click", startOver);
+  document.querySelectorAll("[data-filter-group]").forEach((details) => {
+    details.addEventListener("toggle", () => {
+      if (details.open) state.openFilterGroups.add(details.dataset.filterGroup);
+      else state.openFilterGroups.delete(details.dataset.filterGroup);
+    });
+  });
+  document.querySelectorAll("[data-filter-question][data-filter-value]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const question = getQuestionById(button.dataset.filterQuestion);
+      const option = question?.options.find((item) => item.value === button.dataset.filterValue);
+      if (!question || !option) return;
+      selectQuizOption(question, option);
+      renderCurrentDiscoveryView({ preserveFilterScroll: true });
+    });
+  });
+}
+
+function renderCurrentDiscoveryView({ preserveFilterScroll = false } = {}) {
+  const panel = $(".answer-filter-panel");
+  const scrollTop = preserveFilterScroll && panel ? panel.scrollTop : null;
+  if (state.view === "search") renderSearch();
+  else renderResultsPage();
+  if (scrollTop !== null) {
+    const nextPanel = $(".answer-filter-panel");
+    if (nextPanel) nextPanel.scrollTop = scrollTop;
+  }
+}
+
+function renderAnswerFilterDrawer(selectedCount) {
+  return `
+    <aside class="answer-filter-panel" aria-label="Modify answers">
+      <div class="answer-filter-head">
+        <div>
+          <p class="eyebrow">Filters</p>
+          <h2>Modify your answers</h2>
+        </div>
+        <button class="close-filter-btn" id="close-filters-btn" type="button" aria-label="Close filters">&times;</button>
+      </div>
+      <p class="answer-filter-copy">Adjust the profile from one place. Results update as soon as you change an answer.</p>
+      <div class="answer-filter-actions">
+        <button class="secondary-btn" id="clear-filters-btn" type="button">Clear answers</button>
+        <button class="secondary-btn" id="drawer-start-over-btn" type="button">Start over</button>
+      </div>
+      <div class="answer-filter-count">${selectedCount || 0} selected</div>
+      <div class="answer-filter-groups">
+        ${QUIZ.map(renderFilterGroup).join("")}
+      </div>
+    </aside>
+  `;
+}
+
+function renderFilterGroup(question) {
+  const selected = selectedFor(question);
+  return `
+    <details class="answer-filter-group" data-filter-group="${question.id}" ${state.openFilterGroups.has(question.id) ? "open" : ""}>
+      <summary>
+        <span>
+          <span class="answer-filter-group-title">${escapeHtml(shortQuestionLabel(question.id))}</span>
+          <span class="answer-filter-group-question">${escapeHtml(question.title)}</span>
+        </span>
+        <span class="answer-filter-group-icon" aria-hidden="true"></span>
+      </summary>
+      <div class="answer-filter-options">
+        ${question.options.map((option) => renderFilterOption(question, option, selected.includes(option.value))).join("")}
+      </div>
+    </details>
+  `;
+}
+
+function renderFilterOption(question, option, isSelected) {
+  return `
+    <button
+      class="filter-option ${isSelected ? "is-on" : ""}"
+      type="button"
+      data-filter-question="${question.id}"
+      data-filter-value="${option.value}"
+      aria-pressed="${isSelected}"
+    >
+      <span class="filter-option-box">${isSelected ? iconCheck() : ""}</span>
+      <span>
+        <span class="filter-option-label">${escapeHtml(option.label)}</span>
+        ${option.desc ? `<span class="filter-option-desc">${escapeHtml(option.desc)}</span>` : ""}
+      </span>
+    </button>
+  `;
 }
 
 function filteredSearchStyles() {
   const q = state.searchQuery.trim().toLowerCase();
-  if (!q) return state.styles;
   const tokens = q.split(/[\s,]+/).filter(Boolean);
-  return state.styles.filter((style) => {
+  const queryMatches = state.styles.filter((style) => {
     const haystack = [
       style.name,
       style.description,
@@ -916,8 +1095,15 @@ function filteredSearchStyles() {
       ...(style.labels || []),
       ...(style.features || [])
     ].join(" ").toLowerCase();
+    if (!q) return true;
     return tokens.every((token) => haystack.includes(token));
   });
+
+  if (!selectedAnswerCount()) return queryMatches;
+
+  const answerMatches = queryMatches.filter(stylePassesAnswerFilters);
+  const source = answerMatches.length ? answerMatches : queryMatches;
+  return [...source].sort((a, b) => scoreStyle(b) - scoreStyle(a));
 }
 
 function buildStyleCardHtml(style, compact = false) {
