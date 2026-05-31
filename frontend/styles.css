@@ -915,7 +915,12 @@ body[data-view="quiz"] .app-shell {
   font-size: 12px;
 }
 
-.summary-chips span {
+.summary-chip-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.summary-chip {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -925,10 +930,84 @@ body[data-view="quiz"] .app-shell {
   border-radius: 999px;
   color: var(--muted);
   font-size: 13px;
+  box-shadow: 0 1px 0 rgba(70, 54, 34, 0.04);
+}
+
+.summary-chip:hover,
+.summary-chip[aria-expanded="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: #fffaf1;
 }
 
 .summary-chips b {
   color: var(--ink);
+}
+
+.summary-chip-caret {
+  width: 7px;
+  height: 7px;
+  margin-left: 2px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+}
+
+.preference-menu {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 8px);
+  z-index: 75;
+  width: min(300px, calc(100vw - 32px));
+  padding: 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 18px 45px rgba(70, 54, 34, 0.16);
+}
+
+.summary-chip-wrap:nth-last-child(-n + 2) .preference-menu {
+  right: 0;
+  left: auto;
+}
+
+.preference-menu p {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.preference-option {
+  display: flex;
+  width: 100%;
+  min-height: 38px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 9px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.preference-option:hover {
+  background: #fbf8f1;
+}
+
+.preference-option.is-on {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.preference-option svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
 }
 
 .results-grid {

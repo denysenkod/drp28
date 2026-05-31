@@ -435,7 +435,8 @@ const state = {
   favourites: new Set(),
   uploadedPhotoName: null,
   filterPanelOpen: false,
-  openFilterGroups: new Set()
+  openFilterGroups: new Set(),
+  openPreferenceMenu: null
 };
 
 const pendingFavouriteOps = new Map();
@@ -479,6 +480,7 @@ function setView(view) {
   if (!["results", "search"].includes(view)) {
     state.filterPanelOpen = false;
     state.openFilterGroups.clear();
+    state.openPreferenceMenu = null;
   }
   writeStored(VIEW_KEY, view);
   render();
@@ -502,6 +504,7 @@ function startOver() {
   state.quizStep = 0;
   state.filterPanelOpen = false;
   state.openFilterGroups.clear();
+  state.openPreferenceMenu = null;
   writeStored(STEP_KEY, state.quizStep);
   setView("welcome");
 }
@@ -614,11 +617,11 @@ function summarizeAnswers() {
     const selected = selectedFor(question);
     if (!selected.length) continue;
     if (question.id === "style" && selected.includes("__all")) {
-      chips.push({ label: "Style", value: "Everything" });
+      chips.push({ questionId: question.id, label: "Style", value: "Everything" });
       continue;
     }
     const values = selected.filter((value) => value !== "__all").map((value) => getOptionLabel(question.id, value));
-    if (values.length) chips.push({ label: shortQuestionLabel(question.id), value: values.join(", ") });
+    if (values.length) chips.push({ questionId: question.id, label: shortQuestionLabel(question.id), value: values.join(", ") });
   }
   return chips;
 }
@@ -964,7 +967,7 @@ function renderDiscoveryActions(selectedCount) {
   return `
     <div class="results-actions">
       <button class="secondary-btn filter-toggle-btn" id="filters-btn" type="button" aria-expanded="${state.filterPanelOpen}">
-        Filters
+        Preferences
         ${selectedCount ? `<span class="filter-count">${selectedCount}</span>` : ""}
       </button>
       <button class="secondary-btn" id="refine-btn" type="button">Edit step by step</button>
@@ -974,22 +977,73 @@ function renderDiscoveryActions(selectedCount) {
 }
 
 function renderSummaryChips(chips) {
-  return `<div class="summary-chips">${chips.map((chip) => `<span><b>${chip.label}:</b> ${escapeHtml(chip.value)}</span>`).join("")}</div>`;
+  return `<div class="summary-chips">${chips.map(renderPreferenceChip).join("")}</div>`;
+}
+
+function renderPreferenceChip(chip) {
+  const question = getQuestionById(chip.questionId);
+  const open = state.openPreferenceMenu === chip.questionId;
+  return `
+    <div class="summary-chip-wrap">
+      <button
+        class="summary-chip"
+        type="button"
+        data-preference-chip="${escapeAttr(chip.questionId)}"
+        aria-expanded="${open}"
+        aria-haspopup="menu"
+      >
+        <span><b>${escapeHtml(chip.label)}:</b> ${escapeHtml(chip.value)}</span>
+        <span class="summary-chip-caret" aria-hidden="true"></span>
+      </button>
+      ${open && question ? renderPreferenceMenu(question) : ""}
+    </div>
+  `;
+}
+
+function renderPreferenceMenu(question) {
+  const selected = selectedFor(question);
+  return `
+    <div class="preference-menu" role="menu" aria-label="${escapeAttr(shortQuestionLabel(question.id))} preferences">
+      <p>${escapeHtml(question.title)}</p>
+      ${question.options.map((option) => renderPreferenceOption(question, option, selected.includes(option.value))).join("")}
+    </div>
+  `;
+}
+
+function renderPreferenceOption(question, option, isSelected) {
+  return `
+    <button
+      class="preference-option ${isSelected ? "is-on" : ""}"
+      type="button"
+      role="menuitemcheckbox"
+      aria-checked="${isSelected}"
+      data-preference-question="${escapeAttr(question.id)}"
+      data-preference-value="${escapeAttr(option.value)}"
+    >
+      <span>${escapeHtml(option.label)}</span>
+      ${isSelected ? iconCheck() : ""}
+    </button>
+  `;
 }
 
 function wireDiscoveryControls() {
   $("#filters-btn").addEventListener("click", () => {
     state.filterPanelOpen = !state.filterPanelOpen;
+    state.openPreferenceMenu = null;
     if (state.filterPanelOpen) state.openFilterGroups.clear();
     renderCurrentDiscoveryView();
   });
-  $("#refine-btn").addEventListener("click", () => setView("quiz"));
+  $("#refine-btn").addEventListener("click", () => {
+    state.openPreferenceMenu = null;
+    setView("quiz");
+  });
   $("#restart-btn").addEventListener("click", startOver);
   const closeFilters = $("#close-filters-btn");
   if (closeFilters) {
     closeFilters.addEventListener("click", () => {
       state.filterPanelOpen = false;
       state.openFilterGroups.clear();
+      state.openPreferenceMenu = null;
       renderCurrentDiscoveryView();
     });
   }
@@ -998,6 +1052,7 @@ function wireDiscoveryControls() {
     clearFilters.addEventListener("click", () => {
       setAnswers({});
       state.openFilterGroups.clear();
+      state.openPreferenceMenu = null;
       renderCurrentDiscoveryView({ preserveFilterScroll: true });
     });
   }
@@ -1018,6 +1073,36 @@ function wireDiscoveryControls() {
       renderCurrentDiscoveryView({ preserveFilterScroll: true });
     });
   });
+  document.querySelectorAll("[data-preference-chip]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const nextMenu = button.dataset.preferenceChip;
+      state.openPreferenceMenu = state.openPreferenceMenu === nextMenu ? null : nextMenu;
+      renderCurrentDiscoveryView({ preserveFilterScroll: state.filterPanelOpen });
+    });
+  });
+  document.querySelectorAll("[data-preference-question][data-preference-value]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const question = getQuestionById(button.dataset.preferenceQuestion);
+      const option = question?.options.find((item) => item.value === button.dataset.preferenceValue);
+      if (!question || !option) return;
+      selectQuizOption(question, option);
+      state.openPreferenceMenu = question.id;
+      renderCurrentDiscoveryView({ preserveFilterScroll: state.filterPanelOpen });
+    });
+  });
+  document.querySelectorAll(".summary-chip-wrap").forEach((wrap) => {
+    wrap.addEventListener("click", (event) => event.stopPropagation());
+  });
+  const discoveryScreen = $(".search-screen, .results-screen");
+  if (discoveryScreen) {
+    discoveryScreen.addEventListener("click", () => {
+      if (!state.openPreferenceMenu) return;
+      state.openPreferenceMenu = null;
+      renderCurrentDiscoveryView({ preserveFilterScroll: state.filterPanelOpen });
+    });
+  }
 }
 
 function renderCurrentDiscoveryView({ preserveFilterScroll = false } = {}) {
@@ -1036,10 +1121,10 @@ function renderAnswerFilterDrawer(selectedCount) {
     <aside class="answer-filter-panel" aria-label="Modify answers">
       <div class="answer-filter-head">
         <div>
-          <p class="eyebrow">Filters</p>
+          <p class="eyebrow">Preferences</p>
           <h2>Modify your answers</h2>
         </div>
-        <button class="close-filter-btn" id="close-filters-btn" type="button" aria-label="Close filters">&times;</button>
+        <button class="close-filter-btn" id="close-filters-btn" type="button" aria-label="Close preferences">&times;</button>
       </div>
       <p class="answer-filter-copy">Adjust the profile from one place. Results update as soon as you change an answer.</p>
       <div class="answer-filter-actions">
