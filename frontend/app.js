@@ -670,6 +670,7 @@ function scoredStyles() {
 
 // ---------- Rendering ----------
 function render() {
+  document.body.dataset.view = state.view;
   els.searchNavBtn.classList.toggle("is-active", state.view === "search");
   updateFavouriteCount();
 
@@ -682,21 +683,22 @@ function render() {
 function renderWelcome() {
   els.app.innerHTML = `
     <section class="welcome-screen">
-      <p class="eyebrow">Welcome</p>
-      <h1>Find a haircut that feels like you.</h1>
-      <p class="welcome-copy">Start with a guided match, or jump straight into search and save the photos that sharpen your profile.</p>
+      <div class="welcome-logo">HairMatch</div>
+      <p class="eyebrow">Let's begin</p>
+      <h1><span>Find a haircut that's </span><em>actually you.</em></h1>
+      <p class="welcome-copy">No endless scrolling. Tell us a little about yourself, or dive straight in and save what catches your eye.</p>
       <div class="welcome-options">
         <button class="choice-card" id="find-style-btn" type="button">
           <span class="choice-icon">${iconCheck()}</span>
           <span class="choice-title">Find me a style</span>
-          <span class="choice-copy">Answer one question at a time. We will build a set of results around your hair, lifestyle, and vibe.</span>
-          <span class="choice-action">Start questions ${iconArrow()}</span>
+          <span class="choice-copy">Answer a few quick questions. We'll narrow thousands of looks down to the ones that suit you.</span>
+          <span class="choice-action">7 quick questions ${iconArrow()}</span>
         </button>
         <button class="choice-card" id="have-mind-btn" type="button">
           <span class="choice-icon">${iconSearch()}</span>
           <span class="choice-title">I have something in mind</span>
-          <span class="choice-copy">Go to the search page, browse freely, and like pictures to build up your profile.</span>
-          <span class="choice-action">Search styles ${iconArrow()}</span>
+          <span class="choice-copy">Jump into the gallery and search freely. Like the photos that speak to you to build your profile.</span>
+          <span class="choice-action">Browse the gallery ${iconArrow()}</span>
         </button>
       </div>
     </section>
