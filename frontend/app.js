@@ -221,9 +221,9 @@ const QUIZ = [
     sub: "Pick any that feel right. Show me everything selects all three style directions.",
     layout: "image",
     options: [
-      { value: "masculine", label: "Masculine styles", gender: "Men" },
-      { value: "feminine", label: "Feminine styles", gender: "Women" },
-      { value: "androgynous", label: "Androgynous / gender-neutral styles", gender: "Unisex" },
+      { value: "masculine", label: "Masculine styles", gender: "Men", image: "/Images/MasculineStyles.webp" },
+      { value: "feminine", label: "Feminine styles", gender: "Women", image: "/Images/FeminineStyles.jpg" },
+      { value: "androgynous", label: "Androgynous / gender-neutral styles", gender: "Unisex", image: "/Images/androgynous.avif" },
       { value: "__all", label: "Show me everything", selectAll: true }
     ]
   },
@@ -232,12 +232,12 @@ const QUIZ = [
     title: "What is your natural hair texture?",
     layout: "icon",
     options: [
-      { value: "straight", label: "Straight", icon: textureIcon("straight"), hairType: "Straight Hair" },
-      { value: "wavy", label: "Wavy", icon: textureIcon("wavy"), hairType: "Wavy Hair" },
-      { value: "curly", label: "Curly", icon: textureIcon("curly"), hairType: "Curly Hair" },
-      { value: "coily", label: "Coily / kinky", icon: textureIcon("coily"), hairType: "Curly Hair" },
-      { value: "fine", label: "Fine / thin", icon: textureIcon("fine") },
-      { value: "thick", label: "Thick / dense", icon: textureIcon("thick") },
+      { value: "straight", label: "Straight", icon: textureIcon("straight"), hairType: "Straight Hair", image: "/Images/StraightHair.jpg" },
+      { value: "wavy", label: "Wavy", icon: textureIcon("wavy"), hairType: "Wavy Hair", image: "/Images/WavyHair.jpg" },
+      { value: "curly", label: "Curly", icon: textureIcon("curly"), hairType: "Curly Hair", image: "/Images/Curly.jpg" },
+      { value: "coily", label: "Coily / kinky", icon: textureIcon("coily"), hairType: "Curly Hair", image: "/Images/CoilyHair.jpg" },
+      { value: "fine", label: "Fine / thin", icon: textureIcon("fine"), image: "/Images/ThinHair.jpg" },
+      { value: "thick", label: "Thick / dense", icon: textureIcon("thick"), image: "/Images/ThickDenseHair.webp" },
       { value: "unsure", label: "Not sure", icon: textureIcon("unsure"), exclusive: true }
     ]
   },
@@ -245,14 +245,14 @@ const QUIZ = [
     id: "ethnicity",
     title: "Would you like photos featuring people of a specific ethnicity for inspiration?",
     sub: "This only affects reference inspiration. You can skip it.",
-    layout: "text",
+    layout: "image",
     options: [
-      { value: "black", label: "Black / African descent" },
-      { value: "asian", label: "Asian / East Asian" },
-      { value: "south-asian", label: "South Asian" },
-      { value: "latino", label: "Latino / Hispanic" },
-      { value: "middle-eastern", label: "Middle Eastern" },
-      { value: "white", label: "White / Caucasian" },
+      { value: "black", label: "Black / African descent", image: "/Images/BlackAfrican.webp" },
+      { value: "asian", label: "Asian / East Asian", image: "/Images/AsianEastAsian.webp" },
+      { value: "south-asian", label: "South Asian", image: "/Images/SouthAsian.jpg" },
+      { value: "latino", label: "Latino / Hispanic", image: "/Images/LatinoHispanic.webp" },
+      { value: "middle-eastern", label: "Middle Eastern", image: "/Images/MiddleEastern.jpg" },
+      { value: "white", label: "White / Caucasian", image: "/Images/WhiteCaucasian.jpg" },
       { value: "mixed", label: "Mixed / Multiracial" },
       { value: "none", label: "No preference", exclusive: true }
     ]
@@ -263,13 +263,13 @@ const QUIZ = [
     sub: "Not sure? Choose the helper option and we will show a quick guide.",
     layout: "icon",
     options: [
-      { value: "oval", label: "Oval", icon: faceIcon("oval") },
-      { value: "round", label: "Round", icon: faceIcon("round") },
-      { value: "square", label: "Square", icon: faceIcon("square") },
-      { value: "heart", label: "Heart / inverted triangle", icon: faceIcon("heart") },
-      { value: "diamond", label: "Diamond", icon: faceIcon("diamond") },
-      { value: "oblong", label: "Oblong / rectangle", icon: faceIcon("oblong") },
-      { value: "triangle", label: "Triangle / pear", icon: faceIcon("triangle") },
+      { value: "oval", label: "Oval", icon: faceIcon("oval"), image: "/Images/Oval.jpg" },
+      { value: "round", label: "Round", icon: faceIcon("round"), image: "/Images/RoundFace.jpg" },
+      { value: "square", label: "Square", icon: faceIcon("square"), image: "/Images/Square.png" },
+      { value: "heart", label: "Heart / inverted triangle", icon: faceIcon("heart"), image: "/Images/Heart.jpg" },
+      { value: "diamond", label: "Diamond", icon: faceIcon("diamond"), image: "/Images/Diamond.jpg" },
+      { value: "oblong", label: "Oblong / rectangle", icon: faceIcon("oblong"), image: "/Images/Oblong.avif" },
+      { value: "triangle", label: "Triangle / pear", icon: faceIcon("triangle"), image: "/Images/Triangle.jpg" },
       { value: "unknown", label: "I do not know my face shape", icon: faceIcon("unknown"), exclusive: true }
     ]
   },
@@ -278,12 +278,12 @@ const QUIZ = [
     title: "How long are you thinking?",
     layout: "icon",
     options: [
-      { value: "buzz", label: "Buzz / very short", desc: "Skin-close to 1 inch", icon: lengthIcon(0), length: "Short" },
-      { value: "short", label: "Short", desc: "Above the ears", icon: lengthIcon(1), length: "Short" },
-      { value: "medium-short", label: "Medium-short", desc: "Ear to chin length", icon: lengthIcon(2), length: "Medium" },
-      { value: "medium", label: "Medium", desc: "Chin to shoulder", icon: lengthIcon(3), length: "Medium" },
-      { value: "long", label: "Long", desc: "Shoulder to mid-back", icon: lengthIcon(4), length: "Long" },
-      { value: "very-long", label: "Very long", desc: "Below mid-back", icon: lengthIcon(5), length: "Long" },
+      { value: "buzz", label: "Buzz / very short", desc: "Skin-close to 1 inch", icon: lengthIcon(0), length: "Short", image: "/Images/veryShortHair.png" },
+      { value: "short", label: "Short", desc: "Above the ears", icon: lengthIcon(1), length: "Short", image: "/Images/ShortHair.jpg" },
+      { value: "medium-short", label: "Medium-short", desc: "Ear to chin length", icon: lengthIcon(2), length: "Medium", image: "/Images/MediumShort.png" },
+      { value: "medium", label: "Medium", desc: "Chin to shoulder", icon: lengthIcon(3), length: "Medium", image: "/Images/medium.jpg" },
+      { value: "long", label: "Long", desc: "Shoulder to mid-back", icon: lengthIcon(4), length: "Long", image: "/Images/LongHair.webp" },
+      { value: "very-long", label: "Very long", desc: "Below mid-back", icon: lengthIcon(5), length: "Long", image: "/Images/VeryLongHair.avif" },
       { value: "open", label: "I am open to anything", desc: "No preference", icon: lengthIcon(6), exclusive: true }
     ]
   },
@@ -692,6 +692,9 @@ function getRepresentativeImages() {
 }
 
 function getQuizOptionMedia(question, option) {
+  if (option.image) {
+    return `<img src="${option.image}" alt="" loading="lazy">`;
+  }
   if (question.id === "style") {
     const reps = getRepresentativeImages();
     if (option.selectAll) {
@@ -969,7 +972,7 @@ function renderQuiz() {
 function renderOption(question, option, on) {
   const media = question.layout === "text"
     ? ""
-    : `<span class="option-media ${option.icon ? "is-icon" : ""}">${getQuizOptionMedia(question, option)}</span>`;
+    : `<span class="option-media ${option.icon && !option.image ? "is-icon" : ""}">${getQuizOptionMedia(question, option)}</span>`;
   return `
     <button class="option-card ${question.layout === "text" ? "is-text" : ""} ${on ? "is-on" : ""}" type="button" data-option-value="${option.value}" aria-pressed="${on}">
       ${media}
