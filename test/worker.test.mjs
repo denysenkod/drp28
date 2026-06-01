@@ -498,6 +498,20 @@ test('wrangler deploys the TypeScript worker entry', async () => {
   assert.match(config, /^compatibility_date = "\d{4}-\d{2}-\d{2}"$/m);
 });
 
+test('GitHub Actions deploys pushes after remote D1 migrations', async () => {
+  const workflow = await readFile(new URL('../.github/workflows/ci.yml', import.meta.url), 'utf8');
+
+  assert.match(workflow, /^\s+deploy:$/m);
+  assert.match(workflow, /needs: test/);
+  assert.match(workflow, /if: github\.event_name == 'push'/);
+  assert.match(workflow, /name: Apply remote D1 migrations/);
+  assert.match(workflow, /run: npm run db:migrate:remote/);
+  assert.match(workflow, /name: Deploy Worker/);
+  assert.match(workflow, /run: npx wrangler deploy/);
+  assert.match(workflow, /CLOUDFLARE_API_TOKEN: \$\{\{ secrets\.CLOUDFLARE_API_TOKEN \}\}/);
+  assert.match(workflow, /CLOUDFLARE_ACCOUNT_ID: \$\{\{ secrets\.CLOUDFLARE_ACCOUNT_ID \}\}/);
+});
+
 test('local dev seeds memory gallery from migration files', async () => {
   const localDev = await readFile(new URL('../local-dev.mjs', import.meta.url), 'utf8');
 
