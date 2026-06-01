@@ -491,6 +491,7 @@ test('wrangler deploys the TypeScript worker entry', async () => {
   assert.match(config, /^main = "server\.ts"$/m);
   assert.match(config, /^\[assets\]$/m);
   assert.match(config, /^directory = "\.\/frontend"$/m);
+  assert.match(config, /^run_worker_first = \["\/admin", "\/admin\/\*", "\/api\/\*"\]$/m);
   assert.match(config, /^\[\[d1_databases\]\]$/m);
   assert.match(config, /^binding = "DB"$/m);
   assert.match(config, /^migrations_dir = "migrations"$/m);
