@@ -1,0 +1,6 @@
+accelerate>=1.0,<2
+diffusers>=0.35,<1
+invisible-watermark>=0.2,<1
+safetensors>=0.4,<1
+transformers>=4.45,<5
+

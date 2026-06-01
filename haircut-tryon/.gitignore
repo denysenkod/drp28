@@ -1,0 +1,11 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+data/inputs/*
+data/masks/*
+data/outputs/*
+!data/inputs/.gitkeep
+!data/masks/.gitkeep
+!data/outputs/.gitkeep
+models/
