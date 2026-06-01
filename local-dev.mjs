@@ -278,6 +278,24 @@ async function handleApi(req, res, url) {
     }
   }
 
+  const galleryImageMatch = url.pathname.match(/^\/api\/gallery\/([^/]+)$/);
+  if (galleryImageMatch) {
+    if (req.method === 'DELETE') {
+      const id = decodeURIComponent(galleryImageMatch[1]);
+      const initialLength = store.gallery.length;
+      store.gallery = store.gallery.filter((item) => item.id !== id);
+
+      if (store.gallery.length === initialLength) {
+        sendJson(res, 404, { ok: false, error: 'Gallery image not found.' });
+        return true;
+      }
+
+      store.favorites = store.favorites.filter((item) => item.imageId !== id);
+      sendJson(res, 200, { ok: true });
+      return true;
+    }
+  }
+
   const galleryAttributesMatch = url.pathname.match(/^\/api\/gallery\/([^/]+)\/attributes$/);
   if (galleryAttributesMatch) {
     if (req.method === 'PUT' || req.method === 'PATCH') {

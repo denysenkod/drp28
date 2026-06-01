@@ -1,6 +1,7 @@
 // ---------- API + persistent session ----------
 const API = {
   gallery: "/api/gallery",
+  galleryItem: (id) => `/api/gallery/${encodeURIComponent(id)}`,
   favorites: "/api/favorites",
   userPhotos: "/api/user-photos",
   galleryLabels: (id) => `/api/gallery/${encodeURIComponent(id)}/labels`,
@@ -11,6 +12,7 @@ const SESSION_KEY = "drp28.frontend.sessionId";
 const VIEW_KEY = "drp28.frontend.view";
 const ANSWERS_KEY = "drp28.frontend.answers";
 const STEP_KEY = "drp28.frontend.quizStep";
+const ADMIN_MODE_KEY = "drp28.frontend.adminMode";
 
 const ADMIN_ATTRIBUTE_OPTIONS = {
   gender: ["Men", "Women", "Unisex"],
@@ -481,7 +483,7 @@ function isAdminRoute() {
 }
 
 function isAdminContext() {
-  return isAdminRoute();
+  return state.adminMode || isAdminRoute();
 }
 
 // ---------- State ----------
@@ -494,6 +496,7 @@ const state = {
   view: isAdminRoute() ? "admin" : readStored(VIEW_KEY, "welcome"),
   quizStep: readStored(STEP_KEY, 0),
   answers: readStored(ANSWERS_KEY, {}),
+  adminMode: readStored(ADMIN_MODE_KEY, false),
   searchQuery: "",
   favourites: new Set(),
   uploadedPhotoName: null,
@@ -509,6 +512,7 @@ const $ = (sel) => document.querySelector(sel);
 const els = {
   app: $("#app"),
   homeBtn: $("#home-btn"),
+  stealthAdminToggle: $("#stealth-admin-toggle"),
   searchNavBtn: $("#search-nav-btn"),
   favouritesBtn: $("#favourites-btn"),
   favCount: $("#fav-count"),
@@ -519,6 +523,7 @@ const els = {
   detailDescription: $("#detail-description"),
   detailLike: $("#detail-like"),
   detailBarberOpen: $("#detail-barber-open"),
+  detailDelete: $("#detail-delete"),
   detailLength: $("#detail-length"),
   detailHairtype: $("#detail-hairtype"),
   detailGender: $("#detail-gender"),
@@ -556,8 +561,18 @@ function setView(view) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function setAdminMode(on) {
+  state.adminMode = Boolean(on);
+  writeStored(ADMIN_MODE_KEY, state.adminMode);
+  render();
+}
+
 function updateAdminChrome() {
   document.body.dataset.adminContext = isAdminContext() ? "true" : "false";
+  document.querySelectorAll("[data-admin-mode-toggle]").forEach((toggle) => {
+    toggle.checked = state.adminMode;
+  });
+  if (els.stealthAdminToggle) els.stealthAdminToggle.checked = state.adminMode;
 }
 
 function fallbackStyles() {
@@ -573,6 +588,15 @@ function syncStylesForCurrentRoute() {
   }
 
   state.styles = state.dbStyles.length ? state.dbStyles : fallbackStyles();
+}
+
+function canAdminEditStyle(style) {
+  return Boolean(
+    style &&
+    isAdminContext() &&
+    state.galleryLoaded &&
+    state.dbStyles.some((item) => item.id === style.id)
+  );
 }
 
 function setQuizStep(step) {
@@ -832,6 +856,8 @@ function render() {
   else if (state.view === "search") renderSearch();
   else if (state.view === "results") renderResultsPage();
   else renderWelcome();
+
+  refreshOpenDetailAdminControls();
 }
 
 function renderAdmin() {
@@ -875,7 +901,13 @@ function renderAdmin() {
 function renderWelcome() {
   els.app.innerHTML = `
     <section class="welcome-screen">
-      <div class="welcome-logo">HairMatch</div>
+      <div class="welcome-logo-row">
+        <div class="welcome-logo">HairMatch</div>
+        <label class="stealth-admin-switch welcome-admin-switch" title="Admin mode">
+          <span>Admin</span>
+          <input type="checkbox" data-admin-mode-toggle aria-label="Admin mode" ${state.adminMode ? "checked" : ""}>
+        </label>
+      </div>
       <p class="eyebrow">Let's begin</p>
       <h1><span>Find a haircut that's </span><em>actually you.</em></h1>
       <p class="welcome-copy">No endless scrolling. Tell us a little about yourself, or dive straight in and save what catches your eye.</p>
@@ -901,6 +933,9 @@ function renderWelcome() {
     setView("quiz");
   });
   $("#have-mind-btn").addEventListener("click", () => setView("search"));
+  document.querySelectorAll("[data-admin-mode-toggle]").forEach((toggle) => {
+    toggle.addEventListener("change", (event) => setAdminMode(event.target.checked));
+  });
 }
 
 function renderQuiz() {
@@ -1264,7 +1299,7 @@ function renderLabelChips(labels) {
 }
 
 function renderAdminCardPanel(style) {
-  if (!isAdminContext()) return "";
+  if (!canAdminEditStyle(style)) return "";
   return `
     <div class="admin-card-panel">
       <div class="admin-card-labels" data-admin-card-labels>${renderLabelChips(style.labels)}</div>
@@ -1358,6 +1393,14 @@ function findStyleIndex(id) {
   return state.styles.findIndex((item) => item.id === String(id));
 }
 
+function removeStyleFromState(id) {
+  const imageId = String(id);
+  state.dbStyles = state.dbStyles.filter((item) => item.id !== imageId);
+  state.styles = state.styles.filter((item) => item.id !== imageId);
+  state.favourites.delete(imageId);
+  pendingFavouriteOps.delete(imageId);
+}
+
 function refreshVisibleStyleLabels(id, statusText = "", statusKind = "") {
   const style = state.styles.find((item) => item.id === String(id));
   if (!style) return;
@@ -1431,8 +1474,8 @@ async function saveStyleAttributes(id, nextAttributes) {
 
 function renderAdminAttributeEditor(style, statusText = "", statusKind = "") {
   if (!els.detailAttributeAdmin) return;
-  els.detailAttributeAdmin.hidden = !isAdminContext();
-  if (!isAdminContext()) {
+  els.detailAttributeAdmin.hidden = !canAdminEditStyle(style);
+  if (!canAdminEditStyle(style)) {
     els.detailAttributeAdmin.innerHTML = "";
     return;
   }
@@ -1506,10 +1549,37 @@ async function saveStyleLabels(id, nextLabels) {
   }
 }
 
+async function deleteStyle(id) {
+  const style = state.styles.find((item) => item.id === String(id));
+  if (!style || !canAdminEditStyle(style)) return;
+
+  const ok = window.confirm(`Delete "${style.name}" from the gallery?`);
+  if (!ok) return;
+
+  const previousDbStyles = [...state.dbStyles];
+  const previousStyles = [...state.styles];
+  const wasFavourite = state.favourites.has(style.id);
+
+  removeStyleFromState(style.id);
+  updateFavouriteCount();
+  closeDetail();
+  render();
+
+  try {
+    await apiJson(API.galleryItem(style.id), { method: "DELETE" });
+  } catch (error) {
+    state.dbStyles = previousDbStyles;
+    state.styles = previousStyles;
+    if (wasFavourite) state.favourites.add(style.id);
+    render();
+    window.alert(error.message || "Could not delete gallery image.");
+  }
+}
+
 function renderAdminLabelEditor(style, statusText = "", statusKind = "") {
   if (!els.detailLabelAdmin) return;
-  els.detailLabelAdmin.hidden = !isAdminContext();
-  if (!isAdminContext()) {
+  els.detailLabelAdmin.hidden = !canAdminEditStyle(style);
+  if (!canAdminEditStyle(style)) {
     els.detailLabelAdmin.innerHTML = "";
     return;
   }
@@ -1576,6 +1646,22 @@ function wireAdminLabelEditor(styleId) {
   }
 }
 
+function refreshOpenDetailAdminControls() {
+  if (!currentDetailId || els.detailOverlay.hidden) return;
+  const style = state.styles.find((item) => item.id === String(currentDetailId));
+
+  if (!style) {
+    renderAdminAttributeEditor(null);
+    renderAdminLabelEditor(null);
+    els.detailDelete.hidden = true;
+    return;
+  }
+
+  renderAdminAttributeEditor(style);
+  renderAdminLabelEditor(style);
+  els.detailDelete.hidden = !canAdminEditStyle(style);
+}
+
 // ---------- Detail overlay ----------
 function appendImage(frame, style) {
   frame.innerHTML = style.imageUrl
@@ -1600,6 +1686,8 @@ function openDetail(id) {
   renderAdminAttributeEditor(style);
   els.detailLabels.innerHTML = renderLabelChips(style.labels);
   renderAdminLabelEditor(style);
+  els.detailDelete.hidden = !canAdminEditStyle(style);
+  els.detailDelete.onclick = () => deleteStyle(style.id);
 
   const similar = state.styles
     .filter((item) => item.id !== style.id && (item.length === style.length || item.hairType === style.hairType || item.gender === style.gender))
@@ -1717,6 +1805,9 @@ function escapeAttr(value) {
 // ---------- Wire up ----------
 function init() {
   els.homeBtn.addEventListener("click", () => setView("welcome"));
+  if (els.stealthAdminToggle) {
+    els.stealthAdminToggle.addEventListener("change", (event) => setAdminMode(event.target.checked));
+  }
   els.searchNavBtn.addEventListener("click", () => setView("search"));
   els.favouritesBtn.addEventListener("click", () => {
     renderFavourites();

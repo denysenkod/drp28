@@ -41,7 +41,7 @@ function createMockD1() {
     favorite_images: []
   };
 
-  const clone = (row) => ({ ...row });
+  const clone = (row) => row ? { ...row } : null;
   const now = () => new Date().toISOString();
   const orderByCreatedAt = (rows) => [...rows].sort((a, b) => b.created_at.localeCompare(a.created_at));
 
@@ -105,10 +105,20 @@ function createMockD1() {
             }
           }
 
-          if (sql.includes('DELETE FROM favorite_images')) {
+          if (sql.includes('DELETE FROM favorite_images WHERE image_id = ?')) {
+            tables.favorite_images = tables.favorite_images.filter(
+              (row) => row.image_id !== values[0]
+            );
+          }
+
+          if (sql.includes('DELETE FROM favorite_images WHERE session_id = ? AND image_id = ?')) {
             tables.favorite_images = tables.favorite_images.filter(
               (row) => row.session_id !== values[0] || row.image_id !== values[1]
             );
+          }
+
+          if (sql.includes('DELETE FROM gallery_images WHERE id = ?')) {
+            tables.gallery_images = tables.gallery_images.filter((row) => row.id !== values[0]);
           }
 
           if (sql.includes('UPDATE gallery_images SET labels_json = ? WHERE id = ?')) {
@@ -252,6 +262,7 @@ test('serves the admin route through the frontend shell', async () => {
   assert.equal(response.headers.get('content-type'), 'text/html; charset=utf-8');
   assert.doesNotMatch(body, /id="admin-nav-link"/);
   assert.doesNotMatch(body, /id="topbar-admin-toggle"/);
+  assert.match(body, /id="stealth-admin-toggle"/);
 });
 
 test('serves backend status as JSON', async () => {
@@ -368,6 +379,46 @@ test('updates gallery image labels in D1', async () => {
   assert.deepEqual(updated.item.labels, ['curly', 'low maintenance']);
 });
 
+test('deletes gallery images and their favorites in D1', async () => {
+  const { default: worker } = await loadWorker();
+  const env = await createAssetEnv();
+  const createResponse = await worker.fetch(new Request('https://example.com/api/gallery', {
+    method: 'POST',
+    body: JSON.stringify({
+      title: 'Textured Bob',
+      imageUrl: 'https://example.com/bob.webp',
+      gender: 'Women',
+      features: ['bob'],
+      labels: ['textured']
+    })
+  }), env);
+  const created = await createResponse.json();
+
+  await worker.fetch(new Request('https://example.com/api/favorites', {
+    method: 'POST',
+    body: JSON.stringify({
+      sessionId: 'session-1',
+      imageId: created.item.id
+    })
+  }), env);
+
+  const deleteResponse = await worker.fetch(new Request(`https://example.com/api/gallery/${created.item.id}`, {
+    method: 'DELETE'
+  }), env);
+
+  assert.equal(deleteResponse.status, 200);
+
+  const galleryResponse = await worker.fetch(new Request('https://example.com/api/gallery'), env);
+  const gallery = await galleryResponse.json();
+
+  assert.equal(gallery.items.length, 0);
+
+  const favoritesResponse = await worker.fetch(new Request('https://example.com/api/favorites?sessionId=session-1'), env);
+  const favorites = await favoritesResponse.json();
+
+  assert.equal(favorites.items.length, 0);
+});
+
 test('stores quiz responses and user photos in D1', async () => {
   const { default: worker } = await loadWorker();
   const env = await createAssetEnv();
@@ -462,14 +513,18 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(app.includes('gallery: "/api/gallery"'));
   assert.ok(app.includes('galleryLabels: (id)'));
   assert.ok(app.includes('galleryAttributes: (id)'));
+  assert.ok(app.includes('galleryItem: (id)'));
   assert.ok(app.includes('favorites: "/api/favorites"'));
   assert.ok(app.includes('userPhotos: "/api/user-photos"'));
   assert.ok(app.includes('imageUrl'));
   assert.ok(app.includes('isAdminContext'));
+  assert.ok(app.includes('ADMIN_MODE_KEY'));
   assert.ok(app.includes('syncStylesForCurrentRoute'));
+  assert.ok(app.includes('canAdminEditStyle'));
   assert.ok(app.includes('No database-backed gallery pictures loaded.'));
   assert.ok(app.includes('saveStyleLabels'));
   assert.ok(app.includes('saveStyleAttributes'));
+  assert.ok(app.includes('deleteStyle'));
   assert.ok(app.includes('data-admin-attribute'));
   assert.ok(app.includes('normalizeGender(item.gender)'));
   assert.ok(app.includes('inferGender'));
@@ -478,8 +533,11 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(index.includes('id="detail-gender"'));
   assert.ok(index.includes('id="results-grid"'));
   assert.ok(index.includes('/app.js'));
+  assert.ok(index.includes('id="stealth-admin-toggle"'));
+  assert.ok(index.includes('stealth-admin-switch'));
   assert.ok(index.includes('id="detail-label-admin"'));
   assert.ok(index.includes('id="detail-attribute-admin"'));
+  assert.ok(index.includes('id="detail-delete"'));
   assert.ok(!index.includes('admin-nav-link'));
   assert.ok(!index.includes('topbar-admin-toggle'));
 });
@@ -491,7 +549,8 @@ test('wrangler deploys the TypeScript worker entry', async () => {
   assert.match(config, /^main = "server\.ts"$/m);
   assert.match(config, /^\[assets\]$/m);
   assert.match(config, /^directory = "\.\/frontend"$/m);
-  assert.match(config, /^run_worker_first = \["\/admin", "\/admin\/\*", "\/api\/\*"\]$/m);
+  assert.match(config, /^run_worker_first = true$/m);
+  assert.match(config, /^not_found_handling = "single-page-application"$/m);
   assert.match(config, /^\[\[d1_databases\]\]$/m);
   assert.match(config, /^binding = "DB"$/m);
   assert.match(config, /^migrations_dir = "migrations"$/m);

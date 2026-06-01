@@ -66,6 +66,18 @@ svg {
   backdrop-filter: blur(16px);
 }
 
+.brand-zone,
+.welcome-logo-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.welcome-logo-row {
+  align-self: center;
+  margin-bottom: 62px;
+}
+
 body[data-view="welcome"] .topbar,
 body[data-view="quiz"] .topbar {
   display: none;
@@ -77,6 +89,7 @@ body[data-view="quiz"] .topbar {
 .text-btn,
 .primary-btn,
 .secondary-btn,
+.danger-btn,
 .heart-btn,
 .close-btn,
 .style-card-image {
@@ -91,6 +104,68 @@ body[data-view="quiz"] .topbar {
   font-style: italic;
   font-weight: 400;
   padding: 8px 0;
+}
+
+.stealth-admin-switch {
+  opacity: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 4px 6px 4px 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  transition: opacity 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+.brand-zone:hover .stealth-admin-switch,
+.brand-zone:focus-within .stealth-admin-switch,
+.welcome-logo-row:hover .stealth-admin-switch,
+.welcome-logo-row:focus-within .stealth-admin-switch {
+  opacity: 1;
+}
+
+.stealth-admin-switch:hover {
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+.stealth-admin-switch input {
+  appearance: none;
+  position: relative;
+  width: 34px;
+  height: 20px;
+  margin: 0;
+  border: 1px solid #d2c2ad;
+  border-radius: 999px;
+  background: var(--line);
+  cursor: pointer;
+}
+
+.stealth-admin-switch input::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgba(70, 54, 34, 0.2);
+  transition: transform 140ms ease;
+}
+
+.stealth-admin-switch input:checked {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.stealth-admin-switch input:checked::after {
+  transform: translateX(14px);
 }
 
 .top-actions {
@@ -171,7 +246,6 @@ body[data-view="quiz"] .app-shell {
 }
 
 .welcome-logo {
-  margin-bottom: 62px;
   font-family: var(--font-serif);
   font-size: 31px;
   font-style: italic;
@@ -558,6 +632,26 @@ body[data-view="quiz"] .app-shell {
 .primary-btn.is-saved {
   background: var(--accent);
   color: var(--surface);
+}
+
+.danger-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 16px;
+  background: #9f2f22;
+  border-radius: 999px;
+  color: var(--surface);
+  font-weight: 800;
+}
+
+.danger-btn:hover {
+  background: #81251b;
+}
+
+.danger-btn[hidden] {
+  display: none;
 }
 
 .search-screen,
@@ -1426,7 +1520,8 @@ body[data-view="quiz"] .app-shell {
     padding-top: 24px;
   }
 
-  .welcome-logo {
+  .welcome-logo-row {
+    align-self: flex-start;
     margin-bottom: 48px;
   }
 

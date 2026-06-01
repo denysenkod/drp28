@@ -7,11 +7,17 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/styles.css?v=2026-06-01-admin-db-only" />
+  <link rel="stylesheet" href="/styles.css?v=2026-06-01-admin-delete" />
 </head>
 <body>
   <header class="topbar">
-    <button class="brand-btn" id="home-btn" type="button">HairMatch</button>
+    <div class="brand-zone">
+      <button class="brand-btn" id="home-btn" type="button">HairMatch</button>
+      <label class="stealth-admin-switch" title="Admin mode">
+        <span>Admin</span>
+        <input type="checkbox" id="stealth-admin-toggle" aria-label="Admin mode">
+      </label>
+    </div>
     <nav class="top-actions" aria-label="Primary">
       <button class="nav-btn" id="search-nav-btn" type="button">Search</button>
       <button class="favourites-btn" id="favourites-btn" type="button">
@@ -43,6 +49,7 @@
           <div class="detail-actions">
             <button class="primary-btn" id="detail-like" type="button">Save style</button>
             <button class="secondary-btn" id="detail-barber-open" type="button">Barber notes</button>
+            <button class="danger-btn" id="detail-delete" type="button" hidden>Delete</button>
           </div>
 
           <dl class="detail-specs">
@@ -106,6 +113,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=2026-06-01-admin-db-only"></script>
+  <script src="/app.js?v=2026-06-01-admin-delete"></script>
 </body>
 </html>

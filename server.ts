@@ -273,6 +273,29 @@ async function updateGalleryImageLabels(request: Request, db: any, id: string): 
   return json({ ok: true, item: rowToGalleryImage(row) });
 }
 
+async function deleteGalleryImage(db: any, id: string): Promise<Response> {
+  const existing = await db
+    .prepare('SELECT * FROM gallery_images WHERE id = ?')
+    .bind(id)
+    .first();
+
+  if (!existing) {
+    return error('Gallery image not found.', 404);
+  }
+
+  await db
+    .prepare('DELETE FROM favorite_images WHERE image_id = ?')
+    .bind(id)
+    .run();
+
+  await db
+    .prepare('DELETE FROM gallery_images WHERE id = ?')
+    .bind(id)
+    .run();
+
+  return json({ ok: true });
+}
+
 async function listQuizResponses(url: URL, db: any): Promise<Response> {
   const sessionId = url.searchParams.get('sessionId');
   const query = sessionId
@@ -439,6 +462,13 @@ async function handleApi(request: Request, env: Env, url: URL): Promise<Response
   if (url.pathname === '/api/gallery') {
     if (request.method === 'GET') return listGallery(db);
     if (request.method === 'POST') return createGalleryImage(request, db);
+  }
+
+  const galleryImageMatch = url.pathname.match(/^\/api\/gallery\/([^/]+)$/);
+  if (galleryImageMatch) {
+    if (request.method === 'DELETE') {
+      return deleteGalleryImage(db, decodeURIComponent(galleryImageMatch[1]));
+    }
   }
 
   const galleryLabelsMatch = url.pathname.match(/^\/api\/gallery\/([^/]+)\/labels$/);
