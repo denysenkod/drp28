@@ -2,13 +2,22 @@
 const API = {
   gallery: "/api/gallery",
   favorites: "/api/favorites",
-  userPhotos: "/api/user-photos"
+  userPhotos: "/api/user-photos",
+  galleryLabels: (id) => `/api/gallery/${encodeURIComponent(id)}/labels`,
+  galleryAttributes: (id) => `/api/gallery/${encodeURIComponent(id)}/attributes`
 };
 
 const SESSION_KEY = "drp28.frontend.sessionId";
 const VIEW_KEY = "drp28.frontend.view";
 const ANSWERS_KEY = "drp28.frontend.answers";
 const STEP_KEY = "drp28.frontend.quizStep";
+
+const ADMIN_ATTRIBUTE_OPTIONS = {
+  gender: ["Men", "Women", "Unisex"],
+  length: ["Short", "Medium", "Long"],
+  hairType: ["Straight Hair", "Wavy Hair", "Curly Hair"],
+  maintenanceLevel: ["Low", "Medium", "Higher"]
+};
 
 function readStored(key, fallback) {
   try {
@@ -322,6 +331,22 @@ function titleCase(value) {
     .trim();
 }
 
+function normalizeLabelList(value) {
+  if (!Array.isArray(value)) return [];
+  const seen = new Set();
+  const labels = [];
+
+  for (const item of value) {
+    const label = String(item || "").trim();
+    const key = label.toLowerCase();
+    if (!label || seen.has(key)) continue;
+    seen.add(key);
+    labels.push(label);
+  }
+
+  return labels;
+}
+
 function inferLength(title, features = []) {
   const text = `${slugWords(title)} ${features.join(" ")}`;
   if (/(buzz|crop|crew|edgar|afro|pixie|bob)/.test(text)) return "Short";
@@ -341,6 +366,30 @@ function normalizeGender(value) {
   if (normalized === "men" || normalized === "man" || normalized === "male") return "Men";
   if (normalized === "women" || normalized === "woman" || normalized === "female") return "Women";
   if (normalized === "unisex") return "Unisex";
+  return "";
+}
+
+function normalizeLength(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (normalized === "short") return "Short";
+  if (normalized === "medium") return "Medium";
+  if (normalized === "long") return "Long";
+  return "";
+}
+
+function normalizeHairType(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (normalized === "straight" || normalized === "straight hair") return "Straight Hair";
+  if (normalized === "wavy" || normalized === "wavy hair") return "Wavy Hair";
+  if (normalized === "curly" || normalized === "curly hair") return "Curly Hair";
+  return "";
+}
+
+function normalizeMaintenanceLevel(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (normalized === "low") return "Low";
+  if (normalized === "medium") return "Medium";
+  if (normalized === "higher" || normalized === "high") return "Higher";
   return "";
 }
 
@@ -404,31 +453,45 @@ function detailsForStyle(title, length, hairType, description) {
 function galleryItemToStyle(item, index) {
   const title = item.title || item.name || `Style ${index + 1}`;
   const features = Array.isArray(item.features) ? item.features : [];
-  const length = inferLength(title, features);
-  const hairType = inferHairType(title, features);
+  const length = normalizeLength(item.length) || inferLength(title, features);
+  const hairType = normalizeHairType(item.hairType || item.texture) || inferHairType(title, features);
   const gender = normalizeGender(item.gender) || inferGender(title, features);
+  const maintenanceLevel = normalizeMaintenanceLevel(item.maintenanceLevel || item.upkeep) || inferMaintainability(title, length);
   const detail = detailsForStyle(title, length, hairType, item.description || "");
+  const defaultLabels = [...new Set([...inferLabels(title, features), length.toLowerCase(), hairType.toLowerCase(), gender.toLowerCase()])];
+  const labels = Array.isArray(item.labels) ? normalizeLabelList(item.labels) : defaultLabels;
 
   return {
     id: String(item.id || `style-${index + 1}`),
     name: title,
     imageUrl: item.imageUrl || "",
     description: item.description || "",
-    labels: [...new Set([...inferLabels(title, features), length.toLowerCase(), hairType.toLowerCase(), gender.toLowerCase()])],
+    labels,
     hairType,
     length,
     gender,
-    maintenanceLevel: inferMaintainability(title, length),
+    maintenanceLevel,
     features,
     ...detail
   };
+}
+
+function isAdminRoute() {
+  return window.location.pathname.replace(/\/+$/, "") === "/admin";
+}
+
+function isAdminContext() {
+  return isAdminRoute();
 }
 
 // ---------- State ----------
 const state = {
   sessionId: getSessionId(),
   styles: FALLBACK_STYLES.map(galleryItemToStyle),
-  view: readStored(VIEW_KEY, "welcome"),
+  dbStyles: [],
+  galleryLoaded: false,
+  galleryLoadError: false,
+  view: isAdminRoute() ? "admin" : readStored(VIEW_KEY, "welcome"),
   quizStep: readStored(STEP_KEY, 0),
   answers: readStored(ANSWERS_KEY, {}),
   searchQuery: "",
@@ -461,7 +524,9 @@ const els = {
   detailGender: $("#detail-gender"),
   detailMaintenanceLevel: $("#detail-maintenance-level"),
   detailMaintenance: $("#detail-maintenance"),
+  detailAttributeAdmin: $("#detail-attribute-admin"),
   detailLabels: $("#detail-labels"),
+  detailLabelAdmin: $("#detail-label-admin"),
   similarResults: $("#similar-results"),
   closeDetail: $("#close-detail"),
   favouritesOverlay: $("#favourites-overlay"),
@@ -476,13 +541,38 @@ const els = {
 
 function setView(view) {
   state.view = view;
-  if (!["results", "search"].includes(view)) {
+  if (view === "admin" && !isAdminRoute()) {
+    window.history.pushState({}, "", "/admin");
+  }
+  if (view !== "admin" && isAdminRoute()) {
+    window.history.pushState({}, "", "/");
+  }
+  if (!["admin", "results", "search"].includes(view)) {
     state.filterPanelOpen = false;
     state.openFilterGroups.clear();
   }
-  writeStored(VIEW_KEY, view);
+  if (view !== "admin") writeStored(VIEW_KEY, view);
   render();
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function updateAdminChrome() {
+  document.body.dataset.adminContext = isAdminContext() ? "true" : "false";
+}
+
+function fallbackStyles() {
+  return FALLBACK_STYLES.map(galleryItemToStyle);
+}
+
+function syncStylesForCurrentRoute() {
+  if (!state.galleryLoaded) return;
+
+  if (isAdminContext()) {
+    state.styles = state.dbStyles;
+    return;
+  }
+
+  state.styles = state.dbStyles.length ? state.dbStyles : fallbackStyles();
 }
 
 function setQuizStep(step) {
@@ -510,13 +600,20 @@ function startOver() {
 async function loadGallery() {
   try {
     const data = await apiJson(API.gallery);
-    if (Array.isArray(data.items) && data.items.length > 0) {
-      state.styles = data.items.map(galleryItemToStyle);
+    if (Array.isArray(data.items)) {
+      state.dbStyles = data.items.map(galleryItemToStyle);
+      state.galleryLoaded = true;
+      state.galleryLoadError = false;
+      syncStylesForCurrentRoute();
       render();
       if (!els.favouritesOverlay.hidden) renderFavourites();
     }
   } catch {
-    // Keep bundled fallback styles when the API is unavailable.
+    state.galleryLoaded = true;
+    state.galleryLoadError = true;
+    if (isAdminContext()) state.styles = [];
+    render();
+    // Regular pages keep bundled fallback styles when the API is unavailable.
   }
 }
 
@@ -721,14 +818,58 @@ function stylePassesAnswerFilters(style) {
 
 // ---------- Rendering ----------
 function render() {
+  if (isAdminRoute() && state.view !== "admin") {
+    state.view = "admin";
+  }
+  syncStylesForCurrentRoute();
   document.body.dataset.view = state.view;
   els.searchNavBtn.classList.toggle("is-active", state.view === "search");
+  updateAdminChrome();
   updateFavouriteCount();
 
-  if (state.view === "quiz") renderQuiz();
+  if (state.view === "admin") renderAdmin();
+  else if (state.view === "quiz") renderQuiz();
   else if (state.view === "search") renderSearch();
   else if (state.view === "results") renderResultsPage();
   else renderWelcome();
+}
+
+function renderAdmin() {
+  const labelCount = state.styles.reduce((total, style) => total + (style.labels || []).length, 0);
+  const galleryMessage = !state.galleryLoaded
+    ? "Loading database gallery..."
+    : state.galleryLoadError
+      ? "Could not load database gallery. Check the API and database binding."
+      : "No database-backed gallery pictures loaded.";
+  els.app.innerHTML = `
+    <section class="admin-screen">
+      <div class="admin-heading">
+        <div>
+          <p class="eyebrow">Admin</p>
+          <h1>Label studio</h1>
+        </div>
+      </div>
+
+      <div class="admin-stats">
+        <span><b>${state.styles.length}</b> pictures</span>
+        <span><b>${labelCount}</b> labels</span>
+        <span>Editing enabled</span>
+      </div>
+
+      <div class="admin-actions">
+        <button class="primary-btn" id="admin-search-btn" type="button">Browse gallery</button>
+        <button class="secondary-btn" id="admin-results-btn" type="button">View results</button>
+      </div>
+
+      <section class="results-grid admin-gallery-grid">
+        ${state.galleryLoaded && state.styles.length ? state.styles.map((style) => buildStyleCardHtml(style)).join("") : `<p class="empty-state">${galleryMessage}</p>`}
+      </section>
+    </section>
+  `;
+
+  $("#admin-search-btn").addEventListener("click", () => setView("search"));
+  $("#admin-results-btn").addEventListener("click", () => setView("results"));
+  wireCards();
 }
 
 function renderWelcome() {
@@ -1115,6 +1256,23 @@ function filteredSearchStyles() {
   return [...source].sort((a, b) => scoreStyle(b) - scoreStyle(a));
 }
 
+function renderLabelChips(labels) {
+  const normalized = normalizeLabelList(labels);
+  return normalized.length
+    ? normalized.map((label) => `<span>${escapeHtml(label)}</span>`).join("")
+    : `<span class="label-empty">No labels</span>`;
+}
+
+function renderAdminCardPanel(style) {
+  if (!isAdminContext()) return "";
+  return `
+    <div class="admin-card-panel">
+      <div class="admin-card-labels" data-admin-card-labels>${renderLabelChips(style.labels)}</div>
+      <button class="text-btn admin-edit-labels-btn" type="button" data-admin-edit-style="${style.id}">Edit labels</button>
+    </div>
+  `;
+}
+
 function buildStyleCardHtml(style, compact = false) {
   const liked = state.favourites.has(style.id);
   return `
@@ -1130,6 +1288,7 @@ function buildStyleCardHtml(style, compact = false) {
           </div>
           <button class="heart-btn ${liked ? "is-liked" : ""}" type="button" data-like-style="${style.id}" aria-label="${liked ? "Remove from saved" : "Save style"}">${liked ? "&hearts;" : "&#9825;"}</button>
         </div>
+        ${renderAdminCardPanel(style)}
       `}
     </article>
   `;
@@ -1143,6 +1302,12 @@ function wireCards(scope = document) {
     button.addEventListener("click", (event) => {
       event.stopPropagation();
       toggleFavourite(button.dataset.likeStyle);
+    });
+  });
+  scope.querySelectorAll("[data-admin-edit-style]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      openDetail(button.dataset.adminEditStyle);
     });
   });
 }
@@ -1189,6 +1354,228 @@ function renderFavourites() {
   wireCards(els.favouritesGrid);
 }
 
+function findStyleIndex(id) {
+  return state.styles.findIndex((item) => item.id === String(id));
+}
+
+function refreshVisibleStyleLabels(id, statusText = "", statusKind = "") {
+  const style = state.styles.find((item) => item.id === String(id));
+  if (!style) return;
+
+  document.querySelectorAll(".style-card").forEach((card) => {
+    if (card.dataset.styleId !== style.id) return;
+    const labels = card.querySelector("[data-admin-card-labels]");
+    if (labels) labels.innerHTML = renderLabelChips(style.labels);
+  });
+
+  if (currentDetailId === style.id && !els.detailOverlay.hidden) {
+    els.detailLabels.innerHTML = renderLabelChips(style.labels);
+    renderAdminLabelEditor(style, statusText, statusKind);
+  }
+}
+
+function refreshVisibleStyleAttributes(id, statusText = "", statusKind = "") {
+  const style = state.styles.find((item) => item.id === String(id));
+  if (!style) return;
+
+  document.querySelectorAll(".style-card").forEach((card) => {
+    if (card.dataset.styleId !== style.id) return;
+    const meta = card.querySelector(".style-card-footer p");
+    if (meta) meta.textContent = `${style.length} - ${style.hairType}`;
+  });
+
+  if (currentDetailId === style.id && !els.detailOverlay.hidden) {
+    els.detailMeta.textContent = `${style.gender} - ${style.length}`;
+    els.detailLength.textContent = style.length;
+    els.detailHairtype.textContent = style.hairType;
+    els.detailGender.textContent = style.gender;
+    els.detailMaintenanceLevel.textContent = style.maintenanceLevel;
+    els.detailMaintenance.textContent = style.maintenance;
+    renderAdminAttributeEditor(style, statusText, statusKind);
+  }
+}
+
+async function saveStyleAttributes(id, nextAttributes) {
+  const index = findStyleIndex(id);
+  if (index < 0) return;
+
+  const previous = { ...state.styles[index] };
+  const detail = detailsForStyle(
+    state.styles[index].name,
+    nextAttributes.length,
+    nextAttributes.hairType,
+    state.styles[index].description
+  );
+  state.styles[index] = {
+    ...state.styles[index],
+    ...nextAttributes,
+    ...detail
+  };
+  refreshVisibleStyleAttributes(id, "Saving...");
+
+  try {
+    const data = await apiJson(API.galleryAttributes(id), {
+      method: "PUT",
+      body: JSON.stringify(nextAttributes)
+    });
+
+    if (data.item) {
+      state.styles[index] = galleryItemToStyle(data.item, index);
+    }
+    refreshVisibleStyleAttributes(id, "Saved");
+  } catch (error) {
+    state.styles[index] = previous;
+    refreshVisibleStyleAttributes(id, error.message || "Could not save attributes.", "error");
+  }
+}
+
+function renderAdminAttributeEditor(style, statusText = "", statusKind = "") {
+  if (!els.detailAttributeAdmin) return;
+  els.detailAttributeAdmin.hidden = !isAdminContext();
+  if (!isAdminContext()) {
+    els.detailAttributeAdmin.innerHTML = "";
+    return;
+  }
+
+  els.detailAttributeAdmin.innerHTML = `
+    <div class="admin-attribute-grid">
+      ${renderAdminAttributeSelect("gender", "Gender", style.gender)}
+      ${renderAdminAttributeSelect("length", "Length", style.length)}
+      ${renderAdminAttributeSelect("hairType", "Texture", style.hairType)}
+      ${renderAdminAttributeSelect("maintenanceLevel", "Upkeep", style.maintenanceLevel)}
+    </div>
+    <p class="admin-attribute-status ${statusKind === "error" ? "is-error" : ""}" id="admin-attribute-status">${escapeHtml(statusText)}</p>
+  `;
+
+  wireAdminAttributeEditor(style.id);
+}
+
+function renderAdminAttributeSelect(name, label, value) {
+  const options = ADMIN_ATTRIBUTE_OPTIONS[name] || [];
+  return `
+    <label class="admin-attribute-field">
+      <span>${escapeHtml(label)}</span>
+      <select data-admin-attribute="${name}" aria-label="${escapeAttr(label)}">
+        ${options.map((option) => `<option value="${escapeAttr(option)}" ${option === value ? "selected" : ""}>${escapeHtml(option)}</option>`).join("")}
+      </select>
+    </label>
+  `;
+}
+
+function wireAdminAttributeEditor(styleId) {
+  const editor = els.detailAttributeAdmin;
+  if (!editor) return;
+
+  editor.querySelectorAll("[data-admin-attribute]").forEach((select) => {
+    select.addEventListener("change", () => {
+      const style = state.styles.find((item) => item.id === String(styleId));
+      if (!style) return;
+      saveStyleAttributes(styleId, {
+        gender: style.gender,
+        length: style.length,
+        hairType: style.hairType,
+        maintenanceLevel: style.maintenanceLevel,
+        [select.dataset.adminAttribute]: select.value
+      });
+    });
+  });
+}
+
+async function saveStyleLabels(id, nextLabels) {
+  const index = findStyleIndex(id);
+  if (index < 0) return;
+
+  const previous = [...(state.styles[index].labels || [])];
+  const labels = normalizeLabelList(nextLabels);
+  state.styles[index] = { ...state.styles[index], labels };
+  refreshVisibleStyleLabels(id, "Saving...");
+
+  try {
+    const data = await apiJson(API.galleryLabels(id), {
+      method: "PUT",
+      body: JSON.stringify({ labels })
+    });
+
+    if (data.item) {
+      state.styles[index] = galleryItemToStyle(data.item, index);
+    }
+    refreshVisibleStyleLabels(id, "Saved");
+  } catch (error) {
+    state.styles[index] = { ...state.styles[index], labels: previous };
+    refreshVisibleStyleLabels(id, error.message || "Could not save labels.", "error");
+  }
+}
+
+function renderAdminLabelEditor(style, statusText = "", statusKind = "") {
+  if (!els.detailLabelAdmin) return;
+  els.detailLabelAdmin.hidden = !isAdminContext();
+  if (!isAdminContext()) {
+    els.detailLabelAdmin.innerHTML = "";
+    return;
+  }
+
+  const labels = normalizeLabelList(style.labels);
+  els.detailLabelAdmin.innerHTML = `
+    <div class="admin-label-list">
+      ${labels.length ? labels.map((label, index) => `
+        <label class="admin-label-row">
+          <input type="text" value="${escapeAttr(label)}" data-label-index="${index}" aria-label="Label ${index + 1}">
+          <button class="admin-label-remove" type="button" data-remove-label-index="${index}" aria-label="Remove ${escapeAttr(label)}">&times;</button>
+        </label>
+      `).join("") : `<p class="admin-label-empty">No labels assigned.</p>`}
+    </div>
+    <form class="admin-label-add-form" id="admin-label-add-form">
+      <input type="text" id="admin-label-add-input" placeholder="New label" autocomplete="off">
+      <button class="secondary-btn" type="submit">Add label</button>
+    </form>
+    <p class="admin-label-status ${statusKind === "error" ? "is-error" : ""}" id="admin-label-status">${escapeHtml(statusText)}</p>
+  `;
+
+  wireAdminLabelEditor(style.id);
+}
+
+function wireAdminLabelEditor(styleId) {
+  const editor = els.detailLabelAdmin;
+  if (!editor) return;
+
+  editor.querySelectorAll("[data-label-index]").forEach((input) => {
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        input.blur();
+      }
+    });
+    input.addEventListener("change", () => {
+      const style = state.styles.find((item) => item.id === String(styleId));
+      if (!style) return;
+      const labels = [...(style.labels || [])];
+      labels[Number(input.dataset.labelIndex)] = input.value;
+      saveStyleLabels(styleId, labels);
+    });
+  });
+
+  editor.querySelectorAll("[data-remove-label-index]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const style = state.styles.find((item) => item.id === String(styleId));
+      if (!style) return;
+      const labels = [...(style.labels || [])];
+      labels.splice(Number(button.dataset.removeLabelIndex), 1);
+      saveStyleLabels(styleId, labels);
+    });
+  });
+
+  const form = $("#admin-label-add-form");
+  if (form) {
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const style = state.styles.find((item) => item.id === String(styleId));
+      const input = $("#admin-label-add-input");
+      if (!style || !input) return;
+      saveStyleLabels(styleId, [...(style.labels || []), input.value]);
+    });
+  }
+}
+
 // ---------- Detail overlay ----------
 function appendImage(frame, style) {
   frame.innerHTML = style.imageUrl
@@ -1210,7 +1597,9 @@ function openDetail(id) {
   els.detailGender.textContent = style.gender;
   els.detailMaintenanceLevel.textContent = style.maintenanceLevel;
   els.detailMaintenance.textContent = style.maintenance;
-  els.detailLabels.innerHTML = style.labels.map((label) => `<span>${escapeHtml(label)}</span>`).join("");
+  renderAdminAttributeEditor(style);
+  els.detailLabels.innerHTML = renderLabelChips(style.labels);
+  renderAdminLabelEditor(style);
 
   const similar = state.styles
     .filter((item) => item.id !== style.id && (item.length === style.length || item.hairType === style.hairType || item.gender === style.gender))
@@ -1367,6 +1756,11 @@ function init() {
       els.favouritesOverlay.hidden = true;
       document.body.style.overflow = "";
     }
+  });
+
+  window.addEventListener("popstate", () => {
+    state.view = isAdminRoute() ? "admin" : readStored(VIEW_KEY, "welcome");
+    render();
   });
 
   render();

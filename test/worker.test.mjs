@@ -62,7 +62,11 @@ function createMockD1() {
               description: values[2],
               image_url: values[3],
               gender: values[4],
-              features_json: values[5],
+              length: values[5],
+              hair_type: values[6],
+              maintenance_level: values[7],
+              features_json: values[8],
+              labels_json: values[9],
               created_at: now()
             });
           }
@@ -105,6 +109,21 @@ function createMockD1() {
             tables.favorite_images = tables.favorite_images.filter(
               (row) => row.session_id !== values[0] || row.image_id !== values[1]
             );
+          }
+
+          if (sql.includes('UPDATE gallery_images SET labels_json = ? WHERE id = ?')) {
+            const row = tables.gallery_images.find((item) => item.id === values[1]);
+            if (row) row.labels_json = values[0];
+          }
+
+          if (sql.includes('SET gender = ?, length = ?, hair_type = ?, maintenance_level = ?')) {
+            const row = tables.gallery_images.find((item) => item.id === values[4]);
+            if (row) {
+              row.gender = values[0];
+              row.length = values[1];
+              row.hair_type = values[2];
+              row.maintenance_level = values[3];
+            }
           }
 
           return { success: true };
@@ -220,8 +239,19 @@ test('serves the frontend on the root route', async () => {
   assert.equal(response.status, 200);
   assert.equal(response.headers.get('content-type'), 'text/html; charset=utf-8');
   assert.match(body, /id="results-grid"/);
-  assert.match(body, /src="app\.js(?:\?v=[^"]+)?"/);
-  assert.match(body, /href="styles\.css(?:\?v=[^"]+)?"/);
+  assert.match(body, /src="\/app\.js(?:\?v=[^"]+)?"/);
+  assert.match(body, /href="\/styles\.css(?:\?v=[^"]+)?"/);
+});
+
+test('serves the admin route through the frontend shell', async () => {
+  const { default: worker } = await loadWorker();
+  const response = await worker.fetch(new Request('https://example.com/admin'), await createAssetEnv());
+  const body = await response.text();
+
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('content-type'), 'text/html; charset=utf-8');
+  assert.doesNotMatch(body, /id="admin-nav-link"/);
+  assert.doesNotMatch(body, /id="topbar-admin-toggle"/);
 });
 
 test('serves backend status as JSON', async () => {
@@ -249,7 +279,11 @@ test('stores and lists gallery images in D1', async () => {
       description: 'Face-framing medium cut.',
       imageUrl: 'https://example.com/curtain.webp',
       gender: 'Women',
-      features: ['medium', 'wavy']
+      length: 'Medium',
+      hairType: 'Wavy Hair',
+      maintenanceLevel: 'Low',
+      features: ['medium', 'wavy'],
+      labels: ['soft', 'fringe']
     })
   }), env);
   const created = await createResponse.json();
@@ -257,7 +291,11 @@ test('stores and lists gallery images in D1', async () => {
   assert.equal(createResponse.status, 201);
   assert.equal(created.item.title, 'Soft Curtain Bangs');
   assert.equal(created.item.gender, 'Women');
+  assert.equal(created.item.length, 'Medium');
+  assert.equal(created.item.hairType, 'Wavy Hair');
+  assert.equal(created.item.maintenanceLevel, 'Low');
   assert.deepEqual(created.item.features, ['medium', 'wavy']);
+  assert.deepEqual(created.item.labels, ['soft', 'fringe']);
 
   const listResponse = await worker.fetch(new Request('https://example.com/api/gallery'), env);
   const list = await listResponse.json();
@@ -266,6 +304,68 @@ test('stores and lists gallery images in D1', async () => {
   assert.equal(list.items.length, 1);
   assert.equal(list.items[0].id, created.item.id);
   assert.equal(list.items[0].gender, 'Women');
+  assert.equal(list.items[0].length, 'Medium');
+  assert.equal(list.items[0].hairType, 'Wavy Hair');
+  assert.equal(list.items[0].maintenanceLevel, 'Low');
+  assert.deepEqual(list.items[0].labels, ['soft', 'fringe']);
+});
+
+test('updates gallery image admin attributes in D1', async () => {
+  const { default: worker } = await loadWorker();
+  const env = await createAssetEnv();
+  const createResponse = await worker.fetch(new Request('https://example.com/api/gallery', {
+    method: 'POST',
+    body: JSON.stringify({
+      title: 'Short Crop',
+      imageUrl: 'https://example.com/crop.webp',
+      gender: 'Men',
+      features: ['crop'],
+      labels: ['sharp']
+    })
+  }), env);
+  const created = await createResponse.json();
+
+  const updateResponse = await worker.fetch(new Request(`https://example.com/api/gallery/${created.item.id}/attributes`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      gender: 'Unisex',
+      length: 'Short',
+      hairType: 'Straight Hair',
+      maintenanceLevel: 'Higher'
+    })
+  }), env);
+  const updated = await updateResponse.json();
+
+  assert.equal(updateResponse.status, 200);
+  assert.equal(updated.item.gender, 'Unisex');
+  assert.equal(updated.item.length, 'Short');
+  assert.equal(updated.item.hairType, 'Straight Hair');
+  assert.equal(updated.item.maintenanceLevel, 'Higher');
+});
+
+test('updates gallery image labels in D1', async () => {
+  const { default: worker } = await loadWorker();
+  const env = await createAssetEnv();
+  const createResponse = await worker.fetch(new Request('https://example.com/api/gallery', {
+    method: 'POST',
+    body: JSON.stringify({
+      title: 'Modern Shag',
+      imageUrl: 'https://example.com/shag.webp',
+      gender: 'Women',
+      features: ['shag'],
+      labels: ['layered']
+    })
+  }), env);
+  const created = await createResponse.json();
+
+  const updateResponse = await worker.fetch(new Request(`https://example.com/api/gallery/${created.item.id}/labels`, {
+    method: 'PUT',
+    body: JSON.stringify({ labels: ['curly', 'low maintenance', 'curly'] })
+  }), env);
+  const updated = await updateResponse.json();
+
+  assert.equal(updateResponse.status, 200);
+  assert.deepEqual(updated.item.labels, ['curly', 'low maintenance']);
 });
 
 test('stores quiz responses and user photos in D1', async () => {
@@ -360,16 +460,28 @@ test('new static frontend is wired to image and database APIs', async () => {
   const index = await readFile(new URL('../frontend/index.html', import.meta.url), 'utf8');
 
   assert.ok(app.includes('gallery: "/api/gallery"'));
+  assert.ok(app.includes('galleryLabels: (id)'));
+  assert.ok(app.includes('galleryAttributes: (id)'));
   assert.ok(app.includes('favorites: "/api/favorites"'));
   assert.ok(app.includes('userPhotos: "/api/user-photos"'));
   assert.ok(app.includes('imageUrl'));
+  assert.ok(app.includes('isAdminContext'));
+  assert.ok(app.includes('syncStylesForCurrentRoute'));
+  assert.ok(app.includes('No database-backed gallery pictures loaded.'));
+  assert.ok(app.includes('saveStyleLabels'));
+  assert.ok(app.includes('saveStyleAttributes'));
+  assert.ok(app.includes('data-admin-attribute'));
   assert.ok(app.includes('normalizeGender(item.gender)'));
   assert.ok(app.includes('inferGender'));
   assert.ok(app.includes('toggleFavourite'));
   assert.ok(index.includes('data-filter="gender"'));
   assert.ok(index.includes('id="detail-gender"'));
   assert.ok(index.includes('id="results-grid"'));
-  assert.ok(index.includes('app.js'));
+  assert.ok(index.includes('/app.js'));
+  assert.ok(index.includes('id="detail-label-admin"'));
+  assert.ok(index.includes('id="detail-attribute-admin"'));
+  assert.ok(!index.includes('admin-nav-link'));
+  assert.ok(!index.includes('topbar-admin-toggle'));
 });
 
 test('wrangler deploys the TypeScript worker entry', async () => {
@@ -383,4 +495,12 @@ test('wrangler deploys the TypeScript worker entry', async () => {
   assert.match(config, /^binding = "DB"$/m);
   assert.match(config, /^migrations_dir = "migrations"$/m);
   assert.match(config, /^compatibility_date = "\d{4}-\d{2}-\d{2}"$/m);
+});
+
+test('local dev seeds memory gallery from migration files', async () => {
+  const localDev = await readFile(new URL('../local-dev.mjs', import.meta.url), 'utf8');
+
+  assert.ok(localDev.includes('seedGalleryFromMigrations'));
+  assert.ok(localDev.includes('INSERT OR IGNORE INTO gallery_images'));
+  assert.ok(localDev.includes('await seedGalleryFromMigrations()'));
 });
