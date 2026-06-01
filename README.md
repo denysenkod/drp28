@@ -161,13 +161,28 @@ database_id = "PASTE_DATABASE_ID_HERE"
 migrations_dir = "migrations"
 ```
 
-## GitHub Actions CI
+## GitHub Actions CI/CD
 
-The workflow in `.github/workflows/ci.yml` runs on pushes and pull requests:
+The workflow in `.github/workflows/ci.yml` runs tests on pushes and pull requests:
 
 ```bash
 npm ci
 npm test
+```
+
+On every push, after tests pass, GitHub Actions applies the latest remote D1
+migrations and deploys the Worker directly to Cloudflare:
+
+```bash
+npm run db:migrate:remote
+npx wrangler deploy
+```
+
+Configure these repository secrets in GitHub Actions:
+
+```text
+CLOUDFLARE_API_TOKEN
+CLOUDFLARE_ACCOUNT_ID
 ```
 
 ## Useful Commands
