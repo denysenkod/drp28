@@ -43,6 +43,23 @@ function parseList(value: unknown): string[] {
   return value.filter((item) => typeof item === 'string');
 }
 
+function parseLabels(value: unknown, fallback: string[] = []): string[] {
+  const source = Array.isArray(value) ? value : fallback;
+  const seen = new Set();
+  const labels: string[] = [];
+
+  for (const item of source) {
+    if (typeof item !== 'string') continue;
+    const label = item.trim();
+    const key = label.toLowerCase();
+    if (!label || seen.has(key)) continue;
+    seen.add(key);
+    labels.push(label);
+  }
+
+  return labels;
+}
+
 function parseRecord(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
   return value as Record<string, unknown>;
@@ -67,6 +84,36 @@ function normalizeGender(value: unknown): string {
   return 'Unisex';
 }
 
+function normalizeLength(value: unknown): string {
+  if (typeof value !== 'string') return '';
+
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'short') return 'Short';
+  if (normalized === 'medium') return 'Medium';
+  if (normalized === 'long') return 'Long';
+  return '';
+}
+
+function normalizeHairType(value: unknown): string {
+  if (typeof value !== 'string') return '';
+
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'straight' || normalized === 'straight hair') return 'Straight Hair';
+  if (normalized === 'wavy' || normalized === 'wavy hair') return 'Wavy Hair';
+  if (normalized === 'curly' || normalized === 'curly hair') return 'Curly Hair';
+  return '';
+}
+
+function normalizeMaintenanceLevel(value: unknown): string {
+  if (typeof value !== 'string') return '';
+
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'low') return 'Low';
+  if (normalized === 'medium') return 'Medium';
+  if (normalized === 'higher' || normalized === 'high') return 'Higher';
+  return '';
+}
+
 function rowToGalleryImage(row: any): Record<string, unknown> {
   return {
     id: row.id,
@@ -74,7 +121,11 @@ function rowToGalleryImage(row: any): Record<string, unknown> {
     description: row.description,
     imageUrl: row.image_url,
     gender: normalizeGender(row.gender),
+    length: normalizeLength(row.length),
+    hairType: normalizeHairType(row.hair_type),
+    maintenanceLevel: normalizeMaintenanceLevel(row.maintenance_level),
     features: decodeJson(row.features_json, []),
+    labels: decodeJson(row.labels_json, decodeJson(row.features_json, [])),
     createdAt: row.created_at
   };
 }
@@ -127,14 +178,18 @@ async function createGalleryImage(request: Request, db: any): Promise<Response> 
   const description = typeof body.description === 'string' ? body.description : '';
   const imageUrl = typeof body.imageUrl === 'string' ? body.imageUrl : '';
   const gender = normalizeGender(body.gender);
+  const length = normalizeLength(body.length);
+  const hairType = normalizeHairType(body.hairType);
+  const maintenanceLevel = normalizeMaintenanceLevel(body.maintenanceLevel);
   const features = parseList(body.features);
+  const labels = parseLabels(body.labels, features);
 
   await db
     .prepare(
-      `INSERT INTO gallery_images (id, title, description, image_url, gender, features_json)
-       VALUES (?, ?, ?, ?, ?, ?)`
+      `INSERT INTO gallery_images (id, title, description, image_url, gender, length, hair_type, maintenance_level, features_json, labels_json)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
-    .bind(id, body.title.trim(), description, imageUrl, gender, JSON.stringify(features))
+    .bind(id, body.title.trim(), description, imageUrl, gender, length, hairType, maintenanceLevel, JSON.stringify(features), JSON.stringify(labels))
     .run();
 
   const row = await db
@@ -143,6 +198,102 @@ async function createGalleryImage(request: Request, db: any): Promise<Response> 
     .first();
 
   return json({ ok: true, item: rowToGalleryImage(row) }, { status: 201 });
+}
+
+async function updateGalleryImageAttributes(request: Request, db: any, id: string): Promise<Response> {
+  const body = await readJson(request);
+
+  if (!body || typeof body !== 'object') {
+    return error('Gallery image attributes are required.');
+  }
+
+  const existing = await db
+    .prepare('SELECT * FROM gallery_images WHERE id = ?')
+    .bind(id)
+    .first();
+
+  if (!existing) {
+    return error('Gallery image not found.', 404);
+  }
+
+  const gender = normalizeGender(body.gender);
+  const length = normalizeLength(body.length);
+  const hairType = normalizeHairType(body.hairType);
+  const maintenanceLevel = normalizeMaintenanceLevel(body.maintenanceLevel);
+
+  if (!length) return error('Gallery image length must be Short, Medium, or Long.');
+  if (!hairType) return error('Gallery image texture must be Straight Hair, Wavy Hair, or Curly Hair.');
+  if (!maintenanceLevel) return error('Gallery image upkeep must be Low, Medium, or Higher.');
+
+  await db
+    .prepare(
+      `UPDATE gallery_images
+       SET gender = ?, length = ?, hair_type = ?, maintenance_level = ?
+       WHERE id = ?`
+    )
+    .bind(gender, length, hairType, maintenanceLevel, id)
+    .run();
+
+  const row = await db
+    .prepare('SELECT * FROM gallery_images WHERE id = ?')
+    .bind(id)
+    .first();
+
+  return json({ ok: true, item: rowToGalleryImage(row) });
+}
+
+async function updateGalleryImageLabels(request: Request, db: any, id: string): Promise<Response> {
+  const body = await readJson(request);
+
+  if (!body || !Array.isArray(body.labels)) {
+    return error('Gallery image labels array is required.');
+  }
+
+  const existing = await db
+    .prepare('SELECT * FROM gallery_images WHERE id = ?')
+    .bind(id)
+    .first();
+
+  if (!existing) {
+    return error('Gallery image not found.', 404);
+  }
+
+  const labels = parseLabels(body.labels);
+
+  await db
+    .prepare('UPDATE gallery_images SET labels_json = ? WHERE id = ?')
+    .bind(JSON.stringify(labels), id)
+    .run();
+
+  const row = await db
+    .prepare('SELECT * FROM gallery_images WHERE id = ?')
+    .bind(id)
+    .first();
+
+  return json({ ok: true, item: rowToGalleryImage(row) });
+}
+
+async function deleteGalleryImage(db: any, id: string): Promise<Response> {
+  const existing = await db
+    .prepare('SELECT * FROM gallery_images WHERE id = ?')
+    .bind(id)
+    .first();
+
+  if (!existing) {
+    return error('Gallery image not found.', 404);
+  }
+
+  await db
+    .prepare('DELETE FROM favorite_images WHERE image_id = ?')
+    .bind(id)
+    .run();
+
+  await db
+    .prepare('DELETE FROM gallery_images WHERE id = ?')
+    .bind(id)
+    .run();
+
+  return json({ ok: true });
 }
 
 async function listQuizResponses(url: URL, db: any): Promise<Response> {
@@ -313,6 +464,27 @@ async function handleApi(request: Request, env: Env, url: URL): Promise<Response
     if (request.method === 'POST') return createGalleryImage(request, db);
   }
 
+  const galleryImageMatch = url.pathname.match(/^\/api\/gallery\/([^/]+)$/);
+  if (galleryImageMatch) {
+    if (request.method === 'DELETE') {
+      return deleteGalleryImage(db, decodeURIComponent(galleryImageMatch[1]));
+    }
+  }
+
+  const galleryLabelsMatch = url.pathname.match(/^\/api\/gallery\/([^/]+)\/labels$/);
+  if (galleryLabelsMatch) {
+    if (request.method === 'PUT' || request.method === 'PATCH') {
+      return updateGalleryImageLabels(request, db, decodeURIComponent(galleryLabelsMatch[1]));
+    }
+  }
+
+  const galleryAttributesMatch = url.pathname.match(/^\/api\/gallery\/([^/]+)\/attributes$/);
+  if (galleryAttributesMatch) {
+    if (request.method === 'PUT' || request.method === 'PATCH') {
+      return updateGalleryImageAttributes(request, db, decodeURIComponent(galleryAttributesMatch[1]));
+    }
+  }
+
   if (url.pathname === '/api/quiz-responses') {
     if (request.method === 'GET') return listQuizResponses(url, db);
     if (request.method === 'POST') return createQuizResponse(request, db);
@@ -339,6 +511,12 @@ export default {
 
     if (apiResponse) {
       return apiResponse;
+    }
+
+    if (url.pathname === '/admin' || url.pathname === '/admin/') {
+      const assetUrl = new URL(request.url);
+      assetUrl.pathname = '/index.html';
+      return env.ASSETS.fetch(new Request(assetUrl.toString(), request));
     }
 
     return env.ASSETS.fetch(request);

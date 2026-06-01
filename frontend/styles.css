@@ -66,6 +66,18 @@ svg {
   backdrop-filter: blur(16px);
 }
 
+.brand-zone,
+.welcome-logo-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.welcome-logo-row {
+  align-self: center;
+  margin-bottom: 62px;
+}
+
 body[data-view="welcome"] .topbar,
 body[data-view="quiz"] .topbar {
   display: none;
@@ -77,6 +89,7 @@ body[data-view="quiz"] .topbar {
 .text-btn,
 .primary-btn,
 .secondary-btn,
+.danger-btn,
 .heart-btn,
 .close-btn,
 .style-card-image {
@@ -91,6 +104,68 @@ body[data-view="quiz"] .topbar {
   font-style: italic;
   font-weight: 400;
   padding: 8px 0;
+}
+
+.stealth-admin-switch {
+  opacity: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 4px 6px 4px 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  transition: opacity 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+.brand-zone:hover .stealth-admin-switch,
+.brand-zone:focus-within .stealth-admin-switch,
+.welcome-logo-row:hover .stealth-admin-switch,
+.welcome-logo-row:focus-within .stealth-admin-switch {
+  opacity: 1;
+}
+
+.stealth-admin-switch:hover {
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+.stealth-admin-switch input {
+  appearance: none;
+  position: relative;
+  width: 34px;
+  height: 20px;
+  margin: 0;
+  border: 1px solid #d2c2ad;
+  border-radius: 999px;
+  background: var(--line);
+  cursor: pointer;
+}
+
+.stealth-admin-switch input::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgba(70, 54, 34, 0.2);
+  transition: transform 140ms ease;
+}
+
+.stealth-admin-switch input:checked {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.stealth-admin-switch input:checked::after {
+  transform: translateX(14px);
 }
 
 .top-actions {
@@ -171,12 +246,21 @@ body[data-view="quiz"] .app-shell {
 }
 
 .welcome-logo {
-  margin-bottom: 62px;
   font-family: var(--font-serif);
-  font-size: 31px;
+  font-size: 56px;
   font-style: italic;
   font-weight: 400;
   line-height: 1;
+  text-align: center;
+}
+
+body[data-view="welcome"] #admin-nav-link,
+body[data-view="welcome"] #topbar-admin-toggle,
+body[data-view="welcome"] .admin-toggle,
+body[data-view="welcome"] .admin-mode,
+body[data-view="welcome"] .admin-mode-btn,
+body[data-view="welcome"] .welcome-logo-row .stealth-admin-switch {
+  display: none !important;
 }
 
 .welcome-screen h1,
@@ -560,15 +644,37 @@ body[data-view="quiz"] .app-shell {
   color: var(--surface);
 }
 
+.danger-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 16px;
+  background: #9f2f22;
+  border-radius: 999px;
+  color: var(--surface);
+  font-weight: 800;
+}
+
+.danger-btn:hover {
+  background: #81251b;
+}
+
+.danger-btn[hidden] {
+  display: none;
+}
+
 .search-screen,
-.results-screen {
+.results-screen,
+.admin-screen {
   display: flex;
   flex-direction: column;
   gap: 22px;
 }
 
 .screen-heading,
-.results-summary {
+.results-summary,
+.admin-heading {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
@@ -589,14 +695,42 @@ body[data-view="quiz"] .app-shell {
 }
 
 .screen-heading h1,
-.results-summary h1 {
+.results-summary h1,
+.admin-heading h1 {
   font-size: 52px;
   max-width: 760px;
+  margin: 0;
 }
 
 .screen-heading p,
 .results-summary p {
   margin-left: 0;
+}
+
+.admin-stats,
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.admin-stats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 38px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.admin-stats b {
+  color: var(--ink);
 }
 
 .search-tools {
@@ -915,7 +1049,12 @@ body[data-view="quiz"] .app-shell {
   font-size: 12px;
 }
 
-.summary-chips span {
+.summary-chip-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.summary-chip {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -925,10 +1064,84 @@ body[data-view="quiz"] .app-shell {
   border-radius: 999px;
   color: var(--muted);
   font-size: 13px;
+  box-shadow: 0 1px 0 rgba(70, 54, 34, 0.04);
+}
+
+.summary-chip:hover,
+.summary-chip[aria-expanded="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: #fffaf1;
 }
 
 .summary-chips b {
   color: var(--ink);
+}
+
+.summary-chip-caret {
+  width: 7px;
+  height: 7px;
+  margin-left: 2px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+}
+
+.preference-menu {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 8px);
+  z-index: 75;
+  width: min(300px, calc(100vw - 32px));
+  padding: 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 18px 45px rgba(70, 54, 34, 0.16);
+}
+
+.summary-chip-wrap:nth-last-child(-n + 2) .preference-menu {
+  right: 0;
+  left: auto;
+}
+
+.preference-menu p {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.preference-option {
+  display: flex;
+  width: 100%;
+  min-height: 38px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 9px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.preference-option:hover {
+  background: #fbf8f1;
+}
+
+.preference-option.is-on {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.preference-option svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
 }
 
 .results-grid {
@@ -999,6 +1212,44 @@ body[data-view="quiz"] .app-shell {
   margin: 4px 0 0;
   color: var(--muted);
   font-size: 12px;
+}
+
+.admin-card-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--line);
+  background: #fbf8f1;
+}
+
+.admin-card-labels,
+.detail-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.admin-card-labels span,
+.detail-labels span {
+  padding: 6px 10px;
+  background: var(--surface-2);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.admin-card-labels .label-empty,
+.detail-labels .label-empty {
+  background: transparent;
+  border: 1px dashed #d2c2ad;
+}
+
+.admin-edit-labels-btn {
+  justify-content: flex-start;
+  min-height: auto;
+  padding: 0;
+  color: var(--accent);
 }
 
 .heart-btn {
@@ -1150,6 +1401,61 @@ body[data-view="quiz"] .app-shell {
   font-weight: 800;
 }
 
+.admin-attribute-editor {
+  margin: -6px 0 20px;
+  padding: 12px;
+  background: #fbf8f1;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.admin-attribute-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.admin-attribute-field {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.admin-attribute-field select {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 34px 8px 10px;
+  background: var(--surface);
+  border: 1px solid #d8cbb9;
+  border-radius: var(--radius);
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: none;
+  outline: 0;
+}
+
+.admin-attribute-field select:focus {
+  border-color: var(--line-strong);
+}
+
+.admin-attribute-status {
+  min-height: 18px;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.admin-attribute-status.is-error {
+  color: #a33d2e;
+}
+
 .detail-section {
   margin-top: 18px;
 }
@@ -1177,6 +1483,85 @@ body[data-view="quiz"] .app-shell {
   border-radius: 999px;
   color: var(--muted);
   font-size: 12px;
+}
+
+.admin-label-editor {
+  margin-top: 12px;
+  padding: 12px;
+  background: #fbf8f1;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.admin-label-list {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-label-row,
+.admin-label-add-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.admin-label-row input,
+.admin-label-add-form input {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px solid #d8cbb9;
+  border-radius: var(--radius);
+  color: var(--ink);
+  outline: 0;
+}
+
+.admin-label-row input:focus,
+.admin-label-add-form input:focus {
+  border-color: var(--line-strong);
+}
+
+.admin-label-remove {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.admin-label-remove:hover {
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+
+.admin-label-add-form {
+  margin-top: 10px;
+}
+
+.admin-label-empty,
+.admin-label-status {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.admin-label-status {
+  min-height: 18px;
+  margin-top: 8px;
+  font-weight: 700;
+}
+
+.admin-label-status.is-error {
+  color: #a33d2e;
 }
 
 .similar-section {
@@ -1224,8 +1609,13 @@ body[data-view="quiz"] .app-shell {
     padding-top: 24px;
   }
 
-  .welcome-logo {
+  .welcome-logo-row {
+    align-self: center;
     margin-bottom: 48px;
+  }
+
+  .welcome-logo {
+    font-size: 42px;
   }
 
   .welcome-screen h1,
@@ -1246,7 +1636,8 @@ body[data-view="quiz"] .app-shell {
   .welcome-options,
   .search-tools,
   .detail-layout,
-  .results-summary {
+  .results-summary,
+  .admin-heading {
     grid-template-columns: 1fr;
   }
 
@@ -1291,7 +1682,8 @@ body[data-view="quiz"] .app-shell {
   }
 
   .screen-heading,
-  .results-summary {
+  .results-summary,
+  .admin-heading {
     display: block;
   }
 
@@ -1314,6 +1706,10 @@ body[data-view="quiz"] .app-shell {
   }
 
   .detail-specs {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-attribute-grid {
     grid-template-columns: 1fr;
   }
 }
