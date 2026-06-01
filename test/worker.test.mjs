@@ -509,6 +509,7 @@ test('returns 404 for unknown routes', async () => {
 test('new static frontend is wired to image and database APIs', async () => {
   const app = await readFile(new URL('../frontend/app.js', import.meta.url), 'utf8');
   const index = await readFile(new URL('../frontend/index.html', import.meta.url), 'utf8');
+  const styles = await readFile(new URL('../frontend/styles.css', import.meta.url), 'utf8');
 
   assert.ok(app.includes('gallery: "/api/gallery"'));
   assert.ok(app.includes('galleryLabels: (id)'));
@@ -540,6 +541,9 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(index.includes('id="detail-delete"'));
   assert.ok(!index.includes('admin-nav-link'));
   assert.ok(!index.includes('topbar-admin-toggle'));
+  assert.match(styles, /\.welcome-logo\s*\{[\s\S]*font-size: 56px;/);
+  assert.match(styles, /body\[data-view="welcome"\] #topbar-admin-toggle/);
+  assert.match(styles, /body\[data-view="welcome"\] \.admin-mode/);
 });
 
 test('wrangler deploys the TypeScript worker entry', async () => {
