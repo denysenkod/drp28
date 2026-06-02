@@ -250,12 +250,12 @@ const QUIZ = [
     layout: "image",
     options: [
       { value: "black", label: "Black / African descent", image: "/Images/BlackAfrican.webp" },
-      { value: "asian", label: "Asian / East Asian", image: "/Images/AsianEastAsian.webp" },
-      { value: "south-asian", label: "South Asian", image: "/Images/SouthAsian.jpg" },
-      { value: "latino", label: "Latino / Hispanic", image: "/Images/LatinoHispanic.webp" },
-      { value: "middle-eastern", label: "Middle Eastern", image: "/Images/MiddleEastern.jpg" },
-      { value: "white", label: "White / Caucasian", image: "/Images/WhiteCaucasian.jpg" },
-      { value: "mixed", label: "Mixed / Multiracial" },
+      { value: "asian", label: "Asian / East Asian", keywords: ["asian", "east asian"], image: "/Images/AsianEastAsian.webp" },
+      { value: "south-asian", label: "South Asian", keywords: ["south asian", "indian", "pakistani", "bangladeshi", "sri lankan"], image: "/Images/SouthAsian.jpg" },
+      { value: "latino", label: "Latino / Hispanic", keywords: ["latino", "hispanic"], image: "/Images/LatinoHispanic.webp" },
+      { value: "middle-eastern", label: "Middle Eastern", keywords: ["middle eastern"], image: "/Images/MiddleEastern.jpg" },
+      { value: "white", label: "White / Caucasian", keywords: ["white", "caucasian"], image: "/Images/WhiteCaucasian.jpg" },
+      { value: "mixed", label: "Mixed / Multiracial", keywords: ["mixed", "multiracial"] },
       { value: "none", label: "No preference", exclusive: true }
     ]
   },
@@ -265,13 +265,13 @@ const QUIZ = [
     sub: "Not sure? Choose the helper option and we will show a quick guide.",
     layout: "icon",
     options: [
-      { value: "oval", label: "Oval", icon: faceIcon("oval"), image: "/Images/Oval.jpg" },
-      { value: "round", label: "Round", icon: faceIcon("round"), image: "/Images/RoundFace.jpg" },
-      { value: "square", label: "Square", icon: faceIcon("square"), image: "/Images/Square.png" },
-      { value: "heart", label: "Heart / inverted triangle", icon: faceIcon("heart"), image: "/Images/Heart.jpg" },
-      { value: "diamond", label: "Diamond", icon: faceIcon("diamond"), image: "/Images/Diamond.jpg" },
-      { value: "oblong", label: "Oblong / rectangle", icon: faceIcon("oblong"), image: "/Images/Oblong.avif" },
-      { value: "triangle", label: "Triangle / pear", icon: faceIcon("triangle"), image: "/Images/Triangle.jpg" },
+      { value: "oval", label: "Oval", faceShape: "oval", icon: faceIcon("oval"), image: "/Images/Oval.jpg" },
+      { value: "round", label: "Round", faceShape: "round", icon: faceIcon("round"), image: "/Images/RoundFace.jpg" },
+      { value: "square", label: "Square", faceShape: "square", icon: faceIcon("square"), image: "/Images/Square.png" },
+      { value: "heart", label: "Heart / inverted triangle", faceShape: "heart", icon: faceIcon("heart"), image: "/Images/Heart.jpg" },
+      { value: "diamond", label: "Diamond", faceShape: "diamond", icon: faceIcon("diamond"), image: "/Images/Diamond.jpg" },
+      { value: "oblong", label: "Oblong / rectangle", faceShape: "rectangle", icon: faceIcon("oblong"), image: "/Images/Oblong.avif" },
+      { value: "triangle", label: "Triangle / pear", faceShape: "triangle", icon: faceIcon("triangle"), image: "/Images/Triangle.jpg" },
       { value: "unknown", label: "I do not know my face shape", icon: faceIcon("unknown"), exclusive: true }
     ]
   },
@@ -294,10 +294,10 @@ const QUIZ = [
     title: "What best describes your lifestyle?",
     layout: "text",
     options: [
-      { value: "active", label: "Very active / sporty", keywords: ["low maintenance", "buzz", "crew"] },
-      { value: "professional", label: "Professional / corporate", keywords: ["classic", "side part", "centre part", "polished"] },
-      { value: "creative", label: "Creative / artistic", keywords: ["edgy", "bold", "shag", "mullet"] },
-      { value: "casual", label: "Casual / relaxed", keywords: ["effortless", "grow out", "fringe"] },
+      { value: "active", label: "Very active / sporty", upkeep: "Low", keywords: ["low maintenance", "low", "buzz", "crew"] },
+      { value: "professional", label: "Professional / corporate", vibe: "professional", keywords: ["professional", "classic", "side part", "centre part", "polished"] },
+      { value: "creative", label: "Creative / artistic", vibe: "bold", keywords: ["creative", "edgy", "bold", "shag", "mullet"] },
+      { value: "casual", label: "Casual / relaxed", vibe: "casual", keywords: ["casual", "effortless", "grow out", "fringe"] },
       { value: "mixed", label: "Mixed / varies", exclusive: true }
     ]
   },
@@ -306,13 +306,13 @@ const QUIZ = [
     title: "Which words best describe the vibe you are going for?",
     layout: "text",
     options: [
-      { value: "classic", label: "Classic & timeless", keywords: ["classic", "side part", "centre part"] },
-      { value: "trendy", label: "Trendy & modern", keywords: ["modern", "mod", "crop"] },
-      { value: "bold", label: "Bold & edgy", keywords: ["bold", "edgy", "mullet", "dyed", "frosted"] },
-      { value: "soft", label: "Soft & romantic", keywords: ["soft", "curtain", "fringe", "long"] },
-      { value: "natural", label: "Natural & effortless", keywords: ["natural", "effortless", "grow out", "wavy"] },
-      { value: "professional", label: "Professional & polished", keywords: ["professional", "classic", "crew", "side"] },
-      { value: "playful", label: "Playful & fun", keywords: ["playful", "frosted", "dyed", "shag"] }
+      { value: "classic", label: "Classic & timeless", vibe: "classic", keywords: ["classic", "side part", "centre part"] },
+      { value: "trendy", label: "Trendy & modern", keywords: ["modern", "mod", "crop", "trendy"] },
+      { value: "bold", label: "Bold & edgy", vibe: "bold", keywords: ["bold", "edgy", "mullet", "dyed", "frosted"] },
+      { value: "soft", label: "Soft & romantic", vibe: "soft", keywords: ["soft", "curtain", "fringe", "long"] },
+      { value: "natural", label: "Natural & effortless", vibe: "natural", keywords: ["natural", "effortless", "grow out", "wavy"] },
+      { value: "professional", label: "Professional & polished", vibe: "professional", keywords: ["professional", "classic", "crew", "side"] },
+      { value: "playful", label: "Playful & fun", vibe: "playful", keywords: ["playful", "frosted", "dyed", "shag"] }
     ]
   }
 ];
@@ -398,6 +398,13 @@ function normalizeMaintenanceLevel(value) {
   return "";
 }
 
+function normalizeFaceShape(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (["oval", "round", "square", "heart", "diamond", "rectangle", "triangle"].includes(normalized)) return normalized;
+  if (normalized === "oblong") return "rectangle";
+  return "";
+}
+
 function inferHairType(title, features = []) {
   const text = `${slugWords(title)} ${features.join(" ")}`;
   if (/(coily|kinky)/.test(text)) return "Coily Hair";
@@ -459,6 +466,7 @@ function detailsForStyle(title, length, hairType, description) {
 function galleryItemToStyle(item, index) {
   const title = item.title || item.name || `Style ${index + 1}`;
   const features = Array.isArray(item.features) ? item.features : [];
+  const analysis = item.analysis && typeof item.analysis === "object" ? item.analysis : {};
   const length = normalizeLength(item.length) || inferLength(title, features);
   const hairType = normalizeHairType(item.hairType || item.texture) || inferHairType(title, features);
   const gender = normalizeGender(item.gender) || inferGender(title, features);
@@ -466,6 +474,7 @@ function galleryItemToStyle(item, index) {
   const detail = detailsForStyle(title, length, hairType, item.description || "");
   const defaultLabels = [...new Set([...inferLabels(title, features), length.toLowerCase(), hairType.toLowerCase(), gender.toLowerCase()])];
   const labels = Array.isArray(item.labels) ? normalizeLabelList(item.labels) : defaultLabels;
+  const maintenance = item.maintenance || analysis.maintenance || detail.maintenance;
 
   return {
     id: String(item.id || `style-${index + 1}`),
@@ -474,11 +483,19 @@ function galleryItemToStyle(item, index) {
     description: item.description || "",
     labels,
     hairType,
+    hairSubtype: String(item.hairSubtype || analysis.hairSubtype || "").trim(),
     length,
     gender,
     maintenanceLevel,
+    faceShape: normalizeFaceShape(item.faceShape || analysis.faceShape),
+    vibe: String(item.vibe || analysis.vibe || "").trim().toLowerCase(),
+    hairColour: String(item.hairColour || analysis.hairColour || "").trim(),
+    haircutName: String(item.haircutName || analysis.haircutName || "").trim(),
+    classifiedAt: String(item.classifiedAt || analysis.updatedAt || "").trim(),
+    analysisModel: String(item.analysisModel || analysis.model || "").trim(),
     features,
-    ...detail
+    ...detail,
+    maintenance
   };
 }
 
@@ -776,18 +793,41 @@ function answerOptions(questionId) {
   return selected.map((value) => question?.options.find((option) => option.value === value)).filter(Boolean);
 }
 
-function scoreStyle(style) {
-  let score = 0;
-  const haystack = [
+function styleHaystack(style) {
+  return [
     style.name,
     style.description,
     style.length,
     style.hairType,
+    style.hairSubtype,
     style.gender,
     style.maintenanceLevel,
+    style.faceShape,
+    style.vibe,
+    style.hairColour,
+    style.haircutName,
+    style.maintenance,
     ...(style.labels || []),
     ...(style.features || [])
   ].join(" ").toLowerCase();
+}
+
+function optionKeywordMatch(style, option) {
+  const haystack = styleHaystack(style);
+  return (option.keywords || []).some((keyword) => haystack.includes(String(keyword).toLowerCase()));
+}
+
+function optionVibeMatch(style, option) {
+  return Boolean(option.vibe && style.vibe === option.vibe);
+}
+
+function optionUpkeepMatch(style, option) {
+  return Boolean(option.upkeep && style.maintenanceLevel === option.upkeep);
+}
+
+function scoreStyle(style) {
+  let score = 0;
+  const haystack = styleHaystack(style);
 
   for (const option of answerOptions("style")) {
     if (option.selectAll) score += 1;
@@ -804,31 +844,48 @@ function scoreStyle(style) {
   }
 
   for (const option of answerOptions("lifestyle")) {
+    if (optionVibeMatch(style, option)) score += 3;
+    if (optionUpkeepMatch(style, option)) score += 3;
     for (const keyword of option.keywords || []) {
       if (haystack.includes(keyword)) score += 2;
     }
   }
 
   for (const option of answerOptions("vibe")) {
+    if (optionVibeMatch(style, option)) score += 5;
     for (const keyword of option.keywords || []) {
       if (haystack.includes(keyword)) score += 2;
     }
   }
 
   for (const option of answerOptions("ethnicity")) {
-    if (option.value !== "none" && haystack.includes(option.value.replace("-", " "))) score += 2;
+    if (option.value !== "none" && optionKeywordMatch(style, option)) score += 2;
+  }
+
+  for (const option of answerOptions("face")) {
+    if (option.faceShape && style.faceShape === option.faceShape) score += 4;
   }
 
   return score;
 }
 
-function scoredStyles() {
+function answerFilteredStyles() {
+  return state.styles.filter(stylePassesAnswerFilters);
+}
+
+function scoredStyles(styles = state.styles) {
   const styleAnswers = answerOptions("style").filter((option) => !option.selectAll);
   const hardFiltered = styleAnswers.length
-    ? state.styles.filter((style) => styleAnswers.some((option) => style.gender === option.gender || style.gender === "Unisex"))
-    : state.styles;
-  const source = hardFiltered.length ? hardFiltered : state.styles;
+    ? styles.filter((style) => styleAnswers.some((option) => style.gender === option.gender || style.gender === "Unisex"))
+    : styles;
+  const source = hardFiltered.length ? hardFiltered : styles;
   return [...source].sort((a, b) => scoreStyle(b) - scoreStyle(a));
+}
+
+function optionGroupPasses(style, questionId, matcher) {
+  const options = answerOptions(questionId).filter((option) => !option.exclusive && !option.selectAll);
+  if (!options.length) return true;
+  return options.some((option) => matcher(option));
 }
 
 function stylePassesAnswerFilters(style) {
@@ -837,13 +894,31 @@ function stylePassesAnswerFilters(style) {
     return false;
   }
 
-  const textureAnswers = answerOptions("texture").map((option) => option.hairType).filter(Boolean);
-  if (textureAnswers.length && !textureAnswers.includes(style.hairType)) {
+  if (!optionGroupPasses(style, "texture", (option) => {
+    if (option.hairType) return style.hairType === option.hairType;
+    if (["fine", "thick"].includes(option.value)) return styleHaystack(style).includes(option.value);
+    return true;
+  })) {
     return false;
   }
 
-  const lengthAnswers = answerOptions("length").map((option) => option.length).filter(Boolean);
-  if (lengthAnswers.length && !lengthAnswers.includes(style.length)) {
+  if (!optionGroupPasses(style, "length", (option) => option.length ? style.length === option.length : true)) {
+    return false;
+  }
+
+  if (!optionGroupPasses(style, "face", (option) => option.faceShape ? style.faceShape === option.faceShape : true)) {
+    return false;
+  }
+
+  if (!optionGroupPasses(style, "ethnicity", (option) => optionKeywordMatch(style, option))) {
+    return false;
+  }
+
+  if (!optionGroupPasses(style, "lifestyle", (option) => optionVibeMatch(style, option) || optionUpkeepMatch(style, option) || optionKeywordMatch(style, option))) {
+    return false;
+  }
+
+  if (!optionGroupPasses(style, "vibe", (option) => optionVibeMatch(style, option) || optionKeywordMatch(style, option))) {
     return false;
   }
 
@@ -1117,7 +1192,8 @@ function renderSearchGrid() {
 }
 
 function renderResultsPage() {
-  const results = scoredStyles();
+  const filtered = selectedAnswerCount() ? answerFilteredStyles() : state.styles;
+  const results = scoredStyles(filtered);
   const chips = summarizeAnswers();
   const selectedCount = selectedAnswerCount();
 
@@ -1379,8 +1455,7 @@ function filteredSearchStyles() {
   if (!selectedAnswerCount()) return queryMatches;
 
   const answerMatches = queryMatches.filter(stylePassesAnswerFilters);
-  const source = answerMatches.length ? answerMatches : queryMatches;
-  return [...source].sort((a, b) => scoreStyle(b) - scoreStyle(a));
+  return scoredStyles(answerMatches);
 }
 
 function renderLabelChips(labels) {
