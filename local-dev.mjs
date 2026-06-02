@@ -98,9 +98,11 @@ function normalizeLength(value) {
   if (typeof value !== 'string') return '';
 
   const normalized = value.trim().toLowerCase();
+  if (normalized === 'very short') return 'Very Short';
   if (normalized === 'short') return 'Short';
   if (normalized === 'medium') return 'Medium';
   if (normalized === 'long') return 'Long';
+  if (normalized === 'very long') return 'Very Long';
   return '';
 }
 
@@ -111,6 +113,7 @@ function normalizeHairType(value) {
   if (normalized === 'straight' || normalized === 'straight hair') return 'Straight Hair';
   if (normalized === 'wavy' || normalized === 'wavy hair') return 'Wavy Hair';
   if (normalized === 'curly' || normalized === 'curly hair') return 'Curly Hair';
+  if (normalized === 'coily' || normalized === 'coily hair') return 'Coily Hair';
   return '';
 }
 
@@ -120,7 +123,7 @@ function normalizeMaintenanceLevel(value) {
   const normalized = value.trim().toLowerCase();
   if (normalized === 'low') return 'Low';
   if (normalized === 'medium') return 'Medium';
-  if (normalized === 'higher' || normalized === 'high') return 'Higher';
+  if (normalized === 'higher' || normalized === 'high') return 'High';
   return '';
 }
 
@@ -232,7 +235,21 @@ async function seedGalleryFromMigrations() {
           gender: normalizeGender(row.gender) || inferSeedGender({ id: row.id, imageUrl: row.image_url, features }),
           length: normalizeLength(row.length),
           hairType: normalizeHairType(row.hair_type),
-          maintenanceLevel: normalizeMaintenanceLevel(row.maintenance_level),
+          maintenanceLevel: normalizeMaintenanceLevel(row.upkeep),
+          analysis: {
+            hairType: normalizeHairType(row.hair_type),
+            hairSubtype: row.hair_subtype || '',
+            length: normalizeLength(row.length),
+            faceShape: row.face_shape || '',
+            gender: normalizeGender(row.gender),
+            upkeep: normalizeMaintenanceLevel(row.upkeep),
+            haircutName: row.haircut_name || '',
+            hairColour: row.hair_colour || '',
+            vibe: row.vibe || '',
+            maintenance: row.maintenance || '',
+            model: row.analysis_model || '',
+            updatedAt: row.classified_at || ''
+          },
           features,
           labels
         });
@@ -325,7 +342,7 @@ async function handleApi(req, res, url) {
         return true;
       }
       if (!maintenanceLevel) {
-        sendJson(res, 400, { ok: false, error: 'Gallery image upkeep must be Low, Medium, or Higher.' });
+        sendJson(res, 400, { ok: false, error: 'Gallery image upkeep must be Low, Medium, or High.' });
         return true;
       }
 

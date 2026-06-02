@@ -16,9 +16,9 @@ const ADMIN_MODE_KEY = "drp28.frontend.adminMode";
 
 const ADMIN_ATTRIBUTE_OPTIONS = {
   gender: ["Men", "Women", "Unisex"],
-  length: ["Short", "Medium", "Long"],
-  hairType: ["Straight Hair", "Wavy Hair", "Curly Hair"],
-  maintenanceLevel: ["Low", "Medium", "Higher"]
+  length: ["Very Short", "Short", "Medium", "Long", "Very Long"],
+  hairType: ["Straight Hair", "Wavy Hair", "Curly Hair", "Coily Hair"],
+  maintenanceLevel: ["Low", "Medium", "High"]
 };
 
 function readStored(key, fallback) {
@@ -237,7 +237,7 @@ const QUIZ = [
       { value: "straight", label: "Straight", icon: textureIcon("straight"), hairType: "Straight Hair", image: "/Images/StraightHair.jpg" },
       { value: "wavy", label: "Wavy", icon: textureIcon("wavy"), hairType: "Wavy Hair", image: "/Images/WavyHair.jpg" },
       { value: "curly", label: "Curly", icon: textureIcon("curly"), hairType: "Curly Hair", image: "/Images/Curly.jpg" },
-      { value: "coily", label: "Coily / kinky", icon: textureIcon("coily"), hairType: "Curly Hair", image: "/Images/CoilyHair.jpg" },
+      { value: "coily", label: "Coily / kinky", icon: textureIcon("coily"), hairType: "Coily Hair", image: "/Images/CoilyHair.jpg" },
       { value: "fine", label: "Fine / thin", icon: textureIcon("fine"), image: "/Images/ThinHair.jpg" },
       { value: "thick", label: "Thick / dense", icon: textureIcon("thick"), image: "/Images/ThickDenseHair.webp" },
       { value: "unsure", label: "Not sure", icon: textureIcon("unsure"), exclusive: true }
@@ -280,12 +280,12 @@ const QUIZ = [
     title: "How long are you thinking?",
     layout: "icon",
     options: [
-      { value: "buzz", label: "Buzz / very short", desc: "Skin-close to 1 inch", icon: lengthIcon(0), length: "Short", image: "/Images/veryShortHair.png" },
+      { value: "buzz", label: "Buzz / very short", desc: "Skin-close to 1 inch", icon: lengthIcon(0), length: "Very Short", image: "/Images/veryShortHair.png" },
       { value: "short", label: "Short", desc: "Above the ears", icon: lengthIcon(1), length: "Short", image: "/Images/ShortHair.jpg" },
       { value: "medium-short", label: "Medium-short", desc: "Ear to chin length", icon: lengthIcon(2), length: "Medium", image: "/Images/MediumShort.png" },
       { value: "medium", label: "Medium", desc: "Chin to shoulder", icon: lengthIcon(3), length: "Medium", image: "/Images/medium.jpg" },
       { value: "long", label: "Long", desc: "Shoulder to mid-back", icon: lengthIcon(4), length: "Long", image: "/Images/LongHair.webp" },
-      { value: "very-long", label: "Very long", desc: "Below mid-back", icon: lengthIcon(5), length: "Long", image: "/Images/VeryLongHair.avif" },
+      { value: "very-long", label: "Very long", desc: "Below mid-back", icon: lengthIcon(5), length: "Very Long", image: "/Images/VeryLongHair.avif" },
       { value: "open", label: "I am open to anything", desc: "No preference", icon: lengthIcon(6), exclusive: true }
     ]
   },
@@ -373,9 +373,11 @@ function normalizeGender(value) {
 
 function normalizeLength(value) {
   const normalized = String(value || "").trim().toLowerCase();
+  if (normalized === "very short") return "Very Short";
   if (normalized === "short") return "Short";
   if (normalized === "medium") return "Medium";
   if (normalized === "long") return "Long";
+  if (normalized === "very long") return "Very Long";
   return "";
 }
 
@@ -384,6 +386,7 @@ function normalizeHairType(value) {
   if (normalized === "straight" || normalized === "straight hair") return "Straight Hair";
   if (normalized === "wavy" || normalized === "wavy hair") return "Wavy Hair";
   if (normalized === "curly" || normalized === "curly hair") return "Curly Hair";
+  if (normalized === "coily" || normalized === "coily hair") return "Coily Hair";
   return "";
 }
 
@@ -391,13 +394,14 @@ function normalizeMaintenanceLevel(value) {
   const normalized = String(value || "").trim().toLowerCase();
   if (normalized === "low") return "Low";
   if (normalized === "medium") return "Medium";
-  if (normalized === "higher" || normalized === "high") return "Higher";
+  if (normalized === "higher" || normalized === "high") return "High";
   return "";
 }
 
 function inferHairType(title, features = []) {
   const text = `${slugWords(title)} ${features.join(" ")}`;
-  if (/(afro|curl|curly|coily|kinky)/.test(text)) return "Curly Hair";
+  if (/(coily|kinky)/.test(text)) return "Coily Hair";
+  if (/(afro|curl|curly)/.test(text)) return "Curly Hair";
   if (/(wave|wavy|shag|mullet|fringe|grow out|sweep)/.test(text)) return "Wavy Hair";
   return "Straight Hair";
 }
@@ -405,7 +409,7 @@ function inferHairType(title, features = []) {
 function inferMaintainability(title, length) {
   const text = slugWords(title);
   if (/(buzz|crew|crop|afro)/.test(text)) return "Low";
-  if (/(frosted|dyed|mullet|rockstar|rat tail|bang)/.test(text)) return "Higher";
+  if (/(frosted|dyed|mullet|rockstar|rat tail|bang)/.test(text)) return "High";
   if (length === "Long") return "Medium";
   return "Medium";
 }

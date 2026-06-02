@@ -111,6 +111,54 @@ List D1 databases:
 npm run db:list
 ```
 
+## Gallery Image AI Analysis
+
+After applying migrations, you can enrich existing `gallery_images` rows from their
+`image_url` values. The script sends each pending image URL to OpenAI with a
+structured output schema, stores the detailed result in gallery metadata
+columns, and also backfills the existing UI filter columns.
+The broad `hair_type` remains `straight`, `wavy`, `curly`, or `coily`;
+`hair_subtype` stores the finer `1A` through `4C` pattern. The model used is
+stored in `analysis_model`, and the classification timestamp is stored in
+`classified_at`.
+
+Set your OpenAI key locally in `.env`:
+
+```bash
+OPENAI_API_KEY="sk-..."
+```
+
+Or export it in the current terminal:
+
+```bash
+export OPENAI_API_KEY="sk-..."
+```
+
+Test against the local D1 database:
+
+```bash
+npm run db:migrate:local
+npm run analyze:gallery:local -- --limit 3 --dry-run
+npm run analyze:gallery:local -- --limit 3
+```
+
+Run against the remote Cloudflare D1 database:
+
+```bash
+npm run db:migrate:remote
+npm run analyze:gallery:remote
+```
+
+Useful options:
+
+```bash
+npm run analyze:gallery:remote -- --limit 10
+npm run analyze:gallery:remote -- --concurrency 5
+npm run analyze:gallery:remote -- --concurrency 5 --retries 3
+npm run analyze:gallery:remote -- --force
+OPENAI_MODEL=gpt-5-mini-2025-08-07 npm run analyze:gallery:remote
+```
+
 ## Deploy
 
 Manual deploy with npm available:

@@ -7,6 +7,8 @@
     "db:list": "npx wrangler d1 list",
     "db:migrate:local": "npx wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "npx wrangler d1 migrations apply DB --remote",
+    "analyze:gallery:local": "node scripts/analyze-gallery-images.mjs --local",
+    "analyze:gallery:remote": "node scripts/analyze-gallery-images.mjs --remote",
     "dev:local": "node local-dev.mjs",
     "start": "npx wrangler dev",
     "test": "node --test"

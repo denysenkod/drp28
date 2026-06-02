@@ -88,9 +88,11 @@ function normalizeLength(value: unknown): string {
   if (typeof value !== 'string') return '';
 
   const normalized = value.trim().toLowerCase();
+  if (normalized === 'very short') return 'Very Short';
   if (normalized === 'short') return 'Short';
   if (normalized === 'medium') return 'Medium';
   if (normalized === 'long') return 'Long';
+  if (normalized === 'very long') return 'Very Long';
   return '';
 }
 
@@ -101,6 +103,7 @@ function normalizeHairType(value: unknown): string {
   if (normalized === 'straight' || normalized === 'straight hair') return 'Straight Hair';
   if (normalized === 'wavy' || normalized === 'wavy hair') return 'Wavy Hair';
   if (normalized === 'curly' || normalized === 'curly hair') return 'Curly Hair';
+  if (normalized === 'coily' || normalized === 'coily hair') return 'Coily Hair';
   return '';
 }
 
@@ -110,7 +113,7 @@ function normalizeMaintenanceLevel(value: unknown): string {
   const normalized = value.trim().toLowerCase();
   if (normalized === 'low') return 'Low';
   if (normalized === 'medium') return 'Medium';
-  if (normalized === 'higher' || normalized === 'high') return 'Higher';
+  if (normalized === 'higher' || normalized === 'high') return 'High';
   return '';
 }
 
@@ -123,7 +126,21 @@ function rowToGalleryImage(row: any): Record<string, unknown> {
     gender: normalizeGender(row.gender),
     length: normalizeLength(row.length),
     hairType: normalizeHairType(row.hair_type),
-    maintenanceLevel: normalizeMaintenanceLevel(row.maintenance_level),
+    maintenanceLevel: normalizeMaintenanceLevel(row.upkeep),
+    analysis: {
+      hairType: normalizeHairType(row.hair_type),
+      hairSubtype: row.hair_subtype || '',
+      length: normalizeLength(row.length),
+      faceShape: row.face_shape || '',
+      gender: normalizeGender(row.gender),
+      upkeep: normalizeMaintenanceLevel(row.upkeep),
+      haircutName: row.haircut_name || '',
+      hairColour: row.hair_colour || '',
+      vibe: row.vibe || '',
+      maintenance: row.maintenance || '',
+      model: row.model || '',
+      updatedAt: row.classified_at || ''
+    },
     features: decodeJson(row.features_json, []),
     labels: decodeJson(row.labels_json, decodeJson(row.features_json, [])),
     createdAt: row.created_at
@@ -186,7 +203,7 @@ async function createGalleryImage(request: Request, db: any): Promise<Response> 
 
   await db
     .prepare(
-      `INSERT INTO gallery_images (id, title, description, image_url, gender, length, hair_type, maintenance_level, features_json, labels_json)
+      `INSERT INTO gallery_images (id, title, description, image_url, gender, length, hair_type, upkeep, features_json, labels_json)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .bind(id, body.title.trim(), description, imageUrl, gender, length, hairType, maintenanceLevel, JSON.stringify(features), JSON.stringify(labels))
@@ -221,14 +238,14 @@ async function updateGalleryImageAttributes(request: Request, db: any, id: strin
   const hairType = normalizeHairType(body.hairType);
   const maintenanceLevel = normalizeMaintenanceLevel(body.maintenanceLevel);
 
-  if (!length) return error('Gallery image length must be Short, Medium, or Long.');
-  if (!hairType) return error('Gallery image texture must be Straight Hair, Wavy Hair, or Curly Hair.');
-  if (!maintenanceLevel) return error('Gallery image upkeep must be Low, Medium, or Higher.');
+  if (!length) return error('Gallery image length must be Very Short, Short, Medium, Long, or Very Long.');
+  if (!hairType) return error('Gallery image texture must be Straight Hair, Wavy Hair, Curly Hair, or Coily Hair.');
+  if (!maintenanceLevel) return error('Gallery image upkeep must be Low, Medium, or High.');
 
   await db
     .prepare(
       `UPDATE gallery_images
-       SET gender = ?, length = ?, hair_type = ?, maintenance_level = ?
+       SET gender = ?, length = ?, hair_type = ?, upkeep = ?
        WHERE id = ?`
     )
     .bind(gender, length, hairType, maintenanceLevel, id)

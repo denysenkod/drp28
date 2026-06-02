@@ -64,7 +64,7 @@ function createMockD1() {
               gender: values[4],
               length: values[5],
               hair_type: values[6],
-              maintenance_level: values[7],
+              upkeep: values[7],
               features_json: values[8],
               labels_json: values[9],
               created_at: now()
@@ -126,13 +126,13 @@ function createMockD1() {
             if (row) row.labels_json = values[0];
           }
 
-          if (sql.includes('SET gender = ?, length = ?, hair_type = ?, maintenance_level = ?')) {
+          if (sql.includes('SET gender = ?, length = ?, hair_type = ?, upkeep = ?')) {
             const row = tables.gallery_images.find((item) => item.id === values[4]);
             if (row) {
               row.gender = values[0];
               row.length = values[1];
               row.hair_type = values[2];
-              row.maintenance_level = values[3];
+              row.upkeep = values[3];
             }
           }
 
@@ -305,6 +305,20 @@ test('stores and lists gallery images in D1', async () => {
   assert.equal(created.item.length, 'Medium');
   assert.equal(created.item.hairType, 'Wavy Hair');
   assert.equal(created.item.maintenanceLevel, 'Low');
+  assert.deepEqual(created.item.analysis, {
+    hairType: 'Wavy Hair',
+    hairSubtype: '',
+    length: 'Medium',
+    faceShape: '',
+    gender: 'Women',
+    upkeep: 'Low',
+    haircutName: '',
+    hairColour: '',
+    vibe: '',
+    maintenance: '',
+    model: '',
+    updatedAt: ''
+  });
   assert.deepEqual(created.item.features, ['medium', 'wavy']);
   assert.deepEqual(created.item.labels, ['soft', 'fringe']);
 
@@ -342,7 +356,7 @@ test('updates gallery image admin attributes in D1', async () => {
       gender: 'Unisex',
       length: 'Short',
       hairType: 'Straight Hair',
-      maintenanceLevel: 'Higher'
+      maintenanceLevel: 'High'
     })
   }), env);
   const updated = await updateResponse.json();
@@ -351,7 +365,7 @@ test('updates gallery image admin attributes in D1', async () => {
   assert.equal(updated.item.gender, 'Unisex');
   assert.equal(updated.item.length, 'Short');
   assert.equal(updated.item.hairType, 'Straight Hair');
-  assert.equal(updated.item.maintenanceLevel, 'Higher');
+  assert.equal(updated.item.maintenanceLevel, 'High');
 });
 
 test('updates gallery image labels in D1', async () => {
@@ -573,6 +587,50 @@ test('GitHub Actions deploys pushes after remote D1 migrations', async () => {
   assert.match(workflow, /run: npx wrangler deploy/);
   assert.match(workflow, /CLOUDFLARE_API_TOKEN: \$\{\{ secrets\.CLOUDFLARE_API_TOKEN \}\}/);
   assert.match(workflow, /CLOUDFLARE_ACCOUNT_ID: \$\{\{ secrets\.CLOUDFLARE_ACCOUNT_ID \}\}/);
+});
+
+test('gallery image AI analysis script is wired to D1 and structured outputs', async () => {
+  const migration = await readFile(new URL('../migrations/0009_gallery_image_ai_analysis.sql', import.meta.url), 'utf8');
+  const subtypeMigration = await readFile(new URL('../migrations/0010_gallery_image_hair_subtype.sql', import.meta.url), 'utf8');
+  const cleanupMigration = await readFile(new URL('../migrations/0011_remove_analysis_column_prefix.sql', import.meta.url), 'utf8');
+  const blockedRowsMigration = await readFile(new URL('../migrations/0012_delete_blocked_allthingshair_rows.sql', import.meta.url), 'utf8');
+  const script = await readFile(new URL('../scripts/analyze-gallery-images.mjs', import.meta.url), 'utf8');
+  const packageJson = await readFile(new URL('../package.json', import.meta.url), 'utf8');
+
+  assert.match(migration, /analysis_hair_type/);
+  assert.match(subtypeMigration, /analysis_hair_subtype/);
+  assert.match(cleanupMigration, /RENAME COLUMN analysis_hair_subtype TO hair_subtype/);
+  assert.match(cleanupMigration, /RENAME COLUMN analysis_updated_at TO classified_at/);
+  assert.match(cleanupMigration, /DROP COLUMN analysis_length/);
+  assert.doesNotMatch(cleanupMigration, /RENAME COLUMN analysis_model/);
+  assert.match(blockedRowsMigration, /ath-asianwomen-%/);
+  assert.match(blockedRowsMigration, /assets\.unileversolutions\.com/);
+  assert.match(blockedRowsMigration, /classified_at = ''/);
+  assert.match(migration, /analysis_face_shape/);
+  assert.match(migration, /analysis_hair_colour/);
+  assert.match(migration, /analysis_maintenance/);
+  assert.match(script, /https:\/\/api\.openai\.com\/v1\/responses/);
+  assert.match(script, /async function loadDotEnv/);
+  assert.match(script, /type: 'input_image'/);
+  assert.match(script, /--concurrency/);
+  assert.match(script, /--retries/);
+  assert.match(script, /async function processRows/);
+  assert.match(script, /async function withRetries/);
+  assert.match(script, /Promise\.all\(workers\)/);
+  assert.match(script, /finished with \$\{failures\.length\} failed row/);
+  assert.match(script, /type: 'json_schema'/);
+  assert.match(script, /description: 'Broad visible curl pattern category/);
+  assert.match(script, /Subtype guidance:/);
+  assert.match(script, /enum: \['straight', 'wavy', 'curly', 'coily'\]/);
+  assert.match(script, /enum: \['1A', '1B', '1C', '2A', '2B', '2C', '3A', '3B', '3C', '4A', '4B', '4C'\]/);
+  assert.match(script, /hair_subtype =/);
+  assert.match(script, /classified_at = CURRENT_TIMESTAMP/);
+  assert.match(script, /analysis_model =/);
+  assert.doesNotMatch(script, /analysis_hair_subtype =/);
+  assert.doesNotMatch(script, /analysis_updated_at/);
+  assert.match(script, /labels_json =/);
+  assert.match(packageJson, /"analyze:gallery:local"/);
+  assert.match(packageJson, /"analyze:gallery:remote"/);
 });
 
 test('local dev seeds memory gallery from migration files', async () => {
