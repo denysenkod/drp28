@@ -216,78 +216,86 @@ const FALLBACK_STYLES = [
   }
 ];
 
+// Base length choices, shared across all genders. When the survey targets a
+// single gender these are shown as-is; when it targets both genders each one is
+// expanded into a male and a female variant (see buildLengthOptions).
+const LENGTH_OPTIONS_BASE = [
+  { value: "buzz", label: "Very short", icon: lengthIcon(0), length: "Very Short", image: "/Images/LongHair.webp", images: { masculine: "https://www.kaya.in/media/.renditions/wysiwyg/crew-cut-with-fade-men-short-hairstyle.png", feminine: "https://www.copenhagenfashionsummit.com/wp-content/uploads/2025/12/Undercut-Pixie.png"} },
+  { value: "short", label: "Short", icon: lengthIcon(1), length: "Short", image: "/Images/LongHair.webp", images: { masculine: "https://9f8e62d4.delivery.rocketcdn.me/wp-content/uploads/2023/10/Messy-Textured-Crop-2.jpg", feminine: "https://www.southernliving.com/thmb/Deu04ZuiLAL-3r_BkHo8AgRqrnI=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/Screenshot2024-02-02at1.35.11PM-5e651e05e7e34546ab7c6e554e959acf.png"} },
+  { value: "medium", label: "Medium", icon: lengthIcon(2), length: "Medium", image: "/Images/LongHair.webp", images: { masculine: "https://cdn.prod.website-files.com/6691f4c15ef1cd5c89763f60/68ea41b5fa7494900d4cc32c_Medium%20Length%20Hairstyles%20for%20Men.webp", feminine: "https://hips.hearstapps.com/hmg-prod/images/hbz-medium-length-hair-gettyimages-1203448672.jpg"} },
+  { value: "long", label: "Long", icon: lengthIcon(4), length: "Long", image: "/Images/LongHair.webp", images: { masculine: "https://manforhimself.com/wp-content/uploads/2020/06/mens-hairstyle-haircut-long-grown-out-MFH7-man-for-himself.jpg", feminine: "https://www.fabmood.com/inspiration/wp-content/uploads/2025/02/97425740572471240.jpg"} }
+];
+
+const LENGTH_OPEN_OPTION = { value: "open", label: "No preference", icon: lengthIcon(6), exclusive: true };
+
+// The genders a "both" survey can pick a length for. The value prefix keeps the
+// gendered options distinct in stored answers (e.g. "men:short", "women:long").
+const LENGTH_GENDER_VARIANTS = [
+  { prefix: "men", gender: "Men", imageKey: "masculine" },
+  { prefix: "women", gender: "Women", imageKey: "feminine" }
+];
+
+// Builds the length question's options for the current survey gender. For a
+// single gender the plain length choices are used (gender is already fixed by
+// the style question). For "both" each length is split into a male and a female
+// option so the user can ask for, say, short men's hair and long women's hair.
+function buildLengthOptions() {
+  if (selectedSurveyGender() === "both") {
+    const gendered = [];
+    for (const variant of LENGTH_GENDER_VARIANTS) {
+      for (const base of LENGTH_OPTIONS_BASE) {
+        gendered.push({
+          ...base,
+          value: `${variant.prefix}:${base.value}`,
+          label: `${base.label} (${variant.gender})`,
+          gender: variant.gender,
+          image: base.images?.[variant.imageKey] || base.image
+        });
+      }
+    }
+    return [...gendered, LENGTH_OPEN_OPTION];
+  }
+  return [...LENGTH_OPTIONS_BASE, LENGTH_OPEN_OPTION];
+}
+
 const QUIZ = [
   {
     id: "style",
     title: "What style are you looking for?",
-    sub: "Pick any that feel right. Show me everything selects all three style directions.",
+    sub: "",
     layout: "image",
     options: [
       { value: "masculine", label: "Masculine styles", gender: "Men", image: "/Images/MasculineStyles.webp" },
       { value: "feminine", label: "Feminine styles", gender: "Women", image: "/Images/FeminineStyles.jpg" },
-      { value: "androgynous", label: "Androgynous / gender-neutral styles", gender: "Unisex", image: "/Images/androgynous.avif" },
       { value: "__all", label: "Show me everything", selectAll: true }
     ]
   },
   {
     id: "texture",
-    title: "What is your natural hair texture?",
+    title: "What is your desired hair texture?",
     layout: "icon",
     options: [
-      { value: "straight", label: "Straight", icon: textureIcon("straight"), hairType: "Straight Hair", image: "/Images/StraightHair.jpg" },
-      { value: "wavy", label: "Wavy", icon: textureIcon("wavy"), hairType: "Wavy Hair", image: "/Images/WavyHair.jpg" },
-      { value: "curly", label: "Curly", icon: textureIcon("curly"), hairType: "Curly Hair", image: "/Images/Curly.jpg" },
-      { value: "coily", label: "Coily / kinky", icon: textureIcon("coily"), hairType: "Coily Hair", image: "/Images/CoilyHair.jpg" },
-      { value: "fine", label: "Fine / thin", icon: textureIcon("fine"), image: "/Images/ThinHair.jpg" },
-      { value: "thick", label: "Thick / dense", icon: textureIcon("thick"), image: "/Images/ThickDenseHair.webp" },
+      { value: "straight", label: "Straight", icon: textureIcon("straight"), hairType: "Straight Hair", image: "/Images/LongHair.webp", images: { masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/textured-fringe-straight-hair-men.webp?v=1768222652", feminine: "https://i0.wp.com/therighthairstyles.com/wp-content/uploads/2014/12/1-short-classy-style-with-curtain-bangs.jpg?resize=500%2C556&ssl=1" }},
+      { value: "wavy", label: "Wavy", icon: textureIcon("wavy"), hairType: "Wavy Hair", image: "/Images/LongHair.webp", images: { masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/medium-length-wavy-hairstyle-men.webp?v=1767878793", feminine: "https://scottj.com/wp-content/uploads/2026/03/3-897x1024.webp"} },
+      { value: "curly", label: "Curly", icon: textureIcon("curly"), hairType: "Curly Hair", image: "/Images/LongHair.webp", images: { masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/taper-fade-curly-hair-men.webp?v=1767776997", feminine: "https://ucarecdn.com/2c12cace-f519-415a-adeb-fe89f9d123e7/-/format/auto/-/preview/3000x3000/-/quality/lighter/3422432_qdw2.jpg"} },
+      { value: "coily", label: "Coily", icon: textureIcon("coily"), hairType: "Coily Hair", image: "/Images/LongHair.webp", images: { masculine: "https://theorganibrands.com/cdn/shop/articles/IMG_1611-5085105.jpg?v=1774982816", feminine: "https://mooandyoo.com/cdn/shop/articles/4A_landscape_3.jpg?v=1729522577"} },
       { value: "unsure", label: "Not sure", icon: textureIcon("unsure"), exclusive: true }
-    ]
-  },
-  {
-    id: "ethnicity",
-    title: "Would you like photos featuring people of a specific ethnicity for inspiration?",
-    sub: "This only affects reference inspiration. You can skip it.",
-    layout: "image",
-    options: [
-      { value: "black", label: "Black / African descent", image: "/Images/BlackAfrican.webp" },
-      { value: "asian", label: "Asian / East Asian", keywords: ["asian", "east asian"], image: "/Images/AsianEastAsian.webp" },
-      { value: "south-asian", label: "South Asian", keywords: ["south asian", "indian", "pakistani", "bangladeshi", "sri lankan"], image: "/Images/SouthAsian.jpg" },
-      { value: "latino", label: "Latino / Hispanic", keywords: ["latino", "hispanic"], image: "/Images/LatinoHispanic.webp" },
-      { value: "middle-eastern", label: "Middle Eastern", keywords: ["middle eastern"], image: "/Images/MiddleEastern.jpg" },
-      { value: "white", label: "White / Caucasian", keywords: ["white", "caucasian"], image: "/Images/WhiteCaucasian.jpg" },
-      { value: "mixed", label: "Mixed / Multiracial", keywords: ["mixed", "multiracial"] },
-      { value: "none", label: "No preference", exclusive: true }
-    ]
-  },
-  {
-    id: "face",
-    title: "What is your face shape?",
-    sub: "Not sure? Choose the helper option and we will show a quick guide.",
-    layout: "icon",
-    options: [
-      { value: "oval", label: "Oval", faceShape: "oval", icon: faceIcon("oval"), image: "/Images/Oval.jpg" },
-      { value: "round", label: "Round", faceShape: "round", icon: faceIcon("round"), image: "/Images/RoundFace.jpg" },
-      { value: "square", label: "Square", faceShape: "square", icon: faceIcon("square"), image: "/Images/Square.png" },
-      { value: "heart", label: "Heart / inverted triangle", faceShape: "heart", icon: faceIcon("heart"), image: "/Images/Heart.jpg" },
-      { value: "diamond", label: "Diamond", faceShape: "diamond", icon: faceIcon("diamond"), image: "/Images/Diamond.jpg" },
-      { value: "oblong", label: "Oblong / rectangle", faceShape: "rectangle", icon: faceIcon("oblong"), image: "/Images/Oblong.avif" },
-      { value: "triangle", label: "Triangle / pear", faceShape: "triangle", icon: faceIcon("triangle"), image: "/Images/Triangle.jpg" },
-      { value: "unknown", label: "I do not know my face shape", icon: faceIcon("unknown"), exclusive: true }
     ]
   },
   {
     id: "length",
     title: "How long are you thinking?",
     layout: "icon",
-    options: [
-      { value: "buzz", label: "Buzz / very short", desc: "Skin-close to 1 inch", icon: lengthIcon(0), length: "Very Short", image: "/Images/veryShortHair.png" },
-      { value: "short", label: "Short", desc: "Above the ears", icon: lengthIcon(1), length: "Short", image: "/Images/ShortHair.jpg" },
-      { value: "medium-short", label: "Medium-short", desc: "Ear to chin length", icon: lengthIcon(2), length: "Medium", image: "/Images/MediumShort.png" },
-      { value: "medium", label: "Medium", desc: "Chin to shoulder", icon: lengthIcon(3), length: "Medium", image: "/Images/medium.jpg" },
-      { value: "long", label: "Long", desc: "Shoulder to mid-back", icon: lengthIcon(4), length: "Long", image: "/Images/LongHair.webp" },
-      { value: "very-long", label: "Very long", desc: "Below mid-back", icon: lengthIcon(5), length: "Very Long", image: "/Images/VeryLongHair.avif" },
-      { value: "open", label: "I am open to anything", desc: "No preference", icon: lengthIcon(6), exclusive: true }
-    ]
+    // Options and helper copy depend on whether the survey targets one gender or
+    // both, so they are computed on access rather than fixed up front.
+    get sub() {
+      return selectedSurveyGender() === "both"
+        ? "Pick a male and/or female length - you can mix and match across genders."
+        : "Pick the option which best resembles your desired length.";
+    },
+    get options() {
+      return buildLengthOptions();
+    }
   },
   {
     id: "lifestyle",
@@ -314,7 +322,23 @@ const QUIZ = [
       { value: "professional", label: "Professional & polished", vibe: "professional", keywords: ["professional", "classic", "crew", "side"] },
       { value: "playful", label: "Playful & fun", vibe: "playful", keywords: ["playful", "frosted", "dyed", "shag"] }
     ]
-  }
+  },
+  {
+    id: "ethnicity",
+    title: "Would you like photos featuring people of a specific ethnicity for inspiration?",
+    sub: "This only affects reference inspiration. You can skip it.",
+    layout: "text",
+    options: [
+      { value: "black", label: "Black / African descent"},
+      { value: "south east asian", label: "South East Asian"},
+      { value: "asian", label: "East Asian"},
+      { value: "south-asian", label: "South Asian"},
+      { value: "latino", label: "Latino / Hispanic"},
+      { value: "middle-eastern", label: "Middle Eastern"},
+      { value: "white", label: "White / Caucasian"},
+      { value: "none", label: "No preference", exclusive: true }
+    ]
+  },
 ];
 
 function slugWords(value) {
@@ -719,11 +743,65 @@ function selectQuizOption(question, option) {
   }
 
   setAnswers({ ...state.answers, [question.id]: next });
+
+  // The length options depend on the chosen gender, so changing the style answer
+  // can leave previously picked length values pointing at options that no longer
+  // exist. Remap them to the new gender's options.
+  if (question.id === "style") {
+    setAnswers({ ...state.answers, length: reconcileLengthAnswers() });
+  }
+}
+
+// Reconciles stored length answers with the options available for the current
+// survey gender: switching to "both" expands a plain length to both genders,
+// switching to a single gender strips the gender prefix back to the base length.
+function reconcileLengthAnswers() {
+  const current = selectedFor(getQuestionById("length"));
+  if (!current.length) return current;
+
+  const validValues = new Set(buildLengthOptions().map((option) => option.value));
+  const expandToBoth = selectedSurveyGender() === "both";
+  const next = [];
+
+  for (const value of current) {
+    if (validValues.has(value)) {
+      next.push(value);
+    } else if (expandToBoth) {
+      for (const variant of LENGTH_GENDER_VARIANTS) {
+        const expanded = `${variant.prefix}:${value}`;
+        if (validValues.has(expanded)) next.push(expanded);
+      }
+    } else {
+      const base = value.includes(":") ? value.split(":")[1] : value;
+      if (validValues.has(base)) next.push(base);
+    }
+  }
+
+  return [...new Set(next)];
 }
 
 function toggleQuizOption(question, option) {
   selectQuizOption(question, option);
   render();
+}
+
+// Returns the survey gender picked in the style question:
+//  - "masculine" / "feminine" when exactly one gender is chosen
+//  - "both" when nothing, "everything", or multiple genders are chosen.
+//    "both" is the mixed-gender sentinel that drives a male/female mix in
+//    later questions (e.g. length), so "Show me everything" shows both.
+function selectedSurveyGender() {
+  const styleQuestion = getQuestionById("style");
+  if (!styleQuestion) return null;
+  const selected = selectedFor(styleQuestion);
+  const everything = selected.includes("__all");
+  const picked = selected.filter((value) => value !== "__all");
+  if (everything || picked.length === 0) return "both";
+  return picked.length === 1 ? picked[0] : "both";
+}
+
+function isQuizOptionSelected(question, option, selected) {
+  return selected.includes(option.value);
 }
 
 function getRepresentativeImages() {
@@ -740,8 +818,25 @@ function getRepresentativeImages() {
 }
 
 function getQuizOptionMedia(question, option) {
-  if (option.image) {
-    return `<img src="${option.image}" alt="" loading="lazy">`;
+  const gender = selectedSurveyGender();
+  let genderedImage = "";
+  if (option.images) {
+    if (option.gender) {
+      // The option is already pinned to a gender (e.g. a "both" length variant).
+      const key = option.gender === "Men" ? "masculine" : "feminine";
+      genderedImage = option.images[key] || "";
+    } else if (gender === "both") {
+      // Alternate male/female across the option grid so the survey shows a mix.
+      const index = question.options.indexOf(option);
+      const order = index % 2 === 0 ? ["masculine", "feminine"] : ["feminine", "masculine"];
+      genderedImage = option.images[order[0]] || option.images[order[1]] || "";
+    } else if (gender) {
+      genderedImage = option.images[gender] || "";
+    }
+  }
+  const image = genderedImage || option.image;
+  if (image) {
+    return `<img src="${image}" alt="" loading="lazy" referrerpolicy="no-referrer">`;
   }
   if (question.id === "style") {
     const reps = getRepresentativeImages();
@@ -825,13 +920,22 @@ function optionUpkeepMatch(style, option) {
   return Boolean(option.upkeep && style.maintenanceLevel === option.upkeep);
 }
 
+function optionLengthMatch(style, option) {
+  if (!option.length) return true;
+  if (style.length !== option.length) return false;
+  // Gendered length variants (from a "both" survey) only match their own
+  // gender; Unisex styles fit either a male or female length request.
+  if (option.gender && style.gender !== option.gender && style.gender !== "Unisex") return false;
+  return true;
+}
+
 function scoreStyle(style) {
   let score = 0;
   const haystack = styleHaystack(style);
 
   for (const option of answerOptions("style")) {
     if (option.selectAll) score += 1;
-    else if (style.gender === option.gender || style.gender === "Unisex") score += 8;
+    else if (style.gender === option.gender) score += 8;
   }
 
   for (const option of answerOptions("texture")) {
@@ -840,7 +944,7 @@ function scoreStyle(style) {
   }
 
   for (const option of answerOptions("length")) {
-    if (option.length && style.length === option.length) score += 5;
+    if (option.length && optionLengthMatch(style, option)) score += 5;
   }
 
   for (const option of answerOptions("lifestyle")) {
@@ -876,7 +980,7 @@ function answerFilteredStyles() {
 function scoredStyles(styles = state.styles) {
   const styleAnswers = answerOptions("style").filter((option) => !option.selectAll);
   const hardFiltered = styleAnswers.length
-    ? styles.filter((style) => styleAnswers.some((option) => style.gender === option.gender || style.gender === "Unisex"))
+    ? styles.filter((style) => styleAnswers.some((option) => style.gender === option.gender))
     : styles;
   const source = hardFiltered.length ? hardFiltered : styles;
   return [...source].sort((a, b) => scoreStyle(b) - scoreStyle(a));
@@ -890,7 +994,7 @@ function optionGroupPasses(style, questionId, matcher) {
 
 function stylePassesAnswerFilters(style) {
   const styleAnswers = answerOptions("style").filter((option) => !option.selectAll);
-  if (styleAnswers.length && !styleAnswers.some((option) => style.gender === option.gender || style.gender === "Unisex")) {
+  if (styleAnswers.length && !styleAnswers.some((option) => style.gender === option.gender)) {
     return false;
   }
 
@@ -902,7 +1006,7 @@ function stylePassesAnswerFilters(style) {
     return false;
   }
 
-  if (!optionGroupPasses(style, "length", (option) => option.length ? style.length === option.length : true)) {
+  if (!optionGroupPasses(style, "length", (option) => optionLengthMatch(style, option))) {
     return false;
   }
 
@@ -1053,7 +1157,7 @@ function renderQuiz() {
       </div>
 
       <div class="option-grid ${question.layout === "text" ? "is-text" : ""}">
-        ${question.options.map((option) => renderOption(question, option, selected.includes(option.value))).join("")}
+        ${question.options.map((option) => renderOption(question, option, isQuizOptionSelected(question, option, selected))).join("")}
       </div>
 
       ${question.id === "face" && selected.includes("unknown") ? renderFaceHelper() : ""}
@@ -1264,7 +1368,7 @@ function renderPreferenceMenu(question) {
   return `
     <div class="preference-menu" role="menu" aria-label="${escapeAttr(shortQuestionLabel(question.id))} preferences">
       <p>${escapeHtml(question.title)}</p>
-      ${question.options.map((option) => renderPreferenceOption(question, option, selected.includes(option.value))).join("")}
+      ${question.options.map((option) => renderPreferenceOption(question, option, isQuizOptionSelected(question, option, selected))).join("")}
     </div>
   `;
 }
