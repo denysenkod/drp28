@@ -13,6 +13,7 @@ const VIEW_KEY = "drp28.frontend.view";
 const ANSWERS_KEY = "drp28.frontend.answers";
 const STEP_KEY = "drp28.frontend.quizStep";
 const ADMIN_MODE_KEY = "drp28.frontend.adminMode";
+const PREV_VIEW_KEY = "drp28.frontend.prevView";
 
 const ADMIN_ATTRIBUTE_OPTIONS = {
   gender: ["Men", "Women", "Unisex"],
@@ -273,6 +274,7 @@ const QUIZ = [
   {
     id: "texture",
     title: "What is your desired hair texture?",
+    sub: "Your actual texture will be factored in during our hair maintanence plans.",
     layout: "icon",
     options: [
       { value: "straight", label: "Straight", icon: textureIcon("straight"), hairType: "Straight Hair", image: "/Images/LongHair.webp", images: { masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/textured-fringe-straight-hair-men.webp?v=1768222652", feminine: "https://i0.wp.com/therighthairstyles.com/wp-content/uploads/2014/12/1-short-classy-style-with-curtain-bangs.jpg?resize=500%2C556&ssl=1" }},
@@ -298,6 +300,21 @@ const QUIZ = [
     }
   },
   {
+    id: "vibe",
+    title: "Which words best describe the vibe you are going for?",
+    layout: "icon",
+    sub: "Feel free to pick multiple options. This will help inform your recommendations.",
+    options: [
+      { value: "classic", label: "Classic & timeless", vibe: "classic", keywords: ["classic", "side part", "centre part"], images: {masculine: "https://cdn.thecoolist.com/wp-content/uploads/2017/05/Slicked-Back-classic-mens-hairstyle-762x999.jpg", feminine: "https://www.southernliving.com/thmb/LlL4kY3i6nVCQae0jn-sfug9mqg=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/layers-abe96a8b1e114f65bc44bf97b74ebb3b.jpg"} },
+      { value: "trendy", label: "Trendy & modern", keywords: ["modern", "mod", "crop", "trendy"], images: {masculine: "https://lowtaperfades.com/wp-content/uploads/2026/02/Untitled-design-2026-02-28T063037.589.webp", feminine: "https://media.glamour.com/photos/5f0e32bc9f970c720ce36ec6/master/w_1024%2Cc_limit/Screen%2520Shot%25202020-07-14%2520at%25206.33.11%2520PM.png"}  },
+      { value: "bold", label: "Bold & edgy", vibe: "bold", keywords: ["bold", "edgy", "mullet", "dyed", "frosted"], images: {masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/liberty-spikes-hairstyle-men.webp?v=1758794959", feminine: "https://content.latest-hairstyles.com/wp-content/uploads/edgy-haircuts-for-women-1200x900.jpg"}  },
+      { value: "soft", label: "Soft & romantic", vibe: "soft", keywords: ["soft", "curtain", "fringe", "long"], images: {masculine: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSs5qo7QQxOuinGP4_1XF1hRbFV8lGF_VOf6A&s", feminine: "https://hairstyles.thehairstyler.com/hairstyle_views/front_view_images/14314/original/long-hairstyle-with-curls.jpg"}  },
+      { value: "natural", label: "Natural & effortless", vibe: "natural", keywords: ["natural", "effortless", "grow out", "wavy"], images: {masculine: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNjrYo63_OuWFHS-uO8mlpl07AXuGmtHY7sg&s", feminine: "https://www.byrdie.com/thmb/RfIQsk03xD-ZRGZuObOci6z7-No=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/natural-hair-hairstyle-cd6cfd0c08794b33b485c40c9e324be2.png"}  },
+      { value: "professional", label: "Professional & polished", vibe: "professional", keywords: ["professional", "classic", "crew", "side"], images: {masculine: "https://i0.wp.com/therighthairstyles.com/wp-content/uploads/2024/11/20-professional-mens-brushed-back-long-hairstyle.jpg?resize=863%2C913&ssl=1", feminine: "https://i.pinimg.com/736x/35/66/a0/3566a02c87a625fec8af5765fc637247.jpg"}  },
+      { value: "playful", label: "Playful & fun", vibe: "playful", keywords: ["playful", "frosted", "dyed", "shag"], images: {masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/curly-mullet-hairstyle-men.webp?v=1767776997", feminine: "https://content.latest-hairstyles.com/wp-content/uploads/galleries/10/07/playful-y2k-double-bun-hairstyle-with-curly-bangs.jpg"}  }
+    ]
+  },
+  {
     id: "lifestyle",
     title: "What best describes your lifestyle?",
     layout: "text",
@@ -307,20 +324,6 @@ const QUIZ = [
       { value: "creative", label: "Creative / artistic", vibe: "bold", keywords: ["creative", "edgy", "bold", "shag", "mullet"] },
       { value: "casual", label: "Casual / relaxed", vibe: "casual", keywords: ["casual", "effortless", "grow out", "fringe"] },
       { value: "mixed", label: "Mixed / varies", exclusive: true }
-    ]
-  },
-  {
-    id: "vibe",
-    title: "Which words best describe the vibe you are going for?",
-    layout: "text",
-    options: [
-      { value: "classic", label: "Classic & timeless", vibe: "classic", keywords: ["classic", "side part", "centre part"] },
-      { value: "trendy", label: "Trendy & modern", keywords: ["modern", "mod", "crop", "trendy"] },
-      { value: "bold", label: "Bold & edgy", vibe: "bold", keywords: ["bold", "edgy", "mullet", "dyed", "frosted"] },
-      { value: "soft", label: "Soft & romantic", vibe: "soft", keywords: ["soft", "curtain", "fringe", "long"] },
-      { value: "natural", label: "Natural & effortless", vibe: "natural", keywords: ["natural", "effortless", "grow out", "wavy"] },
-      { value: "professional", label: "Professional & polished", vibe: "professional", keywords: ["professional", "classic", "crew", "side"] },
-      { value: "playful", label: "Playful & fun", vibe: "playful", keywords: ["playful", "frosted", "dyed", "shag"] }
     ]
   },
   {
@@ -539,6 +542,7 @@ const state = {
   galleryLoaded: false,
   galleryLoadError: false,
   view: isAdminRoute() ? "admin" : readStored(VIEW_KEY, "welcome"),
+  previousView: readStored(PREV_VIEW_KEY, "welcome"),
   quizStep: readStored(STEP_KEY, 0),
   answers: readStored(ANSWERS_KEY, {}),
   adminMode: readStored(ADMIN_MODE_KEY, false),
@@ -591,12 +595,30 @@ const els = {
 };
 
 function setView(view) {
+  // Track previous view before changing
+  if (view !== state.view) {
+    state.previousView = state.view;
+    writeStored(PREV_VIEW_KEY, state.previousView);
+  }
+
   state.view = view;
   if (view === "admin" && !isAdminRoute()) {
-    window.history.pushState({}, "", "/admin");
+    window.history.pushState({ view: "admin" }, "", "/admin");
   }
   if (view !== "admin" && isAdminRoute()) {
-    window.history.pushState({}, "", "/");
+    window.history.pushState({ view, previousView: state.previousView }, "", "/");
+  }
+  if (view === "quiz") {
+    window.history.pushState({ view: "quiz", quizStep: state.quizStep, previousView: state.previousView }, "", `?quiz=${state.quizStep}`);
+  }
+  if (view === "search") {
+    window.history.pushState({ view: "search", previousView: state.previousView }, "", "?search");
+  }
+  if (view === "results") {
+    window.history.pushState({ view: "results", previousView: state.previousView }, "", "?results");
+  }
+  if (view === "welcome") {
+    window.history.pushState({ view: "welcome", previousView: state.previousView }, "", "/");
   }
   if (!["admin", "results", "search"].includes(view)) {
     state.filterPanelOpen = false;
@@ -646,9 +668,12 @@ function canAdminEditStyle(style) {
   );
 }
 
-function setQuizStep(step) {
+function setQuizStep(step, skipHistoryPush = false) {
   state.quizStep = Math.max(0, Math.min(QUIZ.length - 1, step));
   writeStored(STEP_KEY, state.quizStep);
+  if (!skipHistoryPush && state.view === "quiz") {
+    window.history.pushState({ view: "quiz", quizStep: state.quizStep, previousView: state.previousView }, "", `?quiz=${state.quizStep}`);
+  }
   render();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -1136,7 +1161,6 @@ function renderQuiz() {
   els.app.innerHTML = `
     <section class="quiz-screen">
       <div class="quiz-top">
-        <button class="text-btn" id="quiz-back-btn" type="button">${state.quizStep === 0 ? "Welcome" : "Back"}</button>
         <div class="progress-wrap" aria-label="Question ${state.quizStep + 1} of ${QUIZ.length}">
           <div class="progress-meta">
             <span>Question <b>${state.quizStep + 1}</b> of ${QUIZ.length}</span>
@@ -1146,7 +1170,6 @@ function renderQuiz() {
         </div>
         <div class="quiz-top-actions">
           <button class="text-btn" id="quiz-start-over-btn" type="button">Start over</button>
-          <button class="text-btn" id="quiz-skip-btn" type="button">Skip</button>
         </div>
       </div>
 
@@ -1163,21 +1186,13 @@ function renderQuiz() {
       ${question.id === "face" && selected.includes("unknown") ? renderFaceHelper() : ""}
 
       <div class="quiz-footer">
-        <span>${selected.length ? `<b>${selected.filter((value) => value !== "__all").length || selected.length}</b> selected` : "Select any that apply, or skip"}</span>
+        <span>${selected.length ? `<b>${selected.filter((value) => value !== "__all").length || selected.length}</b> selected` : "Select any that apply"}</span>
         <button class="primary-btn" id="quiz-next-btn" type="button">${isLast ? "Show me results" : "Continue"} ${iconArrow()}</button>
       </div>
     </section>
   `;
 
-  $("#quiz-back-btn").addEventListener("click", () => {
-    if (state.quizStep === 0) setView("welcome");
-    else setQuizStep(state.quizStep - 1);
-  });
   $("#quiz-start-over-btn").addEventListener("click", startOver);
-  $("#quiz-skip-btn").addEventListener("click", () => {
-    if (isLast) setView("results");
-    else setQuizStep(state.quizStep + 1);
-  });
   $("#quiz-next-btn").addEventListener("click", () => {
     if (isLast) setView("results");
     else setQuizStep(state.quizStep + 1);
@@ -1231,7 +1246,7 @@ function renderSearch() {
       <div class="screen-heading discovery-heading">
         <div>
           <p class="eyebrow">Search</p>
-          <h1>I have something in mind</h1>
+          <h1>Hair Styles</h1>
           <p>Browse freely and like photos. Each save gives your profile a clearer direction.</p>
         </div>
         ${renderDiscoveryActions(selectedCount)}
@@ -2120,10 +2135,61 @@ function init() {
     }
   });
 
-  window.addEventListener("popstate", () => {
-    state.view = isAdminRoute() ? "admin" : readStored(VIEW_KEY, "welcome");
-    render();
+  window.addEventListener("popstate", (event) => {
+    // Handle navigation back through history
+    if (event.state?.view === "quiz") {
+      state.view = "quiz";
+      state.quizStep = event.state.quizStep ?? 0;
+      state.previousView = event.state.previousView ?? "welcome";
+      writeStored(STEP_KEY, state.quizStep);
+      writeStored(PREV_VIEW_KEY, state.previousView);
+      render();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (event.state?.view === "search") {
+      state.view = "search";
+      state.previousView = event.state.previousView ?? "welcome";
+      writeStored(PREV_VIEW_KEY, state.previousView);
+      render();
+    } else if (event.state?.view === "results") {
+      state.view = "results";
+      state.previousView = event.state.previousView ?? "welcome";
+      writeStored(PREV_VIEW_KEY, state.previousView);
+      render();
+    } else if (event.state?.view === "welcome") {
+      state.view = "welcome";
+      state.previousView = event.state.previousView ?? "welcome";
+      writeStored(PREV_VIEW_KEY, state.previousView);
+      render();
+    } else if (event.state?.view === "admin") {
+      state.view = "admin";
+      render();
+    } else {
+      // Fallback for navigation to root or unknown state
+      state.view = isAdminRoute() ? "admin" : "welcome";
+      state.previousView = "welcome";
+      writeStored(PREV_VIEW_KEY, state.previousView);
+      render();
+    }
   });
+
+  // Initialize from URL parameters if landing from external link
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has("quiz")) {
+    const step = Math.max(0, Math.min(QUIZ.length - 1, parseInt(urlParams.get("quiz"), 10) || 0));
+    state.view = "quiz";
+    state.quizStep = step;
+    writeStored(VIEW_KEY, "quiz");
+    writeStored(STEP_KEY, step);
+  } else if (urlParams.has("search")) {
+    state.view = "search";
+    writeStored(VIEW_KEY, "search");
+  } else if (urlParams.has("results")) {
+    state.view = "results";
+    writeStored(VIEW_KEY, "results");
+  } else {
+    state.view = "welcome";
+    writeStored(VIEW_KEY, "welcome");
+  }
 
   render();
   loadGallery();
