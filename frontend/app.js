@@ -316,14 +316,28 @@ const QUIZ = [
   },
   {
     id: "lifestyle",
-    title: "What best describes your lifestyle?",
-    layout: "text",
+    title: "How often do you shower?",
+    layout: "slider",
     options: [
-      { value: "active", label: "Very active / sporty", upkeep: "Low", keywords: ["low maintenance", "low", "buzz", "crew"] },
-      { value: "professional", label: "Professional / corporate", vibe: "professional", keywords: ["professional", "classic", "side part", "centre part", "polished"] },
-      { value: "creative", label: "Creative / artistic", vibe: "bold", keywords: ["creative", "edgy", "bold", "shag", "mullet"] },
-      { value: "casual", label: "Casual / relaxed", vibe: "casual", keywords: ["casual", "effortless", "grow out", "fringe"] },
-      { value: "mixed", label: "Mixed / varies", exclusive: true }
+      { value: "multiple-times-per-day", label: "Multiple times per day", keywords: ["low maintenance", "low", "buzz", "crew"] },
+      { value: "daily", label: "Daily", keywords: ["low maintenance", "low", "buzz", "crew"] },
+      { value: "every-other-day", label: "Every other day", keywords: ["low maintenance", "medium"] },
+      { value: "few-times-week", label: "A few times a week", keywords: ["natural", "effortless"] },
+      { value: "once-week", label: "Once a week", keywords: ["natural", "effortless"] },
+      { value: "no-preference", label: "Prefer not to say", exclusive: true }
+    ]
+  },
+  {
+    id: "outgoingness",
+    title: "How would you describe your social personality?",
+    layout: "slider",
+    options: [
+      { value: "very-outgoing", label: "Very extroverted", vibe: "bold", keywords: ["bold", "trendy", "modern"] },
+      { value: "somewhat-outgoing", label: "Fairly outgoing", vibe: "professional", keywords: ["professional", "classic"] },
+      { value: "normal", label: "Moderately social", vibe: "professional", keywords: ["professional", "classic"] },
+      { value: "somewhat-introverted", label: "Fairly reserved", vibe: "professional", keywords: ["professional", "classic"] },
+      { value: "introverted", label: "Very introverted", vibe: "natural", keywords: ["natural", "effortless"] },
+      { value: "no-preference", label: "No preference", exclusive: true }
     ]
   },
   {
@@ -1158,6 +1172,8 @@ function renderQuiz() {
   const selected = selectedFor(question);
   const progress = Math.round(((state.quizStep + 1) / QUIZ.length) * 100);
   const isLast = state.quizStep === QUIZ.length - 1;
+  const isScale = question.layout === "scale";
+  const isSlider = question.layout === "slider";
 
   els.app.innerHTML = `
     <section class="quiz-screen">
@@ -1180,14 +1196,16 @@ function renderQuiz() {
         ${question.sub ? `<p>${question.sub}</p>` : ""}
       </div>
 
-      <div class="option-grid ${question.layout === "text" ? "is-text" : ""}">
-        ${question.options.map((option) => renderOption(question, option, isQuizOptionSelected(question, option, selected))).join("")}
-      </div>
+      ${isSlider ? renderSliderQuestion(question, selected) : isScale ? renderScaleQuestion(question, selected) : `
+        <div class="option-grid ${question.layout === "text" ? "is-text" : ""}">
+          ${question.options.map((option) => renderOption(question, option, isQuizOptionSelected(question, option, selected))).join("")}
+        </div>
+      `}
 
       ${question.id === "face" && selected.includes("unknown") ? renderFaceHelper() : ""}
 
       <div class="quiz-footer">
-        <span>${selected.length ? `<b>${selected.filter((value) => value !== "__all").length || selected.length}</b> selected` : "Select any that apply"}</span>
+        <span>${selected.length ? `<b>${selected.filter((value) => value !== "__all").length || selected.length}</b> selected` : (isScale || isSlider) ? "Select your answer" : "Select any that apply"}</span>
         <button class="primary-btn" id="quiz-next-btn" type="button">${isLast ? "Show me results" : "Continue"} ${iconArrow()}</button>
       </div>
     </section>
@@ -1198,12 +1216,19 @@ function renderQuiz() {
     if (isLast) setView("results");
     else setQuizStep(state.quizStep + 1);
   });
-  document.querySelectorAll("[data-option-value]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const option = question.options.find((item) => item.value === button.dataset.optionValue);
-      if (option) toggleQuizOption(question, option);
+
+  if (isSlider) {
+    wireSliderQuestion(question);
+  } else if (isScale) {
+    wireScaleQuestion(question);
+  } else {
+    document.querySelectorAll("[data-option-value]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const option = question.options.find((item) => item.value === button.dataset.optionValue);
+        if (option) toggleQuizOption(question, option);
+      });
     });
-  });
+  }
 }
 
 function renderOption(question, option, on) {
@@ -1236,6 +1261,142 @@ function renderFaceHelper() {
       </ul>
     </section>
   `;
+}
+
+function renderScaleQuestion(question, selected) {
+  const regularOptions = question.options.filter((o) => !o.exclusive);
+  const exclusiveOption = question.options.find((o) => o.exclusive);
+  const isExclusiveSelected = exclusiveOption && selected.includes(exclusiveOption.value);
+
+  return `
+    <div class="scale-question-wrap">
+      <div class="scale-options">
+        ${regularOptions.map((option) => {
+          const isOn = selected.includes(option.value);
+          return `
+            <button
+              class="scale-btn ${isOn ? "is-on" : ""}"
+              type="button"
+              data-scale-value="${escapeAttr(option.value)}"
+              aria-pressed="${isOn}"
+            >
+              <span class="scale-btn-label">${escapeHtml(option.label)}</span>
+              <span class="scale-btn-dot" aria-hidden="true"></span>
+            </button>
+          `;
+        }).join("")}
+      </div>
+      ${exclusiveOption ? `
+        <div class="scale-skip-row">
+          <button
+            class="scale-skip-btn ${isExclusiveSelected ? "is-selected" : ""}"
+            type="button"
+            data-scale-value="${escapeAttr(exclusiveOption.value)}"
+            aria-pressed="${isExclusiveSelected}"
+          >
+            ${escapeHtml(exclusiveOption.label)}
+          </button>
+        </div>
+      ` : ""}
+    </div>
+  `;
+}
+
+function wireScaleQuestion(question) {
+  document.querySelectorAll("[data-scale-value]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const option = question.options.find((item) => item.value === button.dataset.scaleValue);
+      if (!option) return;
+      const current = selectedFor(question);
+      const isOn = current.includes(option.value);
+      if (option.exclusive) {
+        setAnswers({ ...state.answers, [question.id]: isOn ? [] : [option.value] });
+      } else {
+        setAnswers({ ...state.answers, [question.id]: isOn ? [] : [option.value] });
+      }
+      render();
+    });
+  });
+}
+
+function renderSliderQuestion(question, selected) {
+  const regularOptions = question.options.filter((o) => !o.exclusive);
+  const exclusiveOption = question.options.find((o) => o.exclusive);
+  const isExclusiveSelected = exclusiveOption && selected.includes(exclusiveOption.value);
+  const selectedIndex = (!isExclusiveSelected && selected.length)
+    ? regularOptions.findIndex((o) => o.value === selected[0])
+    : -1;
+  const hasSelection = selectedIndex !== -1;
+  const sliderValue = hasSelection ? selectedIndex : Math.floor((regularOptions.length - 1) / 2);
+  const displayLabel = hasSelection ? regularOptions[selectedIndex].label : "Slide to answer";
+
+  return `
+    <div class="slider-question-wrap">
+      <div class="slider-value-display ${!hasSelection ? "is-placeholder" : ""}">
+        ${escapeHtml(displayLabel)}
+      </div>
+      <div class="slider-track-wrap">
+        <span class="slider-end-label">${escapeHtml(regularOptions[0].label)}</span>
+        <input
+          type="range"
+          class="quiz-slider"
+          id="quiz-slider-input"
+          min="0"
+          max="${regularOptions.length - 1}"
+          step="1"
+          value="${sliderValue}"
+          ${isExclusiveSelected ? "disabled" : ""}
+        >
+        <span class="slider-end-label">${escapeHtml(regularOptions[regularOptions.length - 1].label)}</span>
+      </div>
+      ${exclusiveOption ? `
+        <div class="scale-skip-row">
+          <button
+            class="scale-skip-btn ${isExclusiveSelected ? "is-selected" : ""}"
+            type="button"
+            data-slider-skip="${escapeAttr(exclusiveOption.value)}"
+            aria-pressed="${isExclusiveSelected}"
+          >
+            ${escapeHtml(exclusiveOption.label)}
+          </button>
+        </div>
+      ` : ""}
+    </div>
+  `;
+}
+
+function wireSliderQuestion(question) {
+  const regularOptions = question.options.filter((o) => !o.exclusive);
+  const slider = document.getElementById("quiz-slider-input");
+  const display = document.querySelector(".slider-value-display");
+
+  if (slider) {
+    slider.addEventListener("input", () => {
+      const option = regularOptions[parseInt(slider.value, 10)];
+      if (option && display) {
+        display.textContent = option.label;
+        display.classList.remove("is-placeholder");
+      }
+    });
+    slider.addEventListener("change", () => {
+      const option = regularOptions[parseInt(slider.value, 10)];
+      if (option) {
+        setAnswers({ ...state.answers, [question.id]: [option.value] });
+        render();
+      }
+    });
+  }
+
+  const skipBtn = document.querySelector("[data-slider-skip]");
+  if (skipBtn) {
+    skipBtn.addEventListener("click", () => {
+      const option = question.options.find((o) => o.exclusive);
+      if (!option) return;
+      const isOn = selectedFor(question).includes(option.value);
+      setAnswers({ ...state.answers, [question.id]: isOn ? [] : [option.value] });
+      render();
+    });
+  }
 }
 
 function renderSearch() {
