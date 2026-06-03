@@ -1367,7 +1367,6 @@ function renderDiscoveryActions(selectedCount) {
         Preferences
         ${selectedCount ? `<span class="filter-count">${selectedCount}</span>` : ""}
       </button>
-      <button class="secondary-btn" id="refine-btn" type="button">Edit step by step</button>
       <button class="secondary-btn" id="restart-btn" type="button">Start over</button>
     </div>
   `;
@@ -1429,10 +1428,6 @@ function wireDiscoveryControls() {
     state.openPreferenceMenu = null;
     if (state.filterPanelOpen) state.openFilterGroups.clear();
     renderCurrentDiscoveryView();
-  });
-  $("#refine-btn").addEventListener("click", () => {
-    state.openPreferenceMenu = null;
-    setView("quiz");
   });
   $("#restart-btn").addEventListener("click", startOver);
   const closeFilters = $("#close-filters-btn");
