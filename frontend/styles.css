@@ -801,6 +801,11 @@ body[data-view="welcome"] .welcome-logo-row .stealth-admin-switch {
   color: var(--muted);
 }
 
+.quiz-footer-buttons {
+  display: flex;
+  gap: 10px;
+}
+
 .quiz-footer b {
   color: var(--ink);
 }
@@ -1860,7 +1865,16 @@ body[data-view="welcome"] .welcome-logo-row .stealth-admin-switch {
     flex-direction: column;
   }
 
+  .quiz-footer-buttons {
+    width: 100%;
+    flex-direction: column;
+  }
+
   .primary-btn {
+    width: 100%;
+  }
+
+  .quiz-footer-buttons .secondary-btn {
     width: 100%;
   }
 

@@ -1206,7 +1206,10 @@ function renderQuiz() {
 
       <div class="quiz-footer">
         <span>${selected.length ? `<b>${selected.filter((value) => value !== "__all").length || selected.length}</b> selected` : (isScale || isSlider) ? "Select your answer" : "Select any that apply"}</span>
-        <button class="primary-btn" id="quiz-next-btn" type="button">${isLast ? "Show me results" : "Continue"} ${iconArrow()}</button>
+        <div class="quiz-footer-buttons">
+          ${state.quizStep > 0 ? `<button class="secondary-btn" id="quiz-back-btn" type="button">Back</button>` : ""}
+          <button class="primary-btn" id="quiz-next-btn" type="button">${isLast ? "Show me results" : "Continue"} ${iconArrow()}</button>
+        </div>
       </div>
     </section>
   `;
@@ -1216,6 +1219,10 @@ function renderQuiz() {
     if (isLast) setView("results");
     else setQuizStep(state.quizStep + 1);
   });
+  const backBtn = $("#quiz-back-btn");
+  if (backBtn) {
+    backBtn.addEventListener("click", () => setQuizStep(state.quizStep - 1));
+  }
 
   if (isSlider) {
     wireSliderQuestion(question);
