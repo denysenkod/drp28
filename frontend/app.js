@@ -322,6 +322,29 @@ const QUIZ = [
   },
 ];
 
+const FACE_SHAPE_FILTER = {
+  id: "face",
+  title: "Which face shape should these styles suit?",
+  sub: "Filter by the face-shape labels stored in the hairstyle database.",
+  layout: "text",
+  options: [
+    { value: "oval", label: "Oval", faceShape: "oval" },
+    { value: "round", label: "Round", faceShape: "round" },
+    { value: "square", label: "Square", faceShape: "square" },
+    { value: "heart", label: "Heart", faceShape: "heart" },
+    { value: "diamond", label: "Diamond", faceShape: "diamond" },
+    { value: "rectangle", label: "Rectangle", faceShape: "rectangle" },
+    { value: "triangle", label: "Triangle", faceShape: "triangle" },
+    { value: "none", label: "No preference", exclusive: true }
+  ]
+};
+
+const DISCOVERY_FILTER_QUESTIONS = [
+  ...QUIZ.slice(0, 3),
+  FACE_SHAPE_FILTER,
+  ...QUIZ.slice(3)
+];
+
 function slugWords(value) {
   return String(value || "")
     .toLowerCase()
@@ -664,7 +687,7 @@ async function loadFavourites() {
 
 // ---------- Quiz helpers ----------
 function getQuestionById(id) {
-  return QUIZ.find((q) => q.id === id);
+  return DISCOVERY_FILTER_QUESTIONS.find((q) => q.id === id);
 }
 
 function getOptionLabel(questionId, value) {
@@ -808,7 +831,7 @@ function getQuizOptionMedia(question, option) {
 
 function summarizeAnswers() {
   const chips = [];
-  for (const question of QUIZ) {
+  for (const question of DISCOVERY_FILTER_QUESTIONS) {
     const selected = selectedFor(question);
     if (!selected.length) continue;
     if (question.id === "style" && selected.includes("__all")) {
@@ -822,14 +845,14 @@ function summarizeAnswers() {
 }
 
 function selectedAnswerCount() {
-  return QUIZ.reduce((total, question) => total + selectedFor(question).filter((value) => value !== "__all").length, 0);
+  return DISCOVERY_FILTER_QUESTIONS.reduce((total, question) => total + selectedFor(question).filter((value) => value !== "__all").length, 0);
 }
 
 function shortQuestionLabel(id) {
   return {
     style: "Style",
     texture: "Texture",
-    ethnicity: "Inspiration",
+    ethnicity: "Ethnicity",
     face: "Face",
     length: "Length",
     vibe: "Vibe"
@@ -1368,7 +1391,6 @@ function renderDiscoveryActions(selectedCount) {
         Preferences
         ${selectedCount ? `<span class="filter-count">${selectedCount}</span>` : ""}
       </button>
-      <button class="secondary-btn" id="restart-btn" type="button">Start over</button>
     </div>
   `;
 }
@@ -1430,7 +1452,6 @@ function wireDiscoveryControls() {
     if (state.filterPanelOpen) state.openFilterGroups.clear();
     renderCurrentDiscoveryView();
   });
-  $("#restart-btn").addEventListener("click", startOver);
   const closeFilters = $("#close-filters-btn");
   if (closeFilters) {
     closeFilters.addEventListener("click", () => {
@@ -1526,7 +1547,7 @@ function renderAnswerFilterDrawer(selectedCount) {
       </div>
       <div class="answer-filter-count">${selectedCount || 0} selected</div>
       <div class="answer-filter-groups">
-        ${QUIZ.map(renderFilterGroup).join("")}
+        ${DISCOVERY_FILTER_QUESTIONS.map(renderFilterGroup).join("")}
       </div>
     </aside>
   `;
@@ -1765,7 +1786,7 @@ async function imageFileToDataUrl(file) {
 
 function selectedFeatures() {
   const features = [];
-  for (const question of QUIZ) {
+  for (const question of DISCOVERY_FILTER_QUESTIONS) {
     for (const value of selectedFor(question)) {
       if (value !== "__all") features.push(value);
     }
