@@ -253,7 +253,7 @@ test('serves the frontend on the root route', async () => {
   assert.match(body, /href="\/styles\.css(?:\?v=[^"]+)?"/);
 });
 
-test('serves the admin route through the frontend shell', async () => {
+test('serves the admin route through the public frontend shell', async () => {
   const { default: worker } = await loadWorker();
   const response = await worker.fetch(new Request('https://example.com/admin'), await createAssetEnv());
   const body = await response.text();
@@ -262,7 +262,8 @@ test('serves the admin route through the frontend shell', async () => {
   assert.equal(response.headers.get('content-type'), 'text/html; charset=utf-8');
   assert.doesNotMatch(body, /id="admin-nav-link"/);
   assert.doesNotMatch(body, /id="topbar-admin-toggle"/);
-  assert.match(body, /id="stealth-admin-toggle"/);
+  assert.doesNotMatch(body, /id="stealth-admin-toggle"/);
+  assert.doesNotMatch(body, /stealth-admin-switch/);
 });
 
 test('serves backend status as JSON', async () => {
@@ -526,21 +527,17 @@ test('new static frontend is wired to image and database APIs', async () => {
   const styles = await readFile(new URL('../frontend/styles.css', import.meta.url), 'utf8');
 
   assert.ok(app.includes('gallery: "/api/gallery"'));
-  assert.ok(app.includes('galleryLabels: (id)'));
-  assert.ok(app.includes('galleryAttributes: (id)'));
-  assert.ok(app.includes('galleryItem: (id)'));
   assert.ok(app.includes('favorites: "/api/favorites"'));
   assert.ok(app.includes('userPhotos: "/api/user-photos"'));
   assert.ok(app.includes('imageUrl'));
-  assert.ok(app.includes('isAdminContext'));
-  assert.ok(app.includes('ADMIN_MODE_KEY'));
   assert.ok(app.includes('syncStylesForCurrentRoute'));
-  assert.ok(app.includes('canAdminEditStyle'));
-  assert.ok(app.includes('No database-backed gallery pictures loaded.'));
-  assert.ok(app.includes('saveStyleLabels'));
-  assert.ok(app.includes('saveStyleAttributes'));
-  assert.ok(app.includes('deleteStyle'));
-  assert.ok(app.includes('data-admin-attribute'));
+  assert.ok(!app.includes('isAdminContext'));
+  assert.ok(!app.includes('ADMIN_MODE_KEY'));
+  assert.ok(!app.includes('canAdminEditStyle'));
+  assert.ok(!app.includes('saveStyleLabels'));
+  assert.ok(!app.includes('saveStyleAttributes'));
+  assert.ok(!app.includes('deleteStyle'));
+  assert.ok(!app.includes('data-admin-attribute'));
   assert.ok(app.includes('normalizeGender(item.gender)'));
   assert.ok(app.includes('inferGender'));
   assert.ok(app.includes('faceShape: normalizeFaceShape'));
@@ -553,16 +550,17 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(index.includes('id="detail-gender"'));
   assert.ok(index.includes('id="results-grid"'));
   assert.ok(index.includes('/app.js'));
-  assert.ok(index.includes('id="stealth-admin-toggle"'));
-  assert.ok(index.includes('stealth-admin-switch'));
-  assert.ok(index.includes('id="detail-label-admin"'));
-  assert.ok(index.includes('id="detail-attribute-admin"'));
-  assert.ok(index.includes('id="detail-delete"'));
+  assert.ok(!index.includes('id="stealth-admin-toggle"'));
+  assert.ok(!index.includes('stealth-admin-switch'));
+  assert.ok(!index.includes('id="detail-label-admin"'));
+  assert.ok(!index.includes('id="detail-attribute-admin"'));
+  assert.ok(!index.includes('id="detail-delete"'));
   assert.ok(!index.includes('admin-nav-link'));
   assert.ok(!index.includes('topbar-admin-toggle'));
   assert.match(styles, /\.welcome-logo\s*\{[\s\S]*font-size: 56px;/);
-  assert.match(styles, /body\[data-view="welcome"\] #topbar-admin-toggle/);
-  assert.match(styles, /body\[data-view="welcome"\] \.admin-mode/);
+  assert.ok(!styles.includes('stealth-admin-switch'));
+  assert.ok(!styles.includes('admin-attribute'));
+  assert.ok(!styles.includes('admin-label'));
 });
 
 test('wrangler deploys the TypeScript worker entry', async () => {
