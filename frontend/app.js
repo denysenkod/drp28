@@ -1142,6 +1142,7 @@ function renderWelcome() {
     </section>
   `;
   $("#find-style-btn").addEventListener("click", () => {
+    setAnswers({});
     state.quizStep = 0;
     writeStored(STEP_KEY, state.quizStep);
     setView("quiz");
