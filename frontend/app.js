@@ -554,7 +554,7 @@ const $ = (sel) => document.querySelector(sel);
 const els = {
   app: $("#app"),
   homeBtn: $("#home-btn"),
-  searchNavBtn: $("#search-nav-btn"),
+  topbarSearchInput: $("#topbar-search-input"),
   favouritesBtn: $("#favourites-btn"),
   favCount: $("#fav-count"),
   detailOverlay: $("#detail-overlay"),
@@ -998,7 +998,9 @@ function stylePassesAnswerFilters(style) {
 function render() {
   syncStylesForCurrentRoute();
   document.body.dataset.view = state.view;
-  els.searchNavBtn.classList.toggle("is-active", state.view === "search");
+  if (els.topbarSearchInput && els.topbarSearchInput.value !== state.searchQuery) {
+    els.topbarSearchInput.value = state.searchQuery;
+  }
   updateFavouriteCount();
 
   if (state.view === "quiz") renderQuiz();
@@ -1301,10 +1303,6 @@ function renderSearch() {
           <span>Upload photo</span>
           <input type="file" id="upload-input" accept="image/*" hidden>
         </label>
-        <label class="search-input-wrap">
-          <span aria-hidden="true">${iconSearch()}</span>
-          <input type="search" id="search-input" placeholder="Search by length, texture, vibe, or style name" value="${escapeAttr(state.searchQuery)}" autocomplete="off">
-        </label>
       </div>
 
       ${state.uploadedPhotoName ? `<div class="upload-preview"><span>Photo saved:</span><b>${escapeHtml(state.uploadedPhotoName)}</b><button id="upload-clear" type="button" aria-label="Clear uploaded photo">&times;</button></div>` : ""}
@@ -1324,10 +1322,6 @@ function renderSearch() {
     </section>
   `;
 
-  $("#search-input").addEventListener("input", (event) => {
-    state.searchQuery = event.target.value;
-    renderSearchGrid();
-  });
   $("#upload-input").addEventListener("change", (event) => {
     const file = event.target.files && event.target.files[0];
     handleUpload(file);
@@ -1833,7 +1827,17 @@ function escapeAttr(value) {
 // ---------- Wire up ----------
 function init() {
   els.homeBtn.addEventListener("click", () => setView("welcome"));
-  els.searchNavBtn.addEventListener("click", () => setView("search"));
+  els.topbarSearchInput.addEventListener("focus", () => {
+    if (state.view !== "search") setView("search");
+  });
+  els.topbarSearchInput.addEventListener("input", (event) => {
+    state.searchQuery = event.target.value;
+    if (state.view !== "search") {
+      setView("search");
+      return;
+    }
+    renderSearchGrid();
+  });
   els.favouritesBtn.addEventListener("click", () => {
     renderFavourites();
     els.favouritesOverlay.hidden = false;
