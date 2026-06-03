@@ -1,0 +1,39 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic "Question 3 of 5" [ref=e5]:
+        - generic [ref=e6]:
+          - generic [ref=e7]: Question 3 of 5
+          - generic [ref=e8]: 60%
+      - button "Start over" [ref=e12] [cursor=pointer]
+    - generic [ref=e13]:
+      - paragraph [ref=e14]: 03 / 05
+      - heading "How long are you thinking?" [level=1] [ref=e15]
+      - paragraph [ref=e16]: Pick a male and/or female length - you can mix and match across genders.
+    - generic [ref=e17]:
+      - button "Very short (Men)" [ref=e18] [cursor=pointer]:
+        - generic [ref=e20]: Very short (Men)
+      - button "Short (Men)" [ref=e22] [cursor=pointer]:
+        - generic [ref=e24]: Short (Men)
+      - button "Medium (Men)" [ref=e26] [cursor=pointer]:
+        - generic [ref=e28]: Medium (Men)
+      - button "Long (Men)" [ref=e30] [cursor=pointer]:
+        - generic [ref=e32]: Long (Men)
+      - button "Very short (Women)" [ref=e34] [cursor=pointer]:
+        - generic [ref=e36]: Very short (Women)
+      - button "Short (Women)" [ref=e38] [cursor=pointer]:
+        - generic [ref=e40]: Short (Women)
+      - button "Medium (Women)" [ref=e42] [cursor=pointer]:
+        - generic [ref=e45]: Medium (Women)
+      - button "Long (Women)" [ref=e47] [cursor=pointer]:
+        - generic [ref=e49]: Long (Women)
+      - button "No preference" [ref=e51] [cursor=pointer]:
+        - img [ref=e53]
+        - generic [ref=e57]: No preference
+    - generic [ref=e59]:
+      - generic [ref=e60]: Select any that apply
+      - generic [ref=e61]:
+        - button "Back" [ref=e62] [cursor=pointer]
+        - button "Continue" [ref=e63] [cursor=pointer]:
+          - text: Continue
+          - img [ref=e64]

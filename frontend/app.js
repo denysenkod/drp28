@@ -315,32 +315,6 @@ const QUIZ = [
     ]
   },
   {
-    id: "lifestyle",
-    title: "How often do you shower?",
-    layout: "slider",
-    options: [
-      { value: "multiple-times-per-day", label: "Multiple times per day", keywords: ["low maintenance", "low", "buzz", "crew"] },
-      { value: "daily", label: "Daily", keywords: ["low maintenance", "low", "buzz", "crew"] },
-      { value: "every-other-day", label: "Every other day", keywords: ["low maintenance", "medium"] },
-      { value: "few-times-week", label: "A few times a week", keywords: ["natural", "effortless"] },
-      { value: "once-week", label: "Once a week", keywords: ["natural", "effortless"] },
-      { value: "no-preference", label: "Prefer not to say", exclusive: true }
-    ]
-  },
-  {
-    id: "outgoingness",
-    title: "How would you describe your social personality?",
-    layout: "slider",
-    options: [
-      { value: "very-outgoing", label: "Very extroverted", vibe: "bold", keywords: ["bold", "trendy", "modern"] },
-      { value: "somewhat-outgoing", label: "Fairly outgoing", vibe: "professional", keywords: ["professional", "classic"] },
-      { value: "normal", label: "Moderately social", vibe: "professional", keywords: ["professional", "classic"] },
-      { value: "somewhat-introverted", label: "Fairly reserved", vibe: "professional", keywords: ["professional", "classic"] },
-      { value: "introverted", label: "Very introverted", vibe: "natural", keywords: ["natural", "effortless"] },
-      { value: "no-preference", label: "No preference", exclusive: true }
-    ]
-  },
-  {
     id: "ethnicity",
     title: "Would you like photos featuring people of a specific ethnicity for inspiration?",
     sub: "This only affects reference inspiration. You can skip it.",
@@ -916,7 +890,6 @@ function shortQuestionLabel(id) {
     ethnicity: "Inspiration",
     face: "Face",
     length: "Length",
-    lifestyle: "Lifestyle",
     vibe: "Vibe"
   }[id] || id;
 }
@@ -986,14 +959,6 @@ function scoreStyle(style) {
     if (option.length && optionLengthMatch(style, option)) score += 5;
   }
 
-  for (const option of answerOptions("lifestyle")) {
-    if (optionVibeMatch(style, option)) score += 3;
-    if (optionUpkeepMatch(style, option)) score += 3;
-    for (const keyword of option.keywords || []) {
-      if (haystack.includes(keyword)) score += 2;
-    }
-  }
-
   for (const option of answerOptions("vibe")) {
     if (optionVibeMatch(style, option)) score += 5;
     for (const keyword of option.keywords || []) {
@@ -1054,10 +1019,6 @@ function stylePassesAnswerFilters(style) {
   }
 
   if (!optionGroupPasses(style, "ethnicity", (option) => optionKeywordMatch(style, option))) {
-    return false;
-  }
-
-  if (!optionGroupPasses(style, "lifestyle", (option) => optionVibeMatch(style, option) || optionUpkeepMatch(style, option) || optionKeywordMatch(style, option))) {
     return false;
   }
 
@@ -1144,7 +1105,7 @@ function renderWelcome() {
           <span class="choice-icon">${iconCheck()}</span>
           <span class="choice-title">Find me a style</span>
           <span class="choice-copy">Answer a few quick questions. We'll narrow thousands of looks down to the ones that suit you.</span>
-          <span class="choice-action">7 quick questions ${iconArrow()}</span>
+          <span class="choice-action">5 quick questions ${iconArrow()}</span>
         </button>
         <button class="choice-card" id="have-mind-btn" type="button">
           <span class="choice-icon">${iconSearch()}</span>

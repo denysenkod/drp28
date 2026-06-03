@@ -547,7 +547,6 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(app.includes('function answerFilteredStyles()'));
   assert.ok(app.includes('function styleHaystack(style)'));
   assert.ok(app.includes('optionGroupPasses(style, "face"'));
-  assert.ok(app.includes('optionGroupPasses(style, "lifestyle"'));
   assert.ok(app.includes('const results = scoredStyles(filtered);'));
   assert.ok(app.includes('toggleFavourite'));
   assert.ok(index.includes('data-filter="gender"'));
