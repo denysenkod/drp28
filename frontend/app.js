@@ -575,6 +575,7 @@ function galleryItemToStyle(item, index) {
     haircutName: String(item.haircutName || analysis.haircutName || "").trim(),
     classifiedAt: String(item.classifiedAt || analysis.updatedAt || "").trim(),
     analysisModel: String(item.analysisModel || analysis.model || "").trim(),
+    createdAt: String(item.createdAt || "").trim(),
     features,
     ...detail,
     maintenance
@@ -915,8 +916,10 @@ function answerOptions(questionId) {
 }
 
 function styleHaystack(style) {
-  return [
+  const fields = [
+    style.id,
     style.name,
+    style.imageUrl,
     style.description,
     style.length,
     style.hairType,
@@ -930,9 +933,22 @@ function styleHaystack(style) {
     style.hairColour,
     style.haircutName,
     style.maintenance,
+    style.classifiedAt,
+    style.analysisModel,
+    style.createdAt,
     ...(style.labels || []),
     ...(style.features || [])
-  ].join(" ").toLowerCase();
+  ];
+
+  return normalizeSearchText(fields.join(" "));
+}
+
+function normalizeSearchText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[-_/]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function optionKeywordMatch(style, option) {
@@ -946,6 +962,10 @@ function optionVibeMatch(style, option) {
 
 function optionUpkeepMatch(style, option) {
   return Boolean(option.upkeep && style.maintenanceLevel === option.upkeep);
+}
+
+function optionEthnicityMatch(style, option) {
+  return Boolean(option.value && option.value !== "none" && style.ethnicity === option.value);
 }
 
 function optionLengthMatch(style, option) {
@@ -983,7 +1003,7 @@ function scoreStyle(style) {
   }
 
   for (const option of answerOptions("ethnicity")) {
-    if (option.value !== "none" && optionKeywordMatch(style, option)) score += 2;
+    if (optionEthnicityMatch(style, option)) score += 5;
   }
 
   for (const option of answerOptions("face")) {
@@ -1034,7 +1054,7 @@ function stylePassesAnswerFilters(style) {
     return false;
   }
 
-  if (!optionGroupPasses(style, "ethnicity", (option) => optionKeywordMatch(style, option))) {
+  if (!optionGroupPasses(style, "ethnicity", (option) => optionEthnicityMatch(style, option))) {
     return false;
   }
 
@@ -1734,19 +1754,10 @@ function renderFilterOption(question, option, isSelected) {
 }
 
 function filteredSearchStyles() {
-  const q = state.searchQuery.trim().toLowerCase();
+  const q = normalizeSearchText(state.searchQuery);
   const tokens = q.split(/[\s,]+/).filter(Boolean);
   const queryMatches = state.styles.filter((style) => {
-    const haystack = [
-      style.name,
-      style.description,
-      style.gender,
-      style.length,
-      style.hairType,
-      style.maintenanceLevel,
-      ...(style.labels || []),
-      ...(style.features || [])
-    ].join(" ").toLowerCase();
+    const haystack = styleHaystack(style);
     if (!q) return true;
     return tokens.every((token) => haystack.includes(token));
   });

@@ -545,8 +545,16 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(app.includes('faceShape: normalizeFaceShape'));
   assert.ok(app.includes('function answerFilteredStyles()'));
   assert.ok(app.includes('function styleHaystack(style)'));
+  assert.ok(app.includes('function normalizeSearchText(value)'));
+  assert.ok(app.includes('function optionEthnicityMatch(style, option)'));
   assert.ok(app.includes('optionGroupPasses(style, "face"'));
+  assert.ok(app.includes('optionGroupPasses(style, "ethnicity", (option) => optionEthnicityMatch(style, option))'));
+  assert.ok(app.includes('const haystack = styleHaystack(style);'));
+<<<<<<< Updated upstream
   assert.ok(app.includes('const results = scoredStyles(refined);'));
+=======
+  assert.ok(app.includes('const results = scoredStyles(filtered);'));
+>>>>>>> Stashed changes
   assert.ok(app.includes('toggleFavourite'));
   assert.ok(index.includes('data-filter="gender"'));
   assert.ok(index.includes('id="detail-gender"'));
@@ -601,6 +609,7 @@ test('gallery image AI analysis script is wired to D1 and structured outputs', a
   const blockedRowsMigration = await readFile(new URL('../migrations/0012_delete_blocked_allthingshair_rows.sql', import.meta.url), 'utf8');
   const demographicsMigration = await readFile(new URL('../migrations/0013_gallery_image_demographics.sql', import.meta.url), 'utf8');
   const script = await readFile(new URL('../scripts/analyze-gallery-images.mjs', import.meta.url), 'utf8');
+  const celebrityScript = await readFile(new URL('../scripts/analyze-gallery-celebrities.mjs', import.meta.url), 'utf8');
   const packageJson = await readFile(new URL('../package.json', import.meta.url), 'utf8');
 
   assert.match(migration, /analysis_hair_type/);
@@ -626,6 +635,8 @@ test('gallery image AI analysis script is wired to D1 and structured outputs', a
   assert.match(script, /async function withRetries/);
   assert.match(script, /Promise\.all\(workers\)/);
   assert.match(script, /finished with \$\{failures\.length\} failed row/);
+  assert.match(script, /ethnicity IS NULL OR ethnicity = ''/);
+  assert.match(script, /celebrity IS NULL OR celebrity = ''/);
   assert.match(script, /type: 'json_schema'/);
   assert.match(script, /description: 'Broad visible curl pattern category/);
   assert.match(script, /Subtype guidance:/);
@@ -643,6 +654,14 @@ test('gallery image AI analysis script is wired to D1 and structured outputs', a
   assert.match(script, /labels_json =/);
   assert.match(packageJson, /"analyze:gallery:local"/);
   assert.match(packageJson, /"analyze:gallery:remote"/);
+  assert.match(packageJson, /"analyze:celebrities:local"/);
+  assert.match(packageJson, /"analyze:celebrities:remote"/);
+  assert.match(celebrityScript, /gallery_celebrity_analysis/);
+  assert.match(celebrityScript, /type: 'input_image'/);
+  assert.match(celebrityScript, /LOWER\(TRIM\(celebrity\)\) = 'none'/);
+  assert.match(celebrityScript, /celebrity =/);
+  assert.match(celebrityScript, /labels_json =/);
+  assert.doesNotMatch(celebrityScript, /hair_type =/);
 });
 
 test('local dev seeds memory gallery from migration files', async () => {

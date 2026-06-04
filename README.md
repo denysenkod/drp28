@@ -123,6 +123,8 @@ stored in `analysis_model`, and the classification timestamp is stored in
 `classified_at`. The classifier also stores `ethnicity` using the supported
 gallery categories and `celebrity`, which is set to a public figure name only
 when existing row text explicitly identifies one; otherwise it stores `none`.
+Rows missing `ethnicity` are treated as pending so older classified rows can be
+backfilled without `--force`.
 
 Set your OpenAI key locally in `.env`:
 
@@ -149,6 +151,18 @@ Run against the remote Cloudflare D1 database:
 ```bash
 npm run db:migrate:remote
 npm run analyze:gallery:remote
+```
+
+To fill only celebrity/public-figure names without re-running the full hairstyle
+classifier, use the celebrity-only analyzer. It reads only rows whose current
+`gallery_images.celebrity` value is `none`; rows that already have a celebrity
+name are not selected.
+
+```bash
+npm run analyze:celebrities:local -- --limit 10 --dry-run
+npm run analyze:celebrities:local
+npm run analyze:celebrities:remote -- --limit 10 --dry-run
+npm run analyze:celebrities:remote
 ```
 
 Useful options:
