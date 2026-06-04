@@ -320,6 +320,16 @@ const QUIZ = [
       { value: "none", label: "No preference", exclusive: true }
     ]
   },
+  {
+    id: "maintenance",
+    title: "How much maintenance are you thinking of?",
+    layout: "slider",
+    options: [
+      { value: "low", label: "I'd rather not", upkeep: "Low" },
+      { value: "medium", label: "Some is fine", desc: "Curl creams, texture powders, sea salt spray, and more", upkeep: "Medium" },
+      { value: "high", label: "All the stops", desc: "Hair straighteners, curlers, dyes, treatments, and so on", upkeep: "High" }
+    ]
+  },
 ];
 
 const FACE_SHAPE_FILTER = {
@@ -844,6 +854,7 @@ function shortQuestionLabel(id) {
     ethnicity: "Ethnicity",
     face: "Face",
     length: "Length",
+    maintenance: "Maintenance",
     vibe: "Vibe"
   }[id] || id;
 }
@@ -1012,7 +1023,7 @@ function renderWelcome() {
           <span class="choice-icon">${iconCheck()}</span>
           <span class="choice-title">Find me a style</span>
           <span class="choice-copy">Answer a few quick questions. We'll narrow thousands of looks down to the ones that suit you.</span>
-          <span class="choice-action">5 quick questions ${iconArrow()}</span>
+          <span class="choice-action">${QUIZ.length} quick questions ${iconArrow()}</span>
         </button>
         <button class="choice-card" id="have-mind-btn" type="button">
           <span class="choice-icon">${iconSearch()}</span>
@@ -1201,6 +1212,7 @@ function renderSliderQuestion(question, selected) {
   const hasSelection = selectedIndex !== -1;
   const sliderValue = hasSelection ? selectedIndex : Math.floor((regularOptions.length - 1) / 2);
   const displayLabel = hasSelection ? regularOptions[selectedIndex].label : "Slide to answer";
+  const displayDesc = hasSelection ? regularOptions[selectedIndex].desc : "";
 
   return `
     <div class="slider-question-wrap">
@@ -1221,6 +1233,7 @@ function renderSliderQuestion(question, selected) {
         >
         <span class="slider-end-label">${escapeHtml(regularOptions[regularOptions.length - 1].label)}</span>
       </div>
+      ${displayDesc ? `<p class="slider-description" style="margin-top: 16px; font-size: 18px; color: #666; text-align: center;">${escapeHtml(displayDesc)}</p>` : ""}
       ${exclusiveOption ? `
         <div class="scale-skip-row">
           <button
@@ -1241,6 +1254,7 @@ function wireSliderQuestion(question) {
   const regularOptions = question.options.filter((o) => !o.exclusive);
   const slider = document.getElementById("quiz-slider-input");
   const display = document.querySelector(".slider-value-display");
+  const descDiv = document.querySelector(".slider-description");
 
   if (slider) {
     slider.addEventListener("input", () => {
@@ -1248,6 +1262,7 @@ function wireSliderQuestion(question) {
       if (option && display) {
         display.textContent = option.label;
         display.classList.remove("is-placeholder");
+        if (descDiv) descDiv.textContent = option.desc || "";
       }
     });
     slider.addEventListener("change", () => {
