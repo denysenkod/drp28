@@ -349,9 +349,41 @@ const FACE_SHAPE_FILTER = {
   ]
 };
 
+const HAIR_COLOUR_FILTER = {
+  id: "hair_colour",
+  title: "Which hair colour should the reference photos show?",
+  sub: "Uses the hair-colour labels stored in the hairstyle database.",
+  layout: "text",
+  options: [
+    { value: "black", label: "Black" },
+    { value: "brown", label: "Brown" },
+    { value: "blonde", label: "Blonde" },
+    { value: "red", label: "Red" },
+    { value: "grey", label: "Grey" },
+    { value: "other", label: "Other" },
+    { value: "none", label: "No preference", exclusive: true }
+  ]
+};
+
+const HAIR_THICKNESS_FILTER = {
+  id: "hair_thickness",
+  title: "Which hair thickness should the reference photos show?",
+  sub: "Uses the hair-thickness labels stored in the hairstyle database.",
+  layout: "text",
+  options: [
+    { value: "especially thin", label: "Especially thin" },
+    { value: "thin", label: "Thin" },
+    { value: "thick", label: "Thick" },
+    { value: "especially thick", label: "Especially thick" },
+    { value: "none", label: "No preference", exclusive: true }
+  ]
+};
+
 const DISCOVERY_FILTER_QUESTIONS = [
   ...QUIZ.slice(0, 3),
   FACE_SHAPE_FILTER,
+  HAIR_COLOUR_FILTER,
+  HAIR_THICKNESS_FILTER,
   ...QUIZ.slice(3)
 ];
 
@@ -905,6 +937,8 @@ function shortQuestionLabel(id) {
     style: "Style",
     texture: "Texture",
     ethnicity: "Ethnicity",
+    hair_colour: "Hair Colour",
+    hair_thickness: "Thickness",
     face: "Face",
     length: "Length",
     maintenance: "Maintenance",
@@ -983,6 +1017,14 @@ function hairColourKey(value) {
   return "other";
 }
 
+function optionHairColourMatch(style, option) {
+  return Boolean(option.value && option.value !== "none" && hairColourKey(style.hairColour) === option.value);
+}
+
+function optionHairThicknessMatch(style, option) {
+  return Boolean(option.value && option.value !== "none" && style.hairThickness === option.value);
+}
+
 function optionLengthMatch(style, option) {
   if (!option.length) return true;
   if (style.length !== option.length) return false;
@@ -1019,6 +1061,14 @@ function scoreStyle(style) {
 
   for (const option of answerOptions("ethnicity")) {
     if (optionEthnicityMatch(style, option)) score += 5;
+  }
+
+  for (const option of answerOptions("hair_colour")) {
+    if (optionHairColourMatch(style, option)) score += 4;
+  }
+
+  for (const option of answerOptions("hair_thickness")) {
+    if (optionHairThicknessMatch(style, option)) score += 4;
   }
 
   for (const option of answerOptions("face")) {
@@ -1070,6 +1120,14 @@ function stylePassesAnswerFilters(style) {
   }
 
   if (!optionGroupPasses(style, "ethnicity", (option) => optionEthnicityMatch(style, option))) {
+    return false;
+  }
+
+  if (!optionGroupPasses(style, "hair_colour", (option) => optionHairColourMatch(style, option))) {
+    return false;
+  }
+
+  if (!optionGroupPasses(style, "hair_thickness", (option) => optionHairThicknessMatch(style, option))) {
     return false;
   }
 

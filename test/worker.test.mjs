@@ -550,8 +550,14 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(app.includes('function normalizeSearchText(value)'));
   assert.ok(app.includes('function optionEthnicityMatch(style, option)'));
   assert.ok(app.includes('function hairColourKey(value)'));
+  assert.ok(app.includes('const HAIR_COLOUR_FILTER ='));
+  assert.ok(app.includes('const HAIR_THICKNESS_FILTER ='));
+  assert.ok(app.includes('function optionHairColourMatch(style, option)'));
+  assert.ok(app.includes('function optionHairThicknessMatch(style, option)'));
   assert.ok(app.includes('optionGroupPasses(style, "face"'));
   assert.ok(app.includes('optionGroupPasses(style, "ethnicity", (option) => optionEthnicityMatch(style, option))'));
+  assert.ok(app.includes('optionGroupPasses(style, "hair_colour", (option) => optionHairColourMatch(style, option))'));
+  assert.ok(app.includes('optionGroupPasses(style, "hair_thickness", (option) => optionHairThicknessMatch(style, option))'));
   assert.ok(app.includes('const haystack = styleHaystack(style);'));
   assert.ok(app.includes('hairColours.has(hairColourKey(style.hairColour))'));
   assert.ok(app.includes('style.hairThickness === thickness'));
