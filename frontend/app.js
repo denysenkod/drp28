@@ -1,26 +1,15 @@
 // ---------- API + persistent session ----------
 const API = {
   gallery: "/api/gallery",
-  galleryItem: (id) => `/api/gallery/${encodeURIComponent(id)}`,
   favorites: "/api/favorites",
-  userPhotos: "/api/user-photos",
-  galleryLabels: (id) => `/api/gallery/${encodeURIComponent(id)}/labels`,
-  galleryAttributes: (id) => `/api/gallery/${encodeURIComponent(id)}/attributes`
+  userPhotos: "/api/user-photos"
 };
 
 const SESSION_KEY = "drp28.frontend.sessionId";
 const VIEW_KEY = "drp28.frontend.view";
 const ANSWERS_KEY = "drp28.frontend.answers";
 const STEP_KEY = "drp28.frontend.quizStep";
-const ADMIN_MODE_KEY = "drp28.frontend.adminMode";
 const PREV_VIEW_KEY = "drp28.frontend.prevView";
-
-const ADMIN_ATTRIBUTE_OPTIONS = {
-  gender: ["Men", "Women", "Unisex"],
-  length: ["Very Short", "Short", "Medium", "Long", "Very Long"],
-  hairType: ["Straight Hair", "Wavy Hair", "Curly Hair", "Coily Hair"],
-  maintenanceLevel: ["Low", "Medium", "High"]
-};
 
 function readStored(key, fallback) {
   try {
@@ -84,27 +73,6 @@ function iconCheck() {
   return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7" ${iconAttrs}/></svg>`;
 }
 
-function iconHeart(filled) {
-  const fill = filled ? "currentColor" : "none";
-
-  return `
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
-           2 5.42 4.42 3 7.5 3
-           c1.74 0 3.41.81 4.5 2.09
-           C13.09 3.81 14.76 3 16.5 3
-           19.58 3 22 5.42 22 8.5
-           c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-        fill="${fill}"
-        stroke="currentColor"
-        stroke-width="1.7"
-        stroke-linejoin="round"
-        stroke-linecap="round"
-      />
-    </svg>
-  `;
-}
 function textureIcon(kind) {
   const columns = [8, 16, 24].map((x) => x * 2);
   if (kind === "straight") {
@@ -149,7 +117,6 @@ function lengthIcon(level) {
   const len = [4, 12, 20, 28, 38, 48][level] || 20;
   return `<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="16" r="8" ${iconAttrs}/><path d="M24 16q-6 4-6 ${len}M40 16q6 4 6 ${len}" ${iconAttrs}/></svg>`;
 }
-
 
 // ---------- Data ----------
 const FALLBACK_STYLES = [
@@ -331,35 +298,10 @@ const QUIZ = [
       { value: "trendy", label: "Trendy & modern", keywords: ["modern", "mod", "crop", "trendy"], images: {masculine: "https://lowtaperfades.com/wp-content/uploads/2026/02/Untitled-design-2026-02-28T063037.589.webp", feminine: "https://media.glamour.com/photos/5f0e32bc9f970c720ce36ec6/master/w_1024%2Cc_limit/Screen%2520Shot%25202020-07-14%2520at%25206.33.11%2520PM.png"}  },
       { value: "bold", label: "Bold & edgy", vibe: "bold", keywords: ["bold", "edgy", "mullet", "dyed", "frosted"], images: {masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/liberty-spikes-hairstyle-men.webp?v=1758794959", feminine: "https://content.latest-hairstyles.com/wp-content/uploads/edgy-haircuts-for-women-1200x900.jpg"}  },
       { value: "soft", label: "Soft & romantic", vibe: "soft", keywords: ["soft", "curtain", "fringe", "long"], images: {masculine: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSs5qo7QQxOuinGP4_1XF1hRbFV8lGF_VOf6A&s", feminine: "https://hairstyles.thehairstyler.com/hairstyle_views/front_view_images/14314/original/long-hairstyle-with-curls.jpg"}  },
-      { value: "natural", label: "Natural & effortless", vibe: "natural", keywords: ["natural", "effortless", "grow out", "wavy"], images: {masculine: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNjrYo63_OuWFHS-uO8mlpl07AXuGmtHY7sg&s", feminine: "https://www.byrdie.com/thmb/RfIQsk03xD-ZRGZuObOci6z7-No=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/natural-hair-hairstyle-cd6cfd0c08794b33b485c40c9e324be2.png"}  },
+      { value: "low-maintanence", label: "Low-maintanence", vibe: "low-maintanence", keywords: ["natural", "effortless", "grow out", "wavy", "low-maintanence"], images: {masculine: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNjrYo63_OuWFHS-uO8mlpl07AXuGmtHY7sg&s", feminine: "https://www.byrdie.com/thmb/RfIQsk03xD-ZRGZuObOci6z7-No=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/natural-hair-hairstyle-cd6cfd0c08794b33b485c40c9e324be2.png"}  },
       { value: "professional", label: "Professional & polished", vibe: "professional", keywords: ["professional", "classic", "crew", "side"], images: {masculine: "https://i0.wp.com/therighthairstyles.com/wp-content/uploads/2024/11/20-professional-mens-brushed-back-long-hairstyle.jpg?resize=863%2C913&ssl=1", feminine: "https://i.pinimg.com/736x/35/66/a0/3566a02c87a625fec8af5765fc637247.jpg"}  },
-      { value: "playful", label: "Playful & fun", vibe: "playful", keywords: ["playful", "frosted", "dyed", "shag"], images: {masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/curly-mullet-hairstyle-men.webp?v=1767776997", feminine: "https://content.latest-hairstyles.com/wp-content/uploads/galleries/10/07/playful-y2k-double-bun-hairstyle-with-curly-bangs.jpg"}  }
-    ]
-  },
-  {
-    id: "lifestyle",
-    title: "How often do you shower?",
-    layout: "slider",
-    options: [
-      { value: "multiple-times-per-day", label: "Multiple times per day", keywords: ["low maintenance", "low", "buzz", "crew"] },
-      { value: "daily", label: "Daily", keywords: ["low maintenance", "low", "buzz", "crew"] },
-      { value: "every-other-day", label: "Every other day", keywords: ["low maintenance", "medium"] },
-      { value: "few-times-week", label: "A few times a week", keywords: ["natural", "effortless"] },
-      { value: "once-week", label: "Once a week", keywords: ["natural", "effortless"] },
-      { value: "no-preference", label: "Prefer not to say", exclusive: true }
-    ]
-  },
-  {
-    id: "outgoingness",
-    title: "How would you describe your social personality?",
-    layout: "slider",
-    options: [
-      { value: "very-outgoing", label: "Very extroverted", vibe: "bold", keywords: ["bold", "trendy", "modern"] },
-      { value: "somewhat-outgoing", label: "Fairly outgoing", vibe: "professional", keywords: ["professional", "classic"] },
-      { value: "normal", label: "Moderately social", vibe: "professional", keywords: ["professional", "classic"] },
-      { value: "somewhat-introverted", label: "Fairly reserved", vibe: "professional", keywords: ["professional", "classic"] },
-      { value: "introverted", label: "Very introverted", vibe: "natural", keywords: ["natural", "effortless"] },
-      { value: "no-preference", label: "No preference", exclusive: true }
+      { value: "playful", label: "Playful & fun", vibe: "playful", keywords: ["playful", "frosted", "dyed", "shag"], images: {masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/curly-mullet-hairstyle-men.webp?v=1767776997", feminine: "https://content.latest-hairstyles.com/wp-content/uploads/galleries/10/07/playful-y2k-double-bun-hairstyle-with-curly-bangs.jpg"}  },
+      { value: "sporty", label: "Sporty", vibe: "sporty", keywords: ["sporty", "athletic", "active", "gym", "practical", "short"], images: {masculine: "https://www.kaya.in/media/.renditions/wysiwyg/crew-cut-with-fade-men-short-hairstyle.png", feminine: "https://www.copenhagenfashionsummit.com/wp-content/uploads/2025/12/Undercut-Pixie.png"}  }
     ]
   },
   {
@@ -378,6 +320,29 @@ const QUIZ = [
       { value: "none", label: "No preference", exclusive: true }
     ]
   },
+];
+
+const FACE_SHAPE_FILTER = {
+  id: "face",
+  title: "Which face shape should these styles suit?",
+  sub: "Filter by the face-shape labels stored in the hairstyle database.",
+  layout: "text",
+  options: [
+    { value: "oval", label: "Oval", faceShape: "oval" },
+    { value: "round", label: "Round", faceShape: "round" },
+    { value: "square", label: "Square", faceShape: "square" },
+    { value: "heart", label: "Heart", faceShape: "heart" },
+    { value: "diamond", label: "Diamond", faceShape: "diamond" },
+    { value: "rectangle", label: "Rectangle", faceShape: "rectangle" },
+    { value: "triangle", label: "Triangle", faceShape: "triangle" },
+    { value: "none", label: "No preference", exclusive: true }
+  ]
+};
+
+const DISCOVERY_FILTER_QUESTIONS = [
+  ...QUIZ.slice(0, 3),
+  FACE_SHAPE_FILTER,
+  ...QUIZ.slice(3)
 ];
 
 function slugWords(value) {
@@ -562,14 +527,6 @@ function galleryItemToStyle(item, index) {
   };
 }
 
-function isAdminRoute() {
-  return window.location.pathname.replace(/\/+$/, "") === "/admin";
-}
-
-function isAdminContext() {
-  return state.adminMode || isAdminRoute();
-}
-
 // ---------- State ----------
 const state = {
   sessionId: getSessionId(),
@@ -577,11 +534,10 @@ const state = {
   dbStyles: [],
   galleryLoaded: false,
   galleryLoadError: false,
-  view: isAdminRoute() ? "admin" : readStored(VIEW_KEY, "welcome"),
+  view: readStored(VIEW_KEY, "welcome"),
   previousView: readStored(PREV_VIEW_KEY, "welcome"),
   quizStep: readStored(STEP_KEY, 0),
   answers: readStored(ANSWERS_KEY, {}),
-  adminMode: readStored(ADMIN_MODE_KEY, false),
   searchQuery: "",
   favourites: new Set(),
   uploadedPhotoName: null,
@@ -598,8 +554,7 @@ const $ = (sel) => document.querySelector(sel);
 const els = {
   app: $("#app"),
   homeBtn: $("#home-btn"),
-  stealthAdminToggle: $("#stealth-admin-toggle"),
-  searchNavBtn: $("#search-nav-btn"),
+  topbarSearchInput: $("#topbar-search-input"),
   favouritesBtn: $("#favourites-btn"),
   favCount: $("#fav-count"),
   detailOverlay: $("#detail-overlay"),
@@ -607,12 +562,7 @@ const els = {
   detailMeta: $("#detail-meta"),
   detailName: $("#detail-name"),
   detailLike: $("#detail-like"),
-  detailUpkeepBadge: $("#detail-upkeep-badge"),
-  detailDelete: $("#detail-delete"),
   detailMaintenance: $("#detail-maintenance"),
-  detailTextSave: $("#detail-text-save"),
-  detailAttributeAdmin: $("#detail-attribute-admin"),
-  detailLabelAdmin: $("#detail-label-admin"),
   similarResults: $("#similar-results"),
   closeDetail: $("#close-detail"),
   favouritesOverlay: $("#favourites-overlay"),
@@ -629,12 +579,6 @@ function setView(view) {
   }
 
   state.view = view;
-  if (view === "admin" && !isAdminRoute()) {
-    window.history.pushState({ view: "admin" }, "", "/admin");
-  }
-  if (view !== "admin" && isAdminRoute()) {
-    window.history.pushState({ view, previousView: state.previousView }, "", "/");
-  }
   if (view === "quiz") {
     window.history.pushState({ view: "quiz", quizStep: state.quizStep, previousView: state.previousView }, "", `?quiz=${state.quizStep}`);
   }
@@ -647,28 +591,14 @@ function setView(view) {
   if (view === "welcome") {
     window.history.pushState({ view: "welcome", previousView: state.previousView }, "", "/");
   }
-  if (!["admin", "results", "search"].includes(view)) {
+  if (!["results", "search"].includes(view)) {
     state.filterPanelOpen = false;
     state.openFilterGroups.clear();
     state.openPreferenceMenu = null;
   }
-  if (view !== "admin") writeStored(VIEW_KEY, view);
+  writeStored(VIEW_KEY, view);
   render();
   window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function setAdminMode(on) {
-  state.adminMode = Boolean(on);
-  writeStored(ADMIN_MODE_KEY, state.adminMode);
-  render();
-}
-
-function updateAdminChrome() {
-  document.body.dataset.adminContext = isAdminContext() ? "true" : "false";
-  document.querySelectorAll("[data-admin-mode-toggle]").forEach((toggle) => {
-    toggle.checked = state.adminMode;
-  });
-  if (els.stealthAdminToggle) els.stealthAdminToggle.checked = state.adminMode;
 }
 
 function fallbackStyles() {
@@ -678,21 +608,7 @@ function fallbackStyles() {
 function syncStylesForCurrentRoute() {
   if (!state.galleryLoaded) return;
 
-  if (isAdminContext()) {
-    state.styles = state.dbStyles;
-    return;
-  }
-
   state.styles = state.dbStyles.length ? state.dbStyles : fallbackStyles();
-}
-
-function canAdminEditStyle(style) {
-  return Boolean(
-    style &&
-    isAdminContext() &&
-    state.galleryLoaded &&
-    state.dbStyles.some((item) => item.id === style.id)
-  );
 }
 
 function setQuizStep(step, skipHistoryPush = false) {
@@ -735,7 +651,6 @@ async function loadGallery() {
   } catch {
     state.galleryLoaded = true;
     state.galleryLoadError = true;
-    if (isAdminContext()) state.styles = [];
     render();
     // Regular pages keep bundled fallback styles when the API is unavailable.
   }
@@ -761,7 +676,7 @@ async function loadFavourites() {
 
 // ---------- Quiz helpers ----------
 function getQuestionById(id) {
-  return QUIZ.find((q) => q.id === id);
+  return DISCOVERY_FILTER_QUESTIONS.find((q) => q.id === id);
 }
 
 function getOptionLabel(questionId, value) {
@@ -905,7 +820,7 @@ function getQuizOptionMedia(question, option) {
 
 function summarizeAnswers() {
   const chips = [];
-  for (const question of QUIZ) {
+  for (const question of DISCOVERY_FILTER_QUESTIONS) {
     const selected = selectedFor(question);
     if (!selected.length) continue;
     if (question.id === "style" && selected.includes("__all")) {
@@ -919,17 +834,16 @@ function summarizeAnswers() {
 }
 
 function selectedAnswerCount() {
-  return QUIZ.reduce((total, question) => total + selectedFor(question).filter((value) => value !== "__all").length, 0);
+  return DISCOVERY_FILTER_QUESTIONS.reduce((total, question) => total + selectedFor(question).filter((value) => value !== "__all").length, 0);
 }
 
 function shortQuestionLabel(id) {
   return {
     style: "Style",
     texture: "Texture",
-    ethnicity: "Inspiration",
+    ethnicity: "Ethnicity",
     face: "Face",
     length: "Length",
-    lifestyle: "Lifestyle",
     vibe: "Vibe"
   }[id] || id;
 }
@@ -999,14 +913,6 @@ function scoreStyle(style) {
     if (option.length && optionLengthMatch(style, option)) score += 5;
   }
 
-  for (const option of answerOptions("lifestyle")) {
-    if (optionVibeMatch(style, option)) score += 3;
-    if (optionUpkeepMatch(style, option)) score += 3;
-    for (const keyword of option.keywords || []) {
-      if (haystack.includes(keyword)) score += 2;
-    }
-  }
-
   for (const option of answerOptions("vibe")) {
     if (optionVibeMatch(style, option)) score += 5;
     for (const keyword of option.keywords || []) {
@@ -1070,10 +976,6 @@ function stylePassesAnswerFilters(style) {
     return false;
   }
 
-  if (!optionGroupPasses(style, "lifestyle", (option) => optionVibeMatch(style, option) || optionUpkeepMatch(style, option) || optionKeywordMatch(style, option))) {
-    return false;
-  }
-
   if (!optionGroupPasses(style, "vibe", (option) => optionVibeMatch(style, option) || optionKeywordMatch(style, option))) {
     return false;
   }
@@ -1083,60 +985,17 @@ function stylePassesAnswerFilters(style) {
 
 // ---------- Rendering ----------
 function render() {
-  if (isAdminRoute() && state.view !== "admin") {
-    state.view = "admin";
-  }
   syncStylesForCurrentRoute();
   document.body.dataset.view = state.view;
-  els.searchNavBtn.classList.toggle("is-active", state.view === "search");
-  updateAdminChrome();
+  if (els.topbarSearchInput && els.topbarSearchInput.value !== state.searchQuery) {
+    els.topbarSearchInput.value = state.searchQuery;
+  }
   updateFavouriteCount();
 
-  if (state.view === "admin") renderAdmin();
-  else if (state.view === "quiz") renderQuiz();
+  if (state.view === "quiz") renderQuiz();
   else if (state.view === "search") renderSearch();
   else if (state.view === "results") renderResultsPage();
   else renderWelcome();
-
-  refreshOpenDetailAdminControls();
-}
-
-function renderAdmin() {
-  const labelCount = state.styles.reduce((total, style) => total + (style.labels || []).length, 0);
-  const galleryMessage = !state.galleryLoaded
-    ? "Loading database gallery..."
-    : state.galleryLoadError
-      ? "Could not load database gallery. Check the API and database binding."
-      : "No database-backed gallery pictures loaded.";
-  els.app.innerHTML = `
-    <section class="admin-screen">
-      <div class="admin-heading">
-        <div>
-          <p class="eyebrow">Admin</p>
-          <h1>Label studio</h1>
-        </div>
-      </div>
-
-      <div class="admin-stats">
-        <span><b>${state.styles.length}</b> pictures</span>
-        <span><b>${labelCount}</b> labels</span>
-        <span>Editing enabled</span>
-      </div>
-
-      <div class="admin-actions">
-        <button class="primary-btn" id="admin-search-btn" type="button">Browse gallery</button>
-        <button class="secondary-btn" id="admin-results-btn" type="button">View results</button>
-      </div>
-
-      <section class="results-grid admin-gallery-grid">
-        ${state.galleryLoaded && state.styles.length ? state.styles.map((style) => buildStyleCardHtml(style)).join("") : `<p class="empty-state">${galleryMessage}</p>`}
-      </section>
-    </section>
-  `;
-
-  $("#admin-search-btn").addEventListener("click", () => setView("search"));
-  $("#admin-results-btn").addEventListener("click", () => setView("results"));
-  wireCards();
 }
 
 function renderWelcome() {
@@ -1144,10 +1003,6 @@ function renderWelcome() {
     <section class="welcome-screen">
       <div class="welcome-logo-row">
         <div class="welcome-logo">HairMatch</div>
-        <label class="stealth-admin-switch welcome-admin-switch" title="Admin mode">
-          <span>Admin</span>
-          <input type="checkbox" data-admin-mode-toggle aria-label="Admin mode" ${state.adminMode ? "checked" : ""}>
-        </label>
       </div>
       <p class="eyebrow">Let's begin</p>
       <h1><span>Find a haircut that's </span><em>actually you.</em></h1>
@@ -1157,7 +1012,7 @@ function renderWelcome() {
           <span class="choice-icon">${iconCheck()}</span>
           <span class="choice-title">Find me a style</span>
           <span class="choice-copy">Answer a few quick questions. We'll narrow thousands of looks down to the ones that suit you.</span>
-          <span class="choice-action">7 quick questions ${iconArrow()}</span>
+          <span class="choice-action">5 quick questions ${iconArrow()}</span>
         </button>
         <button class="choice-card" id="have-mind-btn" type="button">
           <span class="choice-icon">${iconSearch()}</span>
@@ -1175,9 +1030,6 @@ function renderWelcome() {
     setView("quiz");
   });
   $("#have-mind-btn").addEventListener("click", () => setView("search"));
-  document.querySelectorAll("[data-admin-mode-toggle]").forEach((toggle) => {
-    toggle.addEventListener("change", (event) => setAdminMode(event.target.checked));
-  });
 }
 
 function renderQuiz() {
@@ -1440,10 +1292,6 @@ function renderSearch() {
           <span>Upload photo</span>
           <input type="file" id="upload-input" accept="image/*" hidden>
         </label>
-        <label class="search-input-wrap">
-          <span aria-hidden="true">${iconSearch()}</span>
-          <input type="search" id="search-input" placeholder="Search by length, texture, vibe, or style name" value="${escapeAttr(state.searchQuery)}" autocomplete="off">
-        </label>
       </div>
 
       ${state.uploadedPhotoName ? `<div class="upload-preview"><span>Photo saved:</span><b>${escapeHtml(state.uploadedPhotoName)}</b><button id="upload-clear" type="button" aria-label="Clear uploaded photo">&times;</button></div>` : ""}
@@ -1463,10 +1311,6 @@ function renderSearch() {
     </section>
   `;
 
-  $("#search-input").addEventListener("input", (event) => {
-    state.searchQuery = event.target.value;
-    renderSearchGrid();
-  });
   $("#upload-input").addEventListener("change", (event) => {
     const file = event.target.files && event.target.files[0];
     handleUpload(file);
@@ -1530,8 +1374,6 @@ function renderDiscoveryActions(selectedCount) {
         Preferences
         ${selectedCount ? `<span class="filter-count">${selectedCount}</span>` : ""}
       </button>
-      <button class="secondary-btn" id="refine-btn" type="button">Edit step by step</button>
-      <button class="secondary-btn" id="restart-btn" type="button">Start over</button>
     </div>
   `;
 }
@@ -1593,11 +1435,6 @@ function wireDiscoveryControls() {
     if (state.filterPanelOpen) state.openFilterGroups.clear();
     renderCurrentDiscoveryView();
   });
-  $("#refine-btn").addEventListener("click", () => {
-    state.openPreferenceMenu = null;
-    setView("quiz");
-  });
-  $("#restart-btn").addEventListener("click", startOver);
   const closeFilters = $("#close-filters-btn");
   if (closeFilters) {
     closeFilters.addEventListener("click", () => {
@@ -1693,7 +1530,7 @@ function renderAnswerFilterDrawer(selectedCount) {
       </div>
       <div class="answer-filter-count">${selectedCount || 0} selected</div>
       <div class="answer-filter-groups">
-        ${QUIZ.map(renderFilterGroup).join("")}
+        ${DISCOVERY_FILTER_QUESTIONS.map(renderFilterGroup).join("")}
       </div>
     </aside>
   `;
@@ -1759,23 +1596,6 @@ function filteredSearchStyles() {
   return scoredStyles(answerMatches);
 }
 
-function renderLabelChips(labels) {
-  const normalized = normalizeLabelList(labels);
-  return normalized.length
-    ? normalized.map((label) => `<span>${escapeHtml(label)}</span>`).join("")
-    : `<span class="label-empty">No labels</span>`;
-}
-
-function renderAdminCardPanel(style) {
-  if (!canAdminEditStyle(style)) return "";
-  return `
-    <div class="admin-card-panel">
-      <div class="admin-card-labels" data-admin-card-labels>${renderLabelChips(style.labels)}</div>
-      <button class="text-btn admin-edit-labels-btn" type="button" data-admin-edit-style="${style.id}">Edit labels</button>
-    </div>
-  `;
-}
-
 function buildStyleCardHtml(style, compact = false) {
   const liked = state.favourites.has(style.id);
   return `
@@ -1787,11 +1607,10 @@ function buildStyleCardHtml(style, compact = false) {
         <div class="style-card-footer">
           <div>
             <h2>${escapeHtml(style.name)}</h2>
-            <p>${style.length} Length - ${style.hairType}</p>
+            <p>${style.length} - ${style.hairType}</p>
           </div>
-          <button class="heart-btn ${liked ? "is-liked" : ""}" type="button" data-like-style="${style.id}" aria-label="${liked ? "Remove from saved" : "Save style"}">${iconHeart(liked)}</button>
+          <button class="heart-btn ${liked ? "is-liked" : ""}" type="button" data-like-style="${style.id}" aria-label="${liked ? "Remove from saved" : "Save style"}">${liked ? "&hearts;" : "&#9825;"}</button>
         </div>
-        ${renderAdminCardPanel(style)}
       `}
     </article>
   `;
@@ -1805,12 +1624,6 @@ function wireCards(scope = document) {
     button.addEventListener("click", (event) => {
       event.stopPropagation();
       toggleFavourite(button.dataset.likeStyle);
-    });
-  });
-  scope.querySelectorAll("[data-admin-edit-style]").forEach((button) => {
-    button.addEventListener("click", (event) => {
-      event.stopPropagation();
-      openDetail(button.dataset.adminEditStyle);
     });
   });
 }
@@ -1857,285 +1670,7 @@ function renderFavourites() {
   wireCards(els.favouritesGrid);
 }
 
-function findStyleIndex(id) {
-  return state.styles.findIndex((item) => item.id === String(id));
-}
-
-function removeStyleFromState(id) {
-  const imageId = String(id);
-  state.dbStyles = state.dbStyles.filter((item) => item.id !== imageId);
-  state.styles = state.styles.filter((item) => item.id !== imageId);
-  state.favourites.delete(imageId);
-  pendingFavouriteOps.delete(imageId);
-}
-
-function refreshVisibleStyleLabels(id, statusText = "", statusKind = "") {
-  const style = state.styles.find((item) => item.id === String(id));
-  if (!style) return;
-
-  document.querySelectorAll(".style-card").forEach((card) => {
-    if (card.dataset.styleId !== style.id) return;
-    const labels = card.querySelector("[data-admin-card-labels]");
-    if (labels) labels.innerHTML = renderLabelChips(style.labels);
-  });
-
-  if (currentDetailId === style.id && !els.detailOverlay.hidden) {
-    renderAdminLabelEditor(style, statusText, statusKind);
-  }
-}
-
-function refreshVisibleStyleAttributes(id, statusText = "", statusKind = "") {
-  const style = state.styles.find((item) => item.id === String(id));
-  if (!style) return;
-
-  document.querySelectorAll(".style-card").forEach((card) => {
-    if (card.dataset.styleId !== style.id) return;
-    const meta = card.querySelector(".style-card-footer p");
-    if (meta) meta.textContent = `${style.length} - ${style.hairType}`;
-  });
-
-  if (currentDetailId === style.id && !els.detailOverlay.hidden) {
-    els.detailMeta.textContent = `${style.gender} - ${style.length} Length`;
-    renderDetailMaintenance(style);
-    renderAdminAttributeEditor(style, statusText, statusKind);
-  }
-}
-
-async function saveStyleAttributes(id, nextAttributes) {
-  const index = findStyleIndex(id);
-  if (index < 0) return;
-
-  const previous = { ...state.styles[index] };
-  const detail = detailsForStyle(
-    state.styles[index].name,
-    nextAttributes.length,
-    nextAttributes.hairType,
-    state.styles[index].description
-  );
-  state.styles[index] = {
-    ...state.styles[index],
-    ...nextAttributes,
-    ...detail
-  };
-  refreshVisibleStyleAttributes(id, "Saving...");
-
-  try {
-    const data = await apiJson(API.galleryAttributes(id), {
-      method: "PUT",
-      body: JSON.stringify(nextAttributes)
-    });
-
-    if (data.item) {
-      state.styles[index] = galleryItemToStyle(data.item, index);
-    }
-    refreshVisibleStyleAttributes(id, "Saved");
-  } catch (error) {
-    state.styles[index] = previous;
-    refreshVisibleStyleAttributes(id, error.message || "Could not save attributes.", "error");
-  }
-}
-
-function renderAdminAttributeEditor(style, statusText = "", statusKind = "") {
-  if (!els.detailAttributeAdmin) return;
-  els.detailAttributeAdmin.hidden = !canAdminEditStyle(style);
-  if (!canAdminEditStyle(style)) {
-    els.detailAttributeAdmin.innerHTML = "";
-    return;
-  }
-
-  els.detailAttributeAdmin.innerHTML = `
-    <div class="admin-attribute-grid">
-      ${renderAdminAttributeSelect("gender", "Gender", style.gender)}
-      ${renderAdminAttributeSelect("length", "Length", style.length)}
-      ${renderAdminAttributeSelect("hairType", "Texture", style.hairType)}
-      ${renderAdminAttributeSelect("maintenanceLevel", "Upkeep", style.maintenanceLevel)}
-    </div>
-    <p class="admin-attribute-status ${statusKind === "error" ? "is-error" : ""}" id="admin-attribute-status">${escapeHtml(statusText)}</p>
-  `;
-
-  wireAdminAttributeEditor(style.id);
-}
-
-function renderAdminAttributeSelect(name, label, value) {
-  const options = ADMIN_ATTRIBUTE_OPTIONS[name] || [];
-  return `
-    <label class="admin-attribute-field">
-      <span>${escapeHtml(label)}</span>
-      <select data-admin-attribute="${name}" aria-label="${escapeAttr(label)}">
-        ${options.map((option) => `<option value="${escapeAttr(option)}" ${option === value ? "selected" : ""}>${escapeHtml(option)}</option>`).join("")}
-      </select>
-    </label>
-  `;
-}
-
-function wireAdminAttributeEditor(styleId) {
-  const editor = els.detailAttributeAdmin;
-  if (!editor) return;
-
-  editor.querySelectorAll("[data-admin-attribute]").forEach((select) => {
-    select.addEventListener("change", () => {
-      const style = state.styles.find((item) => item.id === String(styleId));
-      if (!style) return;
-      saveStyleAttributes(styleId, {
-        gender: style.gender,
-        length: style.length,
-        hairType: style.hairType,
-        maintenanceLevel: style.maintenanceLevel,
-        [select.dataset.adminAttribute]: select.value
-      });
-    });
-  });
-}
-
-async function saveStyleLabels(id, nextLabels) {
-  const index = findStyleIndex(id);
-  if (index < 0) return;
-
-  const previous = [...(state.styles[index].labels || [])];
-  const labels = normalizeLabelList(nextLabels);
-  state.styles[index] = { ...state.styles[index], labels };
-  refreshVisibleStyleLabels(id, "Saving...");
-
-  try {
-    const data = await apiJson(API.galleryLabels(id), {
-      method: "PUT",
-      body: JSON.stringify({ labels })
-    });
-
-    if (data.item) {
-      state.styles[index] = galleryItemToStyle(data.item, index);
-    }
-    refreshVisibleStyleLabels(id, "Saved");
-  } catch (error) {
-    state.styles[index] = { ...state.styles[index], labels: previous };
-    refreshVisibleStyleLabels(id, error.message || "Could not save labels.", "error");
-  }
-}
-
-async function deleteStyle(id) {
-  const style = state.styles.find((item) => item.id === String(id));
-  if (!style || !canAdminEditStyle(style)) return;
-
-  const ok = window.confirm(`Delete "${style.name}" from the gallery?`);
-  if (!ok) return;
-
-  const previousDbStyles = [...state.dbStyles];
-  const previousStyles = [...state.styles];
-  const wasFavourite = state.favourites.has(style.id);
-
-  removeStyleFromState(style.id);
-  updateFavouriteCount();
-  closeDetail();
-  render();
-
-  try {
-    await apiJson(API.galleryItem(style.id), { method: "DELETE" });
-  } catch (error) {
-    state.dbStyles = previousDbStyles;
-    state.styles = previousStyles;
-    if (wasFavourite) state.favourites.add(style.id);
-    render();
-    window.alert(error.message || "Could not delete gallery image.");
-  }
-}
-
-function renderAdminLabelEditor(style, statusText = "", statusKind = "") {
-  if (!els.detailLabelAdmin) return;
-  els.detailLabelAdmin.hidden = !canAdminEditStyle(style);
-  if (!canAdminEditStyle(style)) {
-    els.detailLabelAdmin.innerHTML = "";
-    return;
-  }
-
-  const labels = normalizeLabelList(style.labels);
-  els.detailLabelAdmin.innerHTML = `
-    <div class="admin-label-list">
-      ${labels.length ? labels.map((label, index) => `
-        <label class="admin-label-row">
-          <input type="text" value="${escapeAttr(label)}" data-label-index="${index}" aria-label="Label ${index + 1}">
-          <button class="admin-label-remove" type="button" data-remove-label-index="${index}" aria-label="Remove ${escapeAttr(label)}">&times;</button>
-        </label>
-      `).join("") : `<p class="admin-label-empty">No labels assigned.</p>`}
-    </div>
-    <form class="admin-label-add-form" id="admin-label-add-form">
-      <input type="text" id="admin-label-add-input" placeholder="New label" autocomplete="off">
-      <button class="secondary-btn" type="submit">Add label</button>
-    </form>
-    <p class="admin-label-status ${statusKind === "error" ? "is-error" : ""}" id="admin-label-status">${escapeHtml(statusText)}</p>
-  `;
-
-  wireAdminLabelEditor(style.id);
-}
-
-function wireAdminLabelEditor(styleId) {
-  const editor = els.detailLabelAdmin;
-  if (!editor) return;
-
-  editor.querySelectorAll("[data-label-index]").forEach((input) => {
-    input.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        input.blur();
-      }
-    });
-    input.addEventListener("change", () => {
-      const style = state.styles.find((item) => item.id === String(styleId));
-      if (!style) return;
-      const labels = [...(style.labels || [])];
-      labels[Number(input.dataset.labelIndex)] = input.value;
-      saveStyleLabels(styleId, labels);
-    });
-  });
-
-  editor.querySelectorAll("[data-remove-label-index]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const style = state.styles.find((item) => item.id === String(styleId));
-      if (!style) return;
-      const labels = [...(style.labels || [])];
-      labels.splice(Number(button.dataset.removeLabelIndex), 1);
-      saveStyleLabels(styleId, labels);
-    });
-  });
-
-  const form = $("#admin-label-add-form");
-  if (form) {
-    form.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const style = state.styles.find((item) => item.id === String(styleId));
-      const input = $("#admin-label-add-input");
-      if (!style || !input) return;
-      saveStyleLabels(styleId, [...(style.labels || []), input.value]);
-    });
-  }
-}
-
-function refreshOpenDetailAdminControls() {
-  if (!currentDetailId || els.detailOverlay.hidden) return;
-  const style = state.styles.find((item) => item.id === String(currentDetailId));
-
-  if (!style) {
-    renderAdminAttributeEditor(null);
-    renderAdminLabelEditor(null);
-    els.detailDelete.hidden = true;
-    return;
-  }
-
-  renderAdminAttributeEditor(style);
-  renderAdminLabelEditor(style);
-  els.detailDelete.hidden = !canAdminEditStyle(style);
-}
-
 // ---------- Detail overlay ----------
-function renderDetailMaintenance(style) {
-  els.detailUpkeepBadge.hidden = true;
-  if (style.maintenance && style.maintenanceLevel) {
-    const levelText = `This is a ${style.maintenanceLevel.toLowerCase()} maintenance hairstyle. `;
-    els.detailMaintenance.textContent = levelText + style.maintenance;
-  } else {
-    els.detailMaintenance.textContent = style.maintenance || "";
-  }
-}
-
 function appendImage(frame, style) {
   frame.innerHTML = style.imageUrl
     ? `<img src="${style.imageUrl}" alt="${escapeAttr(style.name)}" loading="lazy" referrerpolicy="no-referrer">`
@@ -2148,13 +1683,9 @@ function openDetail(id) {
   currentDetailId = style.id;
 
   appendImage(els.detailImage, style);
-  els.detailMeta.textContent = `${style.gender} - ${style.length} Length`;
+  els.detailMeta.textContent = `${style.gender} - ${style.length}`;
   els.detailName.textContent = style.name;
-  renderDetailMaintenance(style);
-  renderAdminAttributeEditor(style);
-  renderAdminLabelEditor(style);
-  els.detailDelete.hidden = !canAdminEditStyle(style);
-  els.detailDelete.onclick = () => deleteStyle(style.id);
+  els.detailMaintenance.textContent = `This is a ${style.maintenanceLevel.toLowerCase()} maintenance hairstyle. ${style.maintenance}`;
 
   const similar = state.styles
     .filter((item) => item.id !== style.id && (item.length === style.length || item.hairType === style.hairType || item.gender === style.gender))
@@ -2174,13 +1705,9 @@ function closeDetail() {
 }
 
 function updateDetailLike(id) {
-  updateDetailTextSave(id);
-}
-
-function updateDetailTextSave(id) {
   const liked = state.favourites.has(id);
-  els.detailTextSave.classList.toggle("is-saved", liked);
-  els.detailTextSave.textContent = liked ? "Saved" : "Save";
+  els.detailLike.classList.toggle("is-saved", liked);
+  els.detailLike.textContent = liked ? "Saved" : "Save style";
 }
 
 
@@ -2215,7 +1742,7 @@ async function imageFileToDataUrl(file) {
 
 function selectedFeatures() {
   const features = [];
-  for (const question of QUIZ) {
+  for (const question of DISCOVERY_FILTER_QUESTIONS) {
     for (const value of selectedFor(question)) {
       if (value !== "__all") features.push(value);
     }
@@ -2262,10 +1789,17 @@ function escapeAttr(value) {
 // ---------- Wire up ----------
 function init() {
   els.homeBtn.addEventListener("click", () => setView("welcome"));
-  if (els.stealthAdminToggle) {
-    els.stealthAdminToggle.addEventListener("change", (event) => setAdminMode(event.target.checked));
-  }
-  els.searchNavBtn.addEventListener("click", () => setView("search"));
+  els.topbarSearchInput.addEventListener("focus", () => {
+    if (state.view !== "search") setView("search");
+  });
+  els.topbarSearchInput.addEventListener("input", (event) => {
+    state.searchQuery = event.target.value;
+    if (state.view !== "search") {
+      setView("search");
+      return;
+    }
+    renderSearchGrid();
+  });
   els.favouritesBtn.addEventListener("click", () => {
     renderFavourites();
     els.favouritesOverlay.hidden = false;
@@ -2276,7 +1810,7 @@ function init() {
   els.detailOverlay.addEventListener("click", (event) => {
     if (event.target === els.detailOverlay) closeDetail();
   });
-  els.detailTextSave.addEventListener("click", () => {
+  els.detailLike.addEventListener("click", () => {
     if (currentDetailId) toggleFavourite(currentDetailId);
   });
 
@@ -2325,12 +1859,9 @@ function init() {
       state.previousView = event.state.previousView ?? "welcome";
       writeStored(PREV_VIEW_KEY, state.previousView);
       render();
-    } else if (event.state?.view === "admin") {
-      state.view = "admin";
-      render();
     } else {
       // Fallback for navigation to root or unknown state
-      state.view = isAdminRoute() ? "admin" : "welcome";
+      state.view = "welcome";
       state.previousView = "welcome";
       writeStored(PREV_VIEW_KEY, state.previousView);
       render();

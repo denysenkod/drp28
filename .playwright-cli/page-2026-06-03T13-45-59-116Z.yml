@@ -1,0 +1,31 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic "Question 2 of 5" [ref=e5]:
+        - generic [ref=e6]:
+          - generic [ref=e7]: Question 2 of 5
+          - generic [ref=e8]: 40%
+      - button "Start over" [ref=e12] [cursor=pointer]
+    - generic [ref=e13]:
+      - paragraph [ref=e14]: 02 / 05
+      - heading "What is your desired hair texture?" [level=1] [ref=e15]
+      - paragraph [ref=e16]: Your actual texture will be factored in during our hair maintanence plans.
+    - generic [ref=e17]:
+      - button "Straight" [ref=e18] [cursor=pointer]:
+        - generic [ref=e21]: Straight
+      - button "Wavy" [ref=e23] [cursor=pointer]:
+        - generic [ref=e25]: Wavy
+      - button "Curly" [ref=e27] [cursor=pointer]:
+        - generic [ref=e30]: Curly
+      - button "Coily" [ref=e32] [cursor=pointer]:
+        - generic [ref=e34]: Coily
+      - button "Not sure" [ref=e36] [cursor=pointer]:
+        - img [ref=e38]
+        - generic [ref=e42]: Not sure
+    - generic [ref=e44]:
+      - generic [ref=e45]: Select any that apply
+      - generic [ref=e46]:
+        - button "Back" [ref=e47] [cursor=pointer]
+        - button "Continue" [ref=e48] [cursor=pointer]:
+          - text: Continue
+          - img [ref=e49]

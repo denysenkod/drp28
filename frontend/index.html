@@ -7,21 +7,25 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/styles.css?v=2026-06-04-card-redesign" />
+  <link rel="stylesheet" href="/styles.css?v=2026-06-03-public-ui" />
 </head>
 <body>
   <header class="topbar">
     <div class="brand-zone">
       <button class="brand-btn" id="home-btn" type="button">HairMatch</button>
-      <label class="stealth-admin-switch" title="Admin mode">
-        <span>Admin</span>
-        <input type="checkbox" id="stealth-admin-toggle" aria-label="Admin mode">
-      </label>
     </div>
+    <label class="topbar-search-wrap">
+      <span aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="M16 16l4 4"></path>
+        </svg>
+      </span>
+      <input type="search" id="topbar-search-input" placeholder="Search by length, texture, vibe, or style name" autocomplete="off">
+    </label>
     <nav class="top-actions" aria-label="Primary">
-      <button class="nav-btn" id="search-nav-btn" type="button">Search</button>
       <button class="favourites-btn" id="favourites-btn" type="button">
-        <svg class="nav-heart" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 21s-7.5-4.6-10-9.2C.6 9 1.7 5.2 5.3 5.2c2 0 3.6 1.2 4.7 2.6 1.1-1.4 2.7-2.6 4.7-2.6 3.6 0 4.7 3.8 3.3 6.6C19.5 16.4 12 21 12 21Z" fill="currentColor"/></svg>
+        <span aria-hidden="true">&hearts;</span>
         <span>Saved</span>
         <span class="fav-count" id="fav-count">0</span>
       </button>
@@ -42,33 +46,22 @@
       <div class="detail-layout">
         <div class="detail-image" id="detail-image"></div>
         <div class="detail-copy">
-          <div class="detail-title-row">
-            <div class="detail-title-text">
-              <p class="eyebrow" id="detail-meta">Style</p>
-              <h2 id="detail-name">Style</h2>
-            </div>
-            <div class="detail-header-actions">
-              <span class="detail-upkeep-badge" id="detail-upkeep-badge"></span>
-            </div>
+          <p class="eyebrow" id="detail-meta">Style</p>
+          <h2 id="detail-name">Style</h2>
+
+          <div class="detail-actions">
+            <button class="primary-btn" id="detail-like" type="button">Save style</button>
           </div>
 
-          <div class="detail-save-section">
-            <button class="detail-save-btn" id="detail-text-save" type="button"></button>
-          </div>
-
-          <div class="detail-suitability">
-            <h3>Suitability and Maintenance</h3>
-            <p class="detail-maintenance-body" id="detail-maintenance"></p>
-          </div>
-
-          <div class="admin-attribute-editor" id="detail-attribute-admin" hidden></div>
-          <div class="admin-label-editor" id="detail-label-admin" hidden></div>
-          <button class="danger-btn" id="detail-delete" type="button" hidden>Delete</button>
+          <section class="detail-section">
+            <h3>How to maintain it</h3>
+            <p id="detail-maintenance"></p>
+          </section>
         </div>
       </div>
 
       <section class="similar-section">
-        <h3>Maybe you'd like these too?</h3>
+        <h3>More like this</h3>
         <div class="similar-results" id="similar-results"></div>
       </section>
     </div>
@@ -86,6 +79,7 @@
     </div>
   </div>
 
-  <script src="/app.js?v=2026-06-04-card-redesign"></script>
+
+  <script src="/app.js?v=2026-06-03-public-ui"></script>
 </body>
 </html>
