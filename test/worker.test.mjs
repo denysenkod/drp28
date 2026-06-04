@@ -550,11 +550,7 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(app.includes('optionGroupPasses(style, "face"'));
   assert.ok(app.includes('optionGroupPasses(style, "ethnicity", (option) => optionEthnicityMatch(style, option))'));
   assert.ok(app.includes('const haystack = styleHaystack(style);'));
-<<<<<<< Updated upstream
   assert.ok(app.includes('const results = scoredStyles(refined);'));
-=======
-  assert.ok(app.includes('const results = scoredStyles(filtered);'));
->>>>>>> Stashed changes
   assert.ok(app.includes('toggleFavourite'));
   assert.ok(index.includes('data-filter="gender"'));
   assert.ok(index.includes('id="detail-gender"'));
