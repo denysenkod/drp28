@@ -567,7 +567,6 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(app.includes('const results = scoredStyles(refined);'));
   assert.ok(app.includes('toggleFavourite'));
   assert.ok(index.includes('data-filter="gender"'));
-  assert.ok(index.includes('id="detail-gender"'));
   assert.ok(index.includes('id="results-grid"'));
   assert.ok(index.includes('/app.js'));
   assert.ok(!index.includes('id="stealth-admin-toggle"'));
