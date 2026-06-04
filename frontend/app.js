@@ -442,7 +442,7 @@ const QUIZ = [
     options: [
       { value: "low", label: "I'd rather not", upkeep: "Low" },
       { value: "medium", label: "Some is fine", products: ["sea-salt-spray", "texture-powder", "matte-paste"], upkeep: "Medium" },
-      { value: "high", label: "All of it", products: ["curl-cream", "gel", "heat-protectant", "pomade", "hair-oil"], upkeep: "High" }
+      { value: "high", label: "All of it", products: ["curl-cream", "sea-salt-spray", "texture-powder", "matte-paste", "pomade", "gel", "heat-protectant", "hair-oil"], upkeep: "High" }
     ]
   },
 ];
@@ -1530,6 +1530,13 @@ function sliderOptionProducts(option) {
 // Product image thumbnails for an option's example products. They sit under the
 // maintenance answer and open the matching product page when tapped. Shown only
 // when the option lists some products.
+// Column count for the product grid: one column per product up to 4, so 3
+// products read as a single 3-wide row and 8 wrap into a 2x4 grid.
+function sliderProductsColsClass(products) {
+  const cols = Math.min((products || []).length || 1, 4);
+  return `slider-products--cols-${cols}`;
+}
+
 function sliderProductsHtml(products) {
   return (products || []).map((product) => {
     const src = (product.images && product.images[0]) || "";
@@ -1576,8 +1583,8 @@ function renderSliderQuestion(question, selected) {
         >
         <span class="slider-end-label">${escapeHtml(regularOptions[regularOptions.length - 1].label)}</span>
       </div>
-      <p class="slider-description" style="margin-top: 16px; font-size: 18px; color: #666; text-align: center;" ${hasProducts ? "" : "hidden"}>Here are some examples</p>
-      <div class="slider-products" ${hasProducts ? "" : "hidden"}>${sliderProductsHtml(displayProducts)}</div>
+      <p class="slider-description" style="margin-top: 16px; font-size: 18px; color: #666; text-align: center;" ${hasProducts ? "" : "hidden"}>Maitanence-level equivalent hair products: </p>
+      <div class="slider-products ${sliderProductsColsClass(displayProducts)}" ${hasProducts ? "" : "hidden"}>${sliderProductsHtml(displayProducts)}</div>
       <p class="slider-product-hint" ${hasProducts ? "" : "hidden"}>Tap a product to learn more about it</p>
       ${exclusiveOption ? `
         <div class="scale-skip-row">
@@ -1615,11 +1622,12 @@ function wireSliderQuestion(question) {
         const products = sliderOptionProducts(option);
         const hasProducts = products.length > 0;
         if (descDiv) {
-          descDiv.textContent = hasProducts ? "Here are some examples" : "";
+          descDiv.textContent = hasProducts ? "Maitanence-level equivalent hair products: " : "";
           descDiv.hidden = !hasProducts;
         }
         if (productsDiv) {
           productsDiv.innerHTML = sliderProductsHtml(products);
+          productsDiv.className = `slider-products ${sliderProductsColsClass(products)}`;
           productsDiv.hidden = !hasProducts;
           wireProductLinks(productsDiv);
         }

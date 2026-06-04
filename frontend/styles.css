@@ -714,15 +714,34 @@ body[data-view="quiz"] .app-shell {
 }
 
 .slider-products {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 160px));
   justify-content: center;
   gap: 16px;
   margin-top: 16px;
 }
 
+.slider-products--cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 160px));
+}
+
+.slider-products--cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 160px));
+}
+
+.slider-products--cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 160px));
+}
+
 .slider-products[hidden] {
   display: none;
+}
+
+@media (max-width: 600px) {
+  .slider-products,
+  .slider-products--cols-3 {
+    grid-template-columns: repeat(2, minmax(0, 160px));
+  }
 }
 
 .slider-product {
@@ -730,7 +749,7 @@ body[data-view="quiz"] .app-shell {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  width: 160px;
+  width: 100%;
   text-decoration: none;
   color: inherit;
   transition: transform 120ms ease;
@@ -741,8 +760,8 @@ body[data-view="quiz"] .app-shell {
 }
 
 .slider-product-thumb {
-  width: 160px;
-  height: 160px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
   border-radius: 14px;
   overflow: hidden;
   background: var(--surface, #f3f0ec);
