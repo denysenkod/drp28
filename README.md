@@ -120,7 +120,9 @@ columns, and also backfills the existing UI filter columns.
 The broad `hair_type` remains `straight`, `wavy`, `curly`, or `coily`;
 `hair_subtype` stores the finer `1A` through `4C` pattern. The model used is
 stored in `analysis_model`, and the classification timestamp is stored in
-`classified_at`.
+`classified_at`. The classifier also stores `ethnicity` using the supported
+gallery categories and `celebrity`, which is set to a public figure name only
+when existing row text explicitly identifies one; otherwise it stores `none`.
 
 Set your OpenAI key locally in `.env`:
 

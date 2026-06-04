@@ -37,6 +37,15 @@ const ANALYSIS_SCHEMA = {
       description: 'Presentation category for the hairstyle in the image.',
       enum: ['male', 'female']
     },
+    ethnicity: {
+      type: 'string',
+      description: 'Best estimate of the visible person ethnicity category for hairstyle inspiration matching.',
+      enum: ['black', 'south east asian', 'asian', 'south-asian', 'latino', 'middle-eastern', 'white']
+    },
+    celebrity: {
+      type: 'string',
+      description: 'Public figure name only when the provided title or source text explicitly names a celebrity; otherwise exactly "none".'
+    },
     upkeep: {
       type: 'string',
       description: 'Estimated maintenance difficulty for keeping this haircut styled day to day.',
@@ -66,6 +75,8 @@ const ANALYSIS_SCHEMA = {
     'length',
     'face_shape',
     'gender',
+    'ethnicity',
+    'celebrity',
     'upkeep',
     'haircut_name',
     'hair_colour',
@@ -310,6 +321,8 @@ Classify:
 - length: very short, short, medium, long, or very long
 - face_shape: oval, round, square, heart, diamond, rectangle, or triangle
 - gender: male or female
+- ethnicity: black, south east asian, asian, south-asian, latino, middle-eastern, or white
+- celebrity: a public figure name only if the existing title or source text explicitly identifies one; otherwise none
 - upkeep: low, medium, or high
 - haircut_name: concise salon-friendly haircut name
 - hair_colour: concise visible hair colour
@@ -322,7 +335,8 @@ Hair Subtype guidance:
 - 3A is loose curls, 3B is springy ringlets, 3C is tight corkscrew curls.
 - 4A is tight S-shaped coils, 4B is dense zig-zag coils, 4C is the tightest densely packed coil pattern.
 
-Existing gallery title: ${row.title || 'Untitled'}`;
+Existing gallery title: ${row.title || 'Untitled'}
+Existing gallery image URL/source: ${row.image_url || ''}`;
 }
 
 async function analyzeImage(row, apiKey, model) {
@@ -408,7 +422,18 @@ function validateAnalysis(value) {
     }
   }
 
-  return Object.fromEntries(keys.map((key) => [key, value[key].trim()]));
+  const analysis = Object.fromEntries(keys.map((key) => [key, value[key].trim()]));
+  analysis.celebrity = normalizeCelebrity(analysis.celebrity);
+  return analysis;
+}
+
+function normalizeCelebrity(value) {
+  const trimmed = value.trim();
+  const normalized = trimmed.toLowerCase();
+  if (['none', 'no', 'unknown', 'n/a', 'na', 'not a celebrity', 'not celebrity'].includes(normalized)) {
+    return 'none';
+  }
+  return trimmed;
 }
 
 function sqlString(value) {
@@ -440,6 +465,8 @@ function mergeLabels(row, analysis) {
     analysis.length,
     analysis.face_shape,
     analysis.gender,
+    analysis.ethnicity,
+    analysis.celebrity === 'none' ? '' : analysis.celebrity,
     analysis.upkeep,
     analysis.haircut_name,
     analysis.hair_colour,
@@ -464,6 +491,8 @@ SET
   hair_subtype = ${sqlString(analysis.hair_subtype)},
   length = ${sqlString(analysis.length)},
   face_shape = ${sqlString(analysis.face_shape)},
+  ethnicity = ${sqlString(analysis.ethnicity)},
+  celebrity = ${sqlString(analysis.celebrity)},
   upkeep = ${sqlString(analysis.upkeep)},
   haircut_name = ${sqlString(analysis.haircut_name)},
   hair_colour = ${sqlString(analysis.hair_colour)},

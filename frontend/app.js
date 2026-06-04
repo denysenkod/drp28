@@ -524,6 +524,8 @@ function galleryItemToStyle(item, index) {
     hairSubtype: String(item.hairSubtype || analysis.hairSubtype || "").trim(),
     length,
     gender,
+    ethnicity: String(item.ethnicity || analysis.ethnicity || "").trim().toLowerCase(),
+    celebrity: String(item.celebrity || analysis.celebrity || "none").trim(),
     maintenanceLevel,
     faceShape: normalizeFaceShape(item.faceShape || analysis.faceShape),
     vibe: String(item.vibe || analysis.vibe || "").trim().toLowerCase(),
@@ -571,6 +573,9 @@ const els = {
   detailImage: $("#detail-image"),
   detailMeta: $("#detail-meta"),
   detailName: $("#detail-name"),
+  detailGender: $("#detail-gender"),
+  detailLength: $("#detail-length"),
+  detailTexture: $("#detail-texture"),
   detailLike: $("#detail-like"),
   detailMaintenance: $("#detail-maintenance"),
   similarResults: $("#similar-results"),
@@ -872,6 +877,8 @@ function styleHaystack(style) {
     style.length,
     style.hairType,
     style.hairSubtype,
+    style.ethnicity,
+    style.celebrity,
     style.gender,
     style.maintenanceLevel,
     style.faceShape,
@@ -1468,8 +1475,6 @@ function wireDiscoveryControls() {
       renderCurrentDiscoveryView({ preserveFilterScroll: true });
     });
   }
-  const drawerStartOver = $("#drawer-start-over-btn");
-  if (drawerStartOver) drawerStartOver.addEventListener("click", startOver);
   document.querySelectorAll("[data-filter-group]").forEach((details) => {
     details.addEventListener("toggle", () => {
       if (details.open) state.openFilterGroups.add(details.dataset.filterGroup);
@@ -1541,7 +1546,6 @@ function renderAnswerFilterDrawer(selectedCount) {
       <p class="answer-filter-copy">Adjust the profile from one place. Results update as soon as you change an answer.</p>
       <div class="answer-filter-actions">
         <button class="secondary-btn" id="clear-filters-btn" type="button">Clear answers</button>
-        <button class="secondary-btn" id="drawer-start-over-btn" type="button">Start over</button>
       </div>
       <div class="answer-filter-count">${selectedCount || 0} selected</div>
       <div class="answer-filter-groups">
@@ -1700,6 +1704,9 @@ function openDetail(id) {
   appendImage(els.detailImage, style);
   els.detailMeta.textContent = `${style.gender} - ${style.length} length`;
   els.detailName.textContent = style.name;
+  els.detailGender.textContent = style.gender;
+  els.detailLength.textContent = style.length;
+  els.detailTexture.textContent = style.hairType;
   els.detailMaintenance.textContent = `This is a ${style.maintenanceLevel.toLowerCase()} maintenance hairstyle. ${style.maintenance}`;
 
   const similar = state.styles

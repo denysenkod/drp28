@@ -133,6 +133,8 @@ function rowToGalleryImage(row: any): Record<string, unknown> {
       length: normalizeLength(row.length),
       faceShape: row.face_shape || '',
       gender: normalizeGender(row.gender),
+      ethnicity: row.ethnicity || '',
+      celebrity: row.celebrity || 'none',
       upkeep: normalizeMaintenanceLevel(row.upkeep),
       haircutName: row.haircut_name || '',
       hairColour: row.hair_colour || '',

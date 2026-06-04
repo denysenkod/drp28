@@ -312,6 +312,8 @@ test('stores and lists gallery images in D1', async () => {
     length: 'Medium',
     faceShape: '',
     gender: 'Women',
+    ethnicity: '',
+    celebrity: 'none',
     upkeep: 'Low',
     haircutName: '',
     hairColour: '',
@@ -597,6 +599,7 @@ test('gallery image AI analysis script is wired to D1 and structured outputs', a
   const subtypeMigration = await readFile(new URL('../migrations/0010_gallery_image_hair_subtype.sql', import.meta.url), 'utf8');
   const cleanupMigration = await readFile(new URL('../migrations/0011_remove_analysis_column_prefix.sql', import.meta.url), 'utf8');
   const blockedRowsMigration = await readFile(new URL('../migrations/0012_delete_blocked_allthingshair_rows.sql', import.meta.url), 'utf8');
+  const demographicsMigration = await readFile(new URL('../migrations/0013_gallery_image_demographics.sql', import.meta.url), 'utf8');
   const script = await readFile(new URL('../scripts/analyze-gallery-images.mjs', import.meta.url), 'utf8');
   const packageJson = await readFile(new URL('../package.json', import.meta.url), 'utf8');
 
@@ -609,6 +612,8 @@ test('gallery image AI analysis script is wired to D1 and structured outputs', a
   assert.match(blockedRowsMigration, /ath-asianwomen-%/);
   assert.match(blockedRowsMigration, /assets\.unileversolutions\.com/);
   assert.match(blockedRowsMigration, /classified_at = ''/);
+  assert.match(demographicsMigration, /ADD COLUMN ethnicity/);
+  assert.match(demographicsMigration, /ADD COLUMN celebrity/);
   assert.match(migration, /analysis_face_shape/);
   assert.match(migration, /analysis_hair_colour/);
   assert.match(migration, /analysis_maintenance/);
@@ -626,6 +631,10 @@ test('gallery image AI analysis script is wired to D1 and structured outputs', a
   assert.match(script, /Subtype guidance:/);
   assert.match(script, /enum: \['straight', 'wavy', 'curly', 'coily'\]/);
   assert.match(script, /enum: \['1A', '1B', '1C', '2A', '2B', '2C', '3A', '3B', '3C', '4A', '4B', '4C'\]/);
+  assert.match(script, /enum: \['black', 'south east asian', 'asian', 'south-asian', 'latino', 'middle-eastern', 'white'\]/);
+  assert.match(script, /celebrity: a public figure name only if/);
+  assert.match(script, /ethnicity =/);
+  assert.match(script, /celebrity =/);
   assert.match(script, /hair_subtype =/);
   assert.match(script, /classified_at = CURRENT_TIMESTAMP/);
   assert.match(script, /analysis_model =/);
