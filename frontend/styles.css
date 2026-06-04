@@ -1824,3 +1824,162 @@ body[data-view="quiz"] .app-shell {
     padding: 20px;
   }
 }
+
+/* ---------- Hair product popup ---------- */
+.product-link {
+  color: var(--accent-2);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.product-link:hover {
+  color: var(--accent);
+}
+
+.detail-products {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.product-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.product-chip:hover {
+  border-color: var(--line-strong);
+}
+
+.product-chip-go svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+  color: var(--accent-2);
+}
+
+/* The product popup sits above the hairstyle popup it can be opened from. */
+#product-overlay {
+  z-index: 120;
+}
+
+#product-overlay .overlay-card {
+  width: min(680px, 100%);
+}
+
+.product-popup {
+  max-width: 100%;
+}
+
+.product-popup h2 {
+  margin: 6px 0 12px;
+  font-family: var(--font-serif);
+  font-size: 38px;
+  line-height: 1.06;
+}
+
+.product-description {
+  margin: 0 0 24px;
+  font-size: 17px;
+  color: var(--muted);
+}
+
+.product-photos {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.product-photo {
+  margin: 0;
+}
+
+.product-photo-frame {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.product-photo-frame img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-photo-placeholder {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-size: 13px;
+}
+
+.product-photo figcaption {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.product-howto {
+  margin-bottom: 28px;
+}
+
+.product-howto h3,
+.product-result h3 {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  margin: 0 0 14px;
+}
+
+.product-howto ol {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.product-howto li {
+  margin-bottom: 6px;
+}
+
+.product-transition {
+  display: block;
+}
+
+.product-arrow svg {
+  width: 32px;
+  height: 32px;
+  color: var(--accent-2);
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .product-popup h2 {
+    font-size: 30px;
+  }
+
+  .product-photos {
+    grid-template-columns: 1fr;
+  }
+}

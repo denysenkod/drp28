@@ -206,6 +206,121 @@ const FALLBACK_STYLES = [
   }
 ];
 
+// ---------- Hair products ----------
+// Each styling product mentioned across the app (quiz copy, maintenance tips,
+// hairstyle popups) gets its own page. `matchTerms` are the phrases linkified in
+// free text; `images` are the product shots and `after` is the result image.
+// Image paths are placeholders under /Images/products/ - drop the real photos in
+// at those paths and they replace the labelled boxes.
+const PRODUCTS = {
+  "curl-cream": {
+    id: "curl-cream",
+    name: "Curl Cream",
+    description: "A leave-in styling cream that defines and softens curls, fights frizz, and keeps coils springy without the crunch of a gel.",
+    matchTerms: ["curl creams", "curl cream"],
+    howToUse: [
+      "Work a coin-sized amount through soaking-wet hair, root to tip.",
+      "Scrunch upward toward the scalp to encourage the curl pattern.",
+      "Air-dry or diffuse on low heat - don't touch it while it sets."
+    ],
+    images: ["https://www.boucleme.co.uk/cdn/shop/products/Texture-Resize-New-Website_0000s_0008_Curl-Cream_38362f76-0fcd-4fb6-96db-d48e34789a26.png?v=1718805205&width=1946", "https://joanmorais.com/wp-content/uploads/2023/12/curl-cream.png"],
+    after: "https://slickgorilla.co.uk/cdn/shop/files/slick-gorilla-curl-cream-1228741454.jpg?v=1774957054&width=1080"
+  },
+  "sea-salt-spray": {
+    id: "sea-salt-spray",
+    name: "Sea Salt Spray",
+    description: "A spritz that mimics the tousled, lived-in texture of a day at the beach. Adds grip and matte volume to limp or fine hair.",
+    matchTerms: ["sea salt spray", "salt spray"],
+    howToUse: [
+      "Mist evenly over damp or dry hair from a few inches away.",
+      "Scrunch with your hands to build piece-y texture.",
+      "Leave it natural or rough-dry for extra lift."
+    ],
+    images: ["https://honorinitiative.com/cdn/shop/files/Sea_Salt_Spray_Lifestyle_1080x.jpg?v=1718452261"],
+    after: "https://poseidonhair.com/cdn/shop/products/Before_and_after_styling_with_Poseidon_Hair_Sea_Salt_Spray.jpg?v=1772621538&width=1946"
+  },
+  "texture-powder": {
+    id: "texture-powder",
+    name: "Texture Powder",
+    description: "A weightless powder that instantly adds volume and a matte, gritty finish at the roots. Great for fine hair that falls flat.",
+    matchTerms: ["texture powders", "texture powder", "texturising powder", "texturizing powder"],
+    howToUse: [
+      "Tap a small amount directly onto dry roots.",
+      "Massage in with your fingertips to lift and separate.",
+      "Build up gradually - a little goes a long way."
+    ],
+    images: ["https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcTlNgTsG7gKamdDyDSprJHK2FEJuzPL2Z2DQhpI1DoOw3LukIslWSO6d4ugw3wwG-OdUBfkxykXWLptoYF9O5xsBIsE4GmM48b0--IABp6TrBDXGN4vB84OebxMSi-W8zt5Yhq3iUS6_g&usqp=CAc"],
+    after: "https://poseidonhair.com/cdn/shop/products/Before_and_after_Poseidon_Hair_Texture_Powder.jpg?v=1760989538&width=1946"
+  },
+  "matte-paste": {
+    id: "matte-paste",
+    name: "Matte Paste",
+    description: "A pliable, low-shine paste that shapes and holds short to medium styles with a natural, never-greasy finish.",
+    matchTerms: ["matte paste", "paste", "clay"],
+    howToUse: [
+      "Warm a fingertip of paste between your palms.",
+      "Push through towel-dried or dry hair to shape the silhouette.",
+      "Restyle through the day - it stays workable."
+    ],
+    images: ["https://ultimategrooming.co.uk/wp-content/uploads/2020/11/F139E730-A7D3-4170-B220-548C613B72A6.jpeg"],
+    after: "https://blumaan.com/cdn/shop/files/UGC-3.webp?v=1742848247"
+  },
+  "pomade": {
+    id: "pomade",
+    name: "Pomade",
+    description: "A classic styling pomade for slick, polished looks with a glossy finish and firm, restylable hold.",
+    matchTerms: ["pomade"],
+    howToUse: [
+      "Emulsify a small amount between your hands.",
+      "Comb through damp hair for a sleek finish, or dry hair for more texture.",
+      "Shape the parting and edges with a fine comb."
+    ],
+    images: ["https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-FroBgNrW3TliLIi_S1T7dvCKS_gBAO7Ydg&s"],
+    after: "https://slickgorilla.co.uk/cdn/shop/files/slick-gorilla-clay-pomade-1228741436.jpg?v=1774957257&width=1080"
+  },
+  "gel": {
+    id: "gel",
+    name: "Styling Gel",
+    description: "A firm-hold gel for slick, structured looks with a wet-to-glossy finish. Locks a parting or a swept-back shape in place and keeps it there all day.",
+    matchTerms: ["styling gel", "gel"],
+    howToUse: [
+      "Rake a small amount through damp hair, root to tip.",
+      "Comb it into the shape you want - a parting, a slick back, or height at the front.",
+      "Let it set undisturbed; scrunch it out later for a softer, broken finish."
+    ],
+    images: ["https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKpx-s2fppsC16eQyovrWNoDPswl6fHon7uQ&s"],
+    after: "https://sammcknight.com/cdn/shop/products/SELFCONTROLBEFORE_AFTERHARRY_450x.jpg?v=1757606877"
+  },
+  "heat-protectant": {
+    id: "heat-protectant",
+    name: "Heat Protectant Spray",
+    description: "A lightweight shield that guards strands from heat damage before you reach for straighteners, curlers, or a blow-dryer.",
+    matchTerms: ["heat protectant", "hair straighteners", "straighteners", "curlers"],
+    howToUse: [
+      "Mist evenly over damp or dry hair before any heat styling.",
+      "Comb through so every section is coated.",
+      "Then straighten, curl, or blow-dry as usual."
+    ],
+    images: ["https://m.media-amazon.com/images/I/511R8f-IS4L.jpg"],
+    after: "https://i0.wp.com/www.makeupandbeautyhome.com/wp-content/uploads/2014/12/diy-hair-spray-before-after.jpg?fit=650%2C650"
+  },
+  "hair-oil": {
+    id: "hair-oil",
+    name: "Hair Oil",
+    description: "A nourishing finishing oil that tames frizz, adds healthy shine, and smooths split ends on longer or dry hair.",
+    matchTerms: ["hair oil", "smoothing product", "serum"],
+    howToUse: [
+      "Warm a few drops between your palms.",
+      "Smooth over the mid-lengths and ends, avoiding the roots.",
+      "Use on damp hair before drying or dry hair to finish."
+    ],
+    images: ["https://img.freepik.com/premium-photo/transparent-glass-bottle-with-body-oil-unbranded-container-with-dispenser-shadow-background-moisturizing-repair-damaged-hair-cosmetology-beauty-concept-place-text-right-side_97916-1062.jpg"],
+    after: "https://rehabyourhair.com/cdn/shop/files/BeforeAfters-HairOil1.jpg?v=1744718230&width=2480"
+  }
+};
+
+const PRODUCT_LIST = Object.values(PRODUCTS);
+
 // Base length choices, shared across all genders. When the survey targets a
 // single gender these are shown as-is; when it targets both genders each one is
 // expanded into a male and a female variant (see buildLengthOptions).
@@ -489,14 +604,58 @@ function inferLabels(title, features = []) {
   return [...new Set(labels)].slice(0, 8);
 }
 
-function detailsForStyle(title, length, hairType, description) {
-  const low = length === "Short";
-  const maintenance = low
-    ? "Keep the outline clean with a trim every 3 to 5 weeks. Use a small amount of matte paste or cream to control shape without making it stiff."
-    : "Refresh the shape every 6 to 8 weeks. Dry with fingers or a vent brush first, then add light texture or smoothing product only where needed.";
+// Cut-specific maintenance advice. The first matching pattern wins, so colour
+// treatments and distinctive cuts are checked before generic ones. When nothing
+// matches, the routine falls back to the hair type and length. Product names in
+// the copy are linkified into the product popups when the text is rendered.
+const CUT_MAINTENANCE = [
+  [/(frosted|dyed|bleach|bleached|highlight|platinum|colou?r)/,
+    "Coloured hair needs babying: always use a heat protectant before styling and a colour-safe shampoo to slow fading. Top up the tone whenever you notice regrowth at the roots or the colour starting to fade, and keep the ends soft with a little hair oil."],
+  [/(mullet|shag|rockstar|rat tail)/,
+    "The short-top, long-back contrast is the whole look, so book a trim once the contrast starts to blur to keep it sharp. Scrunch sea salt spray through damp hair and let it air-dry for that lived-in texture, or tap in a little texture powder at the roots for extra grit."],
+  [/(curtain|fringe)/,
+    "Trim the fringe once it grows long enough to fall into your eyes so it keeps framing your face. Rough-dry it forwards, work in a little sea salt spray for separation, then split the parting with your fingers."],
+  [/(edgar|caesar|french crop|\bcrop\b)/,
+    "Keep the fringe blunt and the sides tight - book a trim as soon as the outline starts to soften. Push a pea-sized scoop of matte paste through dry hair and forward at the fringe for that flat finish, or tap in some texture powder at the roots if it falls flat."],
+  [/(buzz|induction|\bcrew\b)/,
+    "Barely any upkeep: run the clippers over it whenever the edges lose their crispness. Massage a drop of hair oil into the scalp so the skin doesn't look dry, and that's about it."],
+  [/(quiff|pompadour|pomp|slick|undercut)/,
+    "Build height at the front with a blow-dry, then lock it in - gel or pomade for a high-shine hold, or matte paste for a drier finish. For fine hair, tap texture powder into the roots first for lift. Tidy the sides whenever the contrast between top and sides softens."],
+  [/(side part|side parting|centre part|center part|classic|wall street|art dealer)/,
+    "A clean parting is everything here, so book a trim once the shape starts to grow out. Comb gel or pomade through damp hair, set the part with the comb, and blow-dry to one side for a polished finish."],
+  [/(grow out|grown out|grow-out|\bmod\b|mod-ish|sweep|\bflow\b)/,
+    "This one is about length, so go easy on the scissors - just dust the ends when they start to look straggly. Work sea salt spray through damp hair for body, then sweep it back with your fingers."],
+  [/(pixie)/,
+    "A pixie grows out fast, so book a shape-up as soon as it starts to lose its outline. Warm a little matte paste between your fingers and piece out the top, or tap in some texture powder at the roots for lift and movement."],
+  [/(\bbob\b|\blob\b)/,
+    "Keep the line blunt with a trim once the ends start to lose their shape. Blow-dry with a round brush for body, add texture powder at the roots if it falls flat, smooth flyaways with a touch of hair oil, and reach for a heat protectant whenever you use irons."]
+];
 
+function maintenanceForStyle(title, length, hairType, features = []) {
+  const text = `${slugWords(title)} ${features.join(" ")}`.toLowerCase();
+  for (const [pattern, copy] of CUT_MAINTENANCE) {
+    if (pattern.test(text)) return copy;
+  }
+
+  // Fall back to the hair type, then the overall length.
+  if (hairType === "Coily Hair") {
+    return "Coils love moisture: work curl cream through soaking-wet hair, scrunch upwards, then air-dry or diffuse on low. Refresh with water and a little hair oil between wash days, and shape up whenever the curls start to lose their definition.";
+  }
+  if (hairType === "Curly Hair") {
+    return "Define the curls with curl cream on soaking-wet hair, scrunching upward, then diffuse or air-dry without touching it while it sets. A little hair oil on day two tames frizz.";
+  }
+  if (hairType === "Wavy Hair") {
+    return "Encourage the wave with sea salt spray on damp hair, scrunching as it dries. Trim the ends when they start to look ragged and finish with a drop of hair oil.";
+  }
+  if (length === "Short" || length === "Very Short") {
+    return "Keep the outline clean with a trim whenever the edges start to grow out. A small amount of matte paste through dry hair controls the shape without making it stiff.";
+  }
+  return "Refresh the shape whenever it starts to lose its form. Blow-dry with a brush for movement, then smooth the ends with a little hair oil only where you need it.";
+}
+
+function detailsForStyle(title, length, hairType, features = []) {
   return {
-    maintenance,
+    maintenance: maintenanceForStyle(title, length, hairType, features),
     barber: `Ask for ${title.toLowerCase()} with a ${length.toLowerCase()} overall length and a finish that works with ${hairType.toLowerCase()}. Bring the reference image and ask them to adapt the silhouette to your density and growth pattern.`
   };
 }
@@ -509,7 +668,7 @@ function galleryItemToStyle(item, index) {
   const hairType = normalizeHairType(item.hairType || item.texture) || inferHairType(title, features);
   const gender = normalizeGender(item.gender) || inferGender(title, features);
   const maintenanceLevel = normalizeMaintenanceLevel(item.maintenanceLevel || item.upkeep) || inferMaintainability(title, length);
-  const detail = detailsForStyle(title, length, hairType, item.description || "");
+  const detail = detailsForStyle(title, length, hairType, features);
   const defaultLabels = [...new Set([...inferLabels(title, features), length.toLowerCase(), hairType.toLowerCase(), gender.toLowerCase()])];
   const labels = Array.isArray(item.labels) ? normalizeLabelList(item.labels) : defaultLabels;
   const maintenance = item.maintenance || analysis.maintenance || detail.maintenance;
@@ -558,6 +717,7 @@ const state = {
 
 const pendingFavouriteOps = new Map();
 let currentDetailId = null;
+let currentProductId = null;
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -573,12 +733,22 @@ const els = {
   detailName: $("#detail-name"),
   detailLike: $("#detail-like"),
   detailMaintenance: $("#detail-maintenance"),
+  detailProductsSection: $("#detail-products-section"),
+  detailProducts: $("#detail-products"),
   similarResults: $("#similar-results"),
   closeDetail: $("#close-detail"),
   favouritesOverlay: $("#favourites-overlay"),
   favouritesGrid: $("#favourites-grid"),
   favouritesEmpty: $("#favourites-empty"),
-  closeFavourites: $("#close-favourites")
+  closeFavourites: $("#close-favourites"),
+  productOverlay: $("#product-overlay"),
+  productName: $("#product-name"),
+  productDescription: $("#product-description"),
+  productPhotos: $("#product-photos"),
+  productHowtoSection: $("#product-howto-section"),
+  productHowto: $("#product-howto"),
+  productTransition: $("#product-transition"),
+  closeProduct: $("#close-product")
 };
 
 function setView(view) {
@@ -1700,7 +1870,25 @@ function openDetail(id) {
   appendImage(els.detailImage, style);
   els.detailMeta.textContent = `${style.gender} - ${style.length} length`;
   els.detailName.textContent = style.name;
-  els.detailMaintenance.textContent = `This is a ${style.maintenanceLevel.toLowerCase()} maintenance hairstyle. ${style.maintenance}`;
+  const maintenanceText = `This is a ${style.maintenanceLevel.toLowerCase()} maintenance hairstyle. ${style.maintenance}`;
+  els.detailMaintenance.innerHTML = linkifyProducts(escapeHtml(maintenanceText));
+
+  // The chips mirror exactly the products highlighted in the text above, in the
+  // same reading order, so the two lists always stay consistent.
+  const products = productsInText(maintenanceText);
+  if (products.length) {
+    els.detailProducts.innerHTML = products.map((product) => `
+      <a class="product-chip" href="?product=${product.id}" data-product="${product.id}">
+        <span class="product-chip-name">${escapeHtml(product.name)}</span>
+        <span class="product-chip-go" aria-hidden="true">${iconArrow()}</span>
+      </a>
+    `).join("");
+    els.detailProductsSection.hidden = false;
+  } else {
+    els.detailProducts.innerHTML = "";
+    els.detailProductsSection.hidden = true;
+  }
+  wireProductLinks(els.detailOverlay);
 
   const similar = state.styles
     .filter((item) => item.id !== style.id && (item.length === style.length || item.hairType === style.hairType || item.gender === style.gender))
@@ -1723,6 +1911,108 @@ function updateDetailLike(id) {
   const liked = state.favourites.has(id);
   els.detailLike.classList.toggle("is-saved", liked);
   els.detailLike.textContent = liked ? "Saved" : "Save style";
+}
+
+// ---------- Hair product pages ----------
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// Turns product mentions inside already-escaped HTML-safe text into links that
+// open the matching product popup. Each product is linked at most once.
+function linkifyProducts(safeText) {
+  let result = safeText;
+  const linked = new Set();
+  // Longer phrases first so "curl cream" wins over a bare "cream"-style alias.
+  const terms = PRODUCT_LIST
+    .flatMap((product) => product.matchTerms.map((term) => ({ product, term })))
+    .sort((a, b) => b.term.length - a.term.length);
+
+  for (const { product, term } of terms) {
+    if (linked.has(product.id)) continue;
+    const re = new RegExp(`\\b(${escapeRegExp(term)})\\b`, "i");
+    if (!re.test(result)) continue;
+    result = result.replace(re, `<a class="product-link" href="?product=${product.id}" data-product="${product.id}">$1</a>`);
+    linked.add(product.id);
+  }
+
+  return result;
+}
+
+// Returns the products mentioned in a piece of text, in the order they first
+// appear. Uses the same term matching as linkifyProducts, so the chips shown in
+// the popup are exactly the products highlighted in the description.
+function productsInText(text) {
+  const matches = [];
+  for (const product of PRODUCT_LIST) {
+    let firstIndex = -1;
+    for (const term of product.matchTerms) {
+      const match = new RegExp(`\\b${escapeRegExp(term)}\\b`, "i").exec(text);
+      if (match && (firstIndex === -1 || match.index < firstIndex)) firstIndex = match.index;
+    }
+    if (firstIndex !== -1) matches.push({ product, index: firstIndex });
+  }
+  return matches.sort((a, b) => a.index - b.index).map((entry) => entry.product);
+}
+
+// A labelled image frame. The placeholder caption shows until a real photo is
+// dropped in at the product's image path (a missing image removes the <img>).
+function productPhoto(src, label, extraClass = "") {
+  return `
+    <figure class="product-photo ${extraClass}">
+      <div class="product-photo-frame">
+        ${src ? `<img src="${escapeAttr(src)}" alt="${escapeAttr(label)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}
+        <span class="product-photo-placeholder">${escapeHtml(label)}</span>
+      </div>
+      <figcaption>${escapeHtml(label)}</figcaption>
+    </figure>
+  `;
+}
+
+// Opens the product popup. It can sit on top of the hairstyle popup it was
+// launched from, so closing it reveals the hairstyle again.
+function openProduct(id) {
+  const product = PRODUCTS[id];
+  if (!product) return;
+  currentProductId = product.id;
+
+  els.productName.textContent = product.name;
+  els.productDescription.textContent = product.description;
+  els.productPhotos.innerHTML = (product.images || []).map((src, index) =>
+    productPhoto(src, index === 0 ? "Product photo" : "Another angle")
+  ).join("");
+
+  if (Array.isArray(product.howToUse) && product.howToUse.length) {
+    els.productHowto.innerHTML = product.howToUse.map((step) => `<li>${escapeHtml(step)}</li>`).join("");
+    els.productHowtoSection.hidden = false;
+  } else {
+    els.productHowto.innerHTML = "";
+    els.productHowtoSection.hidden = true;
+  }
+
+  els.productTransition.innerHTML = productPhoto(product.after, "Result");
+
+  els.productOverlay.hidden = false;
+  els.productOverlay.scrollTop = 0;
+  document.body.style.overflow = "hidden";
+}
+
+function closeProduct() {
+  els.productOverlay.hidden = true;
+  currentProductId = null;
+  // The hairstyle or favourites popup may still be open underneath.
+  if (els.detailOverlay.hidden && els.favouritesOverlay.hidden) document.body.style.overflow = "";
+}
+
+// Wires product links inside a given scope to open the product popup instead of
+// doing a full navigation.
+function wireProductLinks(scope = document) {
+  scope.querySelectorAll("[data-product]").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      openProduct(link.dataset.product);
+    });
+  });
 }
 
 
@@ -1840,9 +2130,16 @@ function init() {
     }
   });
 
+  els.closeProduct.addEventListener("click", closeProduct);
+  els.productOverlay.addEventListener("click", (event) => {
+    if (event.target === els.productOverlay) closeProduct();
+  });
+
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
-    if (!els.detailOverlay.hidden) closeDetail();
+    // The product popup can sit on top of the others, so close it first.
+    if (!els.productOverlay.hidden) closeProduct();
+    else if (!els.detailOverlay.hidden) closeDetail();
     else if (!els.favouritesOverlay.hidden) {
       els.favouritesOverlay.hidden = true;
       document.body.style.overflow = "";
