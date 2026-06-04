@@ -84,6 +84,27 @@ function iconCheck() {
   return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7" ${iconAttrs}/></svg>`;
 }
 
+function iconHeart(filled) {
+  const fill = filled ? "currentColor" : "none";
+
+  return `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
+           2 5.42 4.42 3 7.5 3
+           c1.74 0 3.41.81 4.5 2.09
+           C13.09 3.81 14.76 3 16.5 3
+           19.58 3 22 5.42 22 8.5
+           c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+        fill="${fill}"
+        stroke="currentColor"
+        stroke-width="1.7"
+        stroke-linejoin="round"
+        stroke-linecap="round"
+      />
+    </svg>
+  `;
+}
 function textureIcon(kind) {
   const columns = [8, 16, 24].map((x) => x * 2);
   if (kind === "straight") {
@@ -128,6 +149,7 @@ function lengthIcon(level) {
   const len = [4, 12, 20, 28, 38, 48][level] || 20;
   return `<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="16" r="8" ${iconAttrs}/><path d="M24 16q-6 4-6 ${len}M40 16q6 4 6 ${len}" ${iconAttrs}/></svg>`;
 }
+
 
 // ---------- Data ----------
 const FALLBACK_STYLES = [
@@ -584,28 +606,19 @@ const els = {
   detailImage: $("#detail-image"),
   detailMeta: $("#detail-meta"),
   detailName: $("#detail-name"),
-  detailDescription: $("#detail-description"),
   detailLike: $("#detail-like"),
-  detailBarberOpen: $("#detail-barber-open"),
+  detailUpkeepBadge: $("#detail-upkeep-badge"),
   detailDelete: $("#detail-delete"),
-  detailLength: $("#detail-length"),
-  detailHairtype: $("#detail-hairtype"),
-  detailGender: $("#detail-gender"),
-  detailMaintenanceLevel: $("#detail-maintenance-level"),
   detailMaintenance: $("#detail-maintenance"),
+  detailTextSave: $("#detail-text-save"),
   detailAttributeAdmin: $("#detail-attribute-admin"),
-  detailLabels: $("#detail-labels"),
   detailLabelAdmin: $("#detail-label-admin"),
   similarResults: $("#similar-results"),
   closeDetail: $("#close-detail"),
   favouritesOverlay: $("#favourites-overlay"),
   favouritesGrid: $("#favourites-grid"),
   favouritesEmpty: $("#favourites-empty"),
-  closeFavourites: $("#close-favourites"),
-  barberOverlay: $("#barber-overlay"),
-  barberStyleName: $("#barber-style-name"),
-  barberText: $("#barber-text"),
-  closeBarber: $("#close-barber")
+  closeFavourites: $("#close-favourites")
 };
 
 function setView(view) {
@@ -1774,9 +1787,9 @@ function buildStyleCardHtml(style, compact = false) {
         <div class="style-card-footer">
           <div>
             <h2>${escapeHtml(style.name)}</h2>
-            <p>${style.length} - ${style.hairType}</p>
+            <p>${style.length} Length - ${style.hairType}</p>
           </div>
-          <button class="heart-btn ${liked ? "is-liked" : ""}" type="button" data-like-style="${style.id}" aria-label="${liked ? "Remove from saved" : "Save style"}">${liked ? "&hearts;" : "&#9825;"}</button>
+          <button class="heart-btn ${liked ? "is-liked" : ""}" type="button" data-like-style="${style.id}" aria-label="${liked ? "Remove from saved" : "Save style"}">${iconHeart(liked)}</button>
         </div>
         ${renderAdminCardPanel(style)}
       `}
@@ -1867,7 +1880,6 @@ function refreshVisibleStyleLabels(id, statusText = "", statusKind = "") {
   });
 
   if (currentDetailId === style.id && !els.detailOverlay.hidden) {
-    els.detailLabels.innerHTML = renderLabelChips(style.labels);
     renderAdminLabelEditor(style, statusText, statusKind);
   }
 }
@@ -1883,12 +1895,8 @@ function refreshVisibleStyleAttributes(id, statusText = "", statusKind = "") {
   });
 
   if (currentDetailId === style.id && !els.detailOverlay.hidden) {
-    els.detailMeta.textContent = `${style.gender} - ${style.length}`;
-    els.detailLength.textContent = style.length;
-    els.detailHairtype.textContent = style.hairType;
-    els.detailGender.textContent = style.gender;
-    els.detailMaintenanceLevel.textContent = style.maintenanceLevel;
-    els.detailMaintenance.textContent = style.maintenance;
+    els.detailMeta.textContent = `${style.gender} - ${style.length} Length`;
+    renderDetailMaintenance(style);
     renderAdminAttributeEditor(style, statusText, statusKind);
   }
 }
@@ -2118,6 +2126,16 @@ function refreshOpenDetailAdminControls() {
 }
 
 // ---------- Detail overlay ----------
+function renderDetailMaintenance(style) {
+  els.detailUpkeepBadge.hidden = true;
+  if (style.maintenance && style.maintenanceLevel) {
+    const levelText = `This is a ${style.maintenanceLevel.toLowerCase()} maintenance hairstyle. `;
+    els.detailMaintenance.textContent = levelText + style.maintenance;
+  } else {
+    els.detailMaintenance.textContent = style.maintenance || "";
+  }
+}
+
 function appendImage(frame, style) {
   frame.innerHTML = style.imageUrl
     ? `<img src="${style.imageUrl}" alt="${escapeAttr(style.name)}" loading="lazy" referrerpolicy="no-referrer">`
@@ -2130,16 +2148,10 @@ function openDetail(id) {
   currentDetailId = style.id;
 
   appendImage(els.detailImage, style);
-  els.detailMeta.textContent = `${style.gender} - ${style.length}`;
+  els.detailMeta.textContent = `${style.gender} - ${style.length} Length`;
   els.detailName.textContent = style.name;
-  els.detailDescription.textContent = style.description || "A reference style from the current gallery.";
-  els.detailLength.textContent = style.length;
-  els.detailHairtype.textContent = style.hairType;
-  els.detailGender.textContent = style.gender;
-  els.detailMaintenanceLevel.textContent = style.maintenanceLevel;
-  els.detailMaintenance.textContent = style.maintenance;
+  renderDetailMaintenance(style);
   renderAdminAttributeEditor(style);
-  els.detailLabels.innerHTML = renderLabelChips(style.labels);
   renderAdminLabelEditor(style);
   els.detailDelete.hidden = !canAdminEditStyle(style);
   els.detailDelete.onclick = () => deleteStyle(style.id);
@@ -2151,7 +2163,6 @@ function openDetail(id) {
   wireCards(els.similarResults);
 
   updateDetailLike(style.id);
-  els.detailBarberOpen.onclick = () => openBarber(style.id);
   els.detailOverlay.hidden = false;
   document.body.style.overflow = "hidden";
 }
@@ -2159,28 +2170,19 @@ function openDetail(id) {
 function closeDetail() {
   els.detailOverlay.hidden = true;
   currentDetailId = null;
-  if (els.favouritesOverlay.hidden && els.barberOverlay.hidden) document.body.style.overflow = "";
+  if (els.favouritesOverlay.hidden) document.body.style.overflow = "";
 }
 
 function updateDetailLike(id) {
+  updateDetailTextSave(id);
+}
+
+function updateDetailTextSave(id) {
   const liked = state.favourites.has(id);
-  els.detailLike.classList.toggle("is-saved", liked);
-  els.detailLike.textContent = liked ? "Saved" : "Save style";
+  els.detailTextSave.classList.toggle("is-saved", liked);
+  els.detailTextSave.textContent = liked ? "Saved" : "Save";
 }
 
-function openBarber(id) {
-  const style = state.styles.find((item) => item.id === String(id));
-  if (!style) return;
-  els.barberStyleName.textContent = style.name;
-  els.barberText.textContent = style.barber;
-  els.barberOverlay.hidden = false;
-  document.body.style.overflow = "hidden";
-}
-
-function closeBarber() {
-  els.barberOverlay.hidden = true;
-  if (els.favouritesOverlay.hidden && els.detailOverlay.hidden) document.body.style.overflow = "";
-}
 
 // ---------- Upload handler ----------
 function fileToDataUrl(file) {
@@ -2274,30 +2276,24 @@ function init() {
   els.detailOverlay.addEventListener("click", (event) => {
     if (event.target === els.detailOverlay) closeDetail();
   });
-  els.detailLike.addEventListener("click", () => {
+  els.detailTextSave.addEventListener("click", () => {
     if (currentDetailId) toggleFavourite(currentDetailId);
   });
 
   els.closeFavourites.addEventListener("click", () => {
     els.favouritesOverlay.hidden = true;
-    if (els.detailOverlay.hidden && els.barberOverlay.hidden) document.body.style.overflow = "";
+    if (els.detailOverlay.hidden) document.body.style.overflow = "";
   });
   els.favouritesOverlay.addEventListener("click", (event) => {
     if (event.target === els.favouritesOverlay) {
       els.favouritesOverlay.hidden = true;
-      if (els.detailOverlay.hidden && els.barberOverlay.hidden) document.body.style.overflow = "";
+      if (els.detailOverlay.hidden) document.body.style.overflow = "";
     }
-  });
-
-  els.closeBarber.addEventListener("click", closeBarber);
-  els.barberOverlay.addEventListener("click", (event) => {
-    if (event.target === els.barberOverlay) closeBarber();
   });
 
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
-    if (!els.barberOverlay.hidden) closeBarber();
-    else if (!els.detailOverlay.hidden) closeDetail();
+    if (!els.detailOverlay.hidden) closeDetail();
     else if (!els.favouritesOverlay.hidden) {
       els.favouritesOverlay.hidden = true;
       document.body.style.overflow = "";

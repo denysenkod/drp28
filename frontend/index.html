@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/styles.css?v=2026-06-01-admin-delete" />
+  <link rel="stylesheet" href="/styles.css?v=2026-06-04-card-redesign" />
 </head>
 <body>
   <header class="topbar">
@@ -21,7 +21,7 @@
     <nav class="top-actions" aria-label="Primary">
       <button class="nav-btn" id="search-nav-btn" type="button">Search</button>
       <button class="favourites-btn" id="favourites-btn" type="button">
-        <span aria-hidden="true">&hearts;</span>
+        <svg class="nav-heart" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 21s-7.5-4.6-10-9.2C.6 9 1.7 5.2 5.3 5.2c2 0 3.6 1.2 4.7 2.6 1.1-1.4 2.7-2.6 4.7-2.6 3.6 0 4.7 3.8 3.3 6.6C19.5 16.4 12 21 12 21Z" fill="currentColor"/></svg>
         <span>Saved</span>
         <span class="fav-count" id="fav-count">0</span>
       </button>
@@ -42,51 +42,33 @@
       <div class="detail-layout">
         <div class="detail-image" id="detail-image"></div>
         <div class="detail-copy">
-          <p class="eyebrow" id="detail-meta">Style</p>
-          <h2 id="detail-name">Style</h2>
-          <p class="detail-description" id="detail-description"></p>
-
-          <div class="detail-actions">
-            <button class="primary-btn" id="detail-like" type="button">Save style</button>
-            <button class="secondary-btn" id="detail-barber-open" type="button">Barber notes</button>
-            <button class="danger-btn" id="detail-delete" type="button" hidden>Delete</button>
+          <div class="detail-title-row">
+            <div class="detail-title-text">
+              <p class="eyebrow" id="detail-meta">Style</p>
+              <h2 id="detail-name">Style</h2>
+            </div>
+            <div class="detail-header-actions">
+              <span class="detail-upkeep-badge" id="detail-upkeep-badge"></span>
+            </div>
           </div>
 
-          <dl class="detail-specs">
-            <div>
-              <dt>Length</dt>
-              <dd id="detail-length"></dd>
-            </div>
-            <div>
-              <dt>Texture</dt>
-              <dd id="detail-hairtype"></dd>
-            </div>
-            <div>
-              <dt>Gender</dt>
-              <dd id="detail-gender"></dd>
-            </div>
-            <div>
-              <dt>Upkeep</dt>
-              <dd id="detail-maintenance-level"></dd>
-            </div>
-          </dl>
+          <div class="detail-save-section">
+            <button class="detail-save-btn" id="detail-text-save" type="button"></button>
+          </div>
+
+          <div class="detail-suitability">
+            <h3>Suitability and Maintenance</h3>
+            <p class="detail-maintenance-body" id="detail-maintenance"></p>
+          </div>
+
           <div class="admin-attribute-editor" id="detail-attribute-admin" hidden></div>
-
-          <section class="detail-section">
-            <h3>How to maintain it</h3>
-            <p id="detail-maintenance"></p>
-          </section>
-
-          <section class="detail-section">
-            <h3>Labels</h3>
-            <div class="detail-labels" id="detail-labels"></div>
-            <div class="admin-label-editor" id="detail-label-admin" hidden></div>
-          </section>
+          <div class="admin-label-editor" id="detail-label-admin" hidden></div>
+          <button class="danger-btn" id="detail-delete" type="button" hidden>Delete</button>
         </div>
       </div>
 
       <section class="similar-section">
-        <h3>More like this</h3>
+        <h3>Maybe you'd like these too?</h3>
         <div class="similar-results" id="similar-results"></div>
       </section>
     </div>
@@ -104,15 +86,6 @@
     </div>
   </div>
 
-  <div class="overlay" id="barber-overlay" hidden>
-    <div class="overlay-card overlay-card-small">
-      <button class="close-btn" id="close-barber" type="button" aria-label="Close">&times;</button>
-      <p class="eyebrow">Barber notes</p>
-      <h2 id="barber-style-name">Style</h2>
-      <p class="barber-text" id="barber-text"></p>
-    </div>
-  </div>
-
-  <script src="/app.js?v=2026-06-01-admin-delete"></script>
+  <script src="/app.js?v=2026-06-04-card-redesign"></script>
 </body>
 </html>
