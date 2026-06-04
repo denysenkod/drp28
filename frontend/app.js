@@ -1206,6 +1206,34 @@ function optionLengthMatch(style, option) {
   return true;
 }
 
+function hashStr(str) {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return h;
+}
+
+function seededShuffle(arr, seed) {
+  const result = [...arr];
+  let s = seed >>> 0;
+  for (let i = result.length - 1; i > 0; i--) {
+    s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
+    const j = s % (i + 1);
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+function answerSeed() {
+  const key = Object.entries(state.answers)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `${k}:${JSON.stringify(v)}`)
+    .join("|");
+  return hashStr(key);
+}
+
 function scoreStyle(style) {
   let score = 0;
   const haystack = styleHaystack(style);
@@ -1260,7 +1288,12 @@ function scoredStyles(styles = state.styles) {
     ? styles.filter((style) => styleAnswers.some((option) => style.gender === option.gender))
     : styles;
   const source = hardFiltered.length ? hardFiltered : styles;
-  return [...source].sort((a, b) => scoreStyle(b) - scoreStyle(a));
+  const seed = answerSeed();
+  return [...source].sort((a, b) => {
+    const scoreDiff = scoreStyle(b) - scoreStyle(a);
+    if (scoreDiff !== 0) return scoreDiff;
+    return hashStr(a.id + seed) - hashStr(b.id + seed);
+  });
 }
 
 function optionGroupPasses(style, questionId, matcher) {
@@ -2065,7 +2098,7 @@ function filteredSearchStyles() {
     return tokens.every((token) => haystack.includes(token));
   });
 
-  if (!selectedAnswerCount()) return queryMatches;
+  if (!selectedAnswerCount()) return seededShuffle(queryMatches, hashStr(q || "all"));
 
   const answerMatches = queryMatches.filter(stylePassesAnswerFilters);
   return scoredStyles(answerMatches);
