@@ -11,6 +11,8 @@
     "analyze:gallery:remote": "node scripts/analyze-gallery-images.mjs --remote",
     "analyze:celebrities:local": "node scripts/analyze-gallery-celebrities.mjs --local",
     "analyze:celebrities:remote": "node scripts/analyze-gallery-celebrities.mjs --remote",
+    "analyze:hair-attributes:local": "node scripts/analyze-gallery-hair-attributes.mjs --local",
+    "analyze:hair-attributes:remote": "node scripts/analyze-gallery-hair-attributes.mjs --remote",
     "dev:local": "node local-dev.mjs",
     "start": "npx wrangler dev",
     "test": "node --test"

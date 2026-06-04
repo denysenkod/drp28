@@ -235,10 +235,12 @@ async function seedGalleryFromMigrations() {
           gender: normalizeGender(row.gender) || inferSeedGender({ id: row.id, imageUrl: row.image_url, features }),
           length: normalizeLength(row.length),
           hairType: normalizeHairType(row.hair_type),
+          hairThickness: row.hair_thickness || '',
           maintenanceLevel: normalizeMaintenanceLevel(row.upkeep),
           analysis: {
             hairType: normalizeHairType(row.hair_type),
             hairSubtype: row.hair_subtype || '',
+            hairThickness: row.hair_thickness || '',
             length: normalizeLength(row.length),
             faceShape: row.face_shape || '',
             gender: normalizeGender(row.gender),

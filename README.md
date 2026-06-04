@@ -165,6 +165,19 @@ npm run analyze:celebrities:remote -- --limit 10 --dry-run
 npm run analyze:celebrities:remote
 ```
 
+To fill hair thickness and canonical hair colour metadata, run the hair
+attributes analyzer. `hair_colour` already exists from the full classifier;
+the `0014` migration adds `hair_thickness` and indexes both fields.
+
+```bash
+npm run db:migrate:local
+npm run analyze:hair-attributes:local -- --limit 10 --dry-run
+npm run analyze:hair-attributes:local
+npm run db:migrate:remote
+npm run analyze:hair-attributes:remote -- --limit 10 --dry-run
+npm run analyze:hair-attributes:remote
+```
+
 Useful options:
 
 ```bash

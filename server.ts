@@ -126,10 +126,12 @@ function rowToGalleryImage(row: any): Record<string, unknown> {
     gender: normalizeGender(row.gender),
     length: normalizeLength(row.length),
     hairType: normalizeHairType(row.hair_type),
+    hairThickness: row.hair_thickness || '',
     maintenanceLevel: normalizeMaintenanceLevel(row.upkeep),
     analysis: {
       hairType: normalizeHairType(row.hair_type),
       hairSubtype: row.hair_subtype || '',
+      hairThickness: row.hair_thickness || '',
       length: normalizeLength(row.length),
       faceShape: row.face_shape || '',
       gender: normalizeGender(row.gender),

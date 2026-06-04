@@ -391,8 +391,10 @@ const REFINE_FILTERS = [
     noun: "hair thickness",
     question: "What is your hair thickness?",
     options: [
+      { value: "especially thin", label: "Especially thin" },
+      { value: "thin", label: "Thin" },
       { value: "thick", label: "Thick" },
-      { value: "thin", label: "Thin" }
+      { value: "especially thick", label: "Especially thick" }
     ]
   }
 ];
@@ -564,6 +566,7 @@ function galleryItemToStyle(item, index) {
     labels,
     hairType,
     hairSubtype: String(item.hairSubtype || analysis.hairSubtype || "").trim(),
+    hairThickness: String(item.hairThickness || analysis.hairThickness || "").trim().toLowerCase(),
     length,
     gender,
     ethnicity: String(item.ethnicity || analysis.ethnicity || "").trim().toLowerCase(),
@@ -924,6 +927,7 @@ function styleHaystack(style) {
     style.length,
     style.hairType,
     style.hairSubtype,
+    style.hairThickness,
     style.ethnicity,
     style.celebrity,
     style.gender,
@@ -966,6 +970,17 @@ function optionUpkeepMatch(style, option) {
 
 function optionEthnicityMatch(style, option) {
   return Boolean(option.value && option.value !== "none" && style.ethnicity === option.value);
+}
+
+function hairColourKey(value) {
+  const text = normalizeSearchText(value);
+  if (!text) return "";
+  if (text.includes("black")) return "black";
+  if (text.includes("brown") || text.includes("brunette")) return "brown";
+  if (text.includes("blonde") || text.includes("blond")) return "blonde";
+  if (text.includes("red") || text.includes("auburn") || text.includes("ginger")) return "red";
+  if (text.includes("grey") || text.includes("gray") || text.includes("silver")) return "grey";
+  return "other";
 }
 
 function optionLengthMatch(style, option) {
@@ -1427,6 +1442,17 @@ function applyRefineFilters(styles) {
   if (faceShapes.size > 0) {
     styles = styles.filter((style) => faceShapes.has(style.faceShape));
   }
+
+  const hairColours = state.refineFilters.hair_colour;
+  if (hairColours.size > 0) {
+    styles = styles.filter((style) => hairColours.has(hairColourKey(style.hairColour)));
+  }
+
+  const thickness = state.refineFilters.thickness;
+  if (thickness) {
+    styles = styles.filter((style) => style.hairThickness === thickness);
+  }
+
   return styles;
 }
 
