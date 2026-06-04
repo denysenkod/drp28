@@ -8,88 +8,23 @@ const DEFAULT_MODEL = 'gpt-5-mini-2025-08-07';
 const OPENAI_RESPONSES_URL = 'https://api.openai.com/v1/responses';
 const REPO_ROOT = fileURLToPath(new URL('..', import.meta.url));
 
-const ANALYSIS_SCHEMA = {
+const CELEBRITY_SCHEMA = {
   type: 'object',
   additionalProperties: false,
   properties: {
-    hair_type: {
-      type: 'string',
-      description: 'Broad visible curl pattern category for the hairstyle.',
-      enum: ['straight', 'wavy', 'curly', 'coily']
-    },
-    hair_subtype: {
-      type: 'string',
-      description: 'Detailed Andre Walker hair typing subtype: 1A-1C straight, 2A-2C wavy, 3A-3C curly, 4A-4C coily.',
-      enum: ['1A', '1B', '1C', '2A', '2B', '2C', '3A', '3B', '3C', '4A', '4B', '4C']
-    },
-    length: {
-      type: 'string',
-      description: 'Visible hair length category based on where the hair falls on the head, neck, shoulders, or below.',
-      enum: ['very short', 'short', 'medium', 'long', 'very long']
-    },
-    face_shape: {
-      type: 'string',
-      description: 'Best estimate of the visible face shape in the image.',
-      enum: ['oval', 'round', 'square', 'heart', 'diamond', 'rectangle', 'triangle']
-    },
-    gender: {
-      type: 'string',
-      description: 'Presentation category for the hairstyle in the image.',
-      enum: ['male', 'female']
-    },
-    ethnicity: {
-      type: 'string',
-      description: 'Best estimate of the visible person ethnicity category for hairstyle inspiration matching.',
-      enum: ['black', 'south east asian', 'asian', 'south-asian', 'latino', 'middle-eastern', 'white']
-    },
     celebrity: {
       type: 'string',
-      description: 'public figure/celebrity name only if can be recognized from the image; if this is not a famous celebrity but just a random person put exactly "none".'
-    },
-    upkeep: {
-      type: 'string',
-      description: 'Estimated maintenance difficulty for keeping this haircut styled day to day.',
-      enum: ['low', 'medium', 'high']
-    },
-    haircut_name: {
-      type: 'string',
-      description: 'Short salon-friendly name for the haircut or hairstyle.'
-    },
-    hair_colour: {
-      type: 'string',
-      description: 'Concise visible hair color, including notable tones such as blonde, brunette, black, red, silver, balayage, highlighted, or dyed.'
-    },
-    vibe: {
-      type: 'string',
-      description: 'Overall style impression conveyed by the haircut.',
-      enum: ['casual', 'professional', 'classic', 'bold', 'soft', 'natural', 'playful']
-    },
-    maintenance: {
-      type: 'string',
-      description: 'Exactly two practical sentences explaining how to maintain this haircut or hairstyle.'
+      description:
+        'Exact public figure, celebrity, actor, musician, athlete, influencer, model, politician, or otherwise notable person name if confidently identifiable; otherwise exactly "none".'
     }
   },
-  required: [
-    'hair_type',
-    'hair_subtype',
-    'length',
-    'face_shape',
-    'gender',
-    'ethnicity',
-    'celebrity',
-    'upkeep',
-    'haircut_name',
-    'hair_colour',
-    'vibe',
-    'maintenance'
-  ]
+  required: ['celebrity']
 };
 
 function parseArgs(argv) {
   const options = {
     databaseBinding: 'DB',
     dryRun: false,
-    force: false,
     limit: null,
     location: 'local',
     delayMs: 300,
@@ -108,8 +43,6 @@ function parseArgs(argv) {
       options.location = 'local';
     } else if (arg === '--dry-run') {
       options.dryRun = true;
-    } else if (arg === '--force') {
-      options.force = true;
     } else if (arg === '--limit') {
       options.limit = readPositiveInteger(argv[++index], '--limit');
     } else if (arg.startsWith('--limit=')) {
@@ -164,15 +97,14 @@ function readNonNegativeInteger(value, name) {
 }
 
 function printHelp() {
-  console.log(`Analyze gallery image URLs with OpenAI and write attributes back to D1.
+  console.log(`Analyze gallery image URLs and backfill celebrity names only for rows currently set to "none".
 
 Usage:
-  OPENAI_API_KEY=... node scripts/analyze-gallery-images.mjs [--local|--remote] [options]
+  OPENAI_API_KEY=... node scripts/analyze-gallery-celebrities.mjs [--local|--remote] [options]
 
 Options:
   --local              Read/write the local Wrangler D1 database. Default.
   --remote             Read/write the remote Cloudflare D1 database.
-  --force              Re-analyze rows that already have classified_at.
   --dry-run            Analyze and print output without updating D1.
   --limit <n>          Analyze at most n rows.
   --delay-ms <n>       Delay between OpenAI requests. Default: 300.
@@ -278,24 +210,13 @@ async function runD1(sql, options) {
 }
 
 async function fetchRows(options) {
-  const where = [
-    "image_url IS NOT NULL",
-    "TRIM(image_url) <> ''"
-  ];
-
-  if (!options.force) {
-    where.push(`(
-      classified_at IS NULL OR classified_at = '' OR
-      ethnicity IS NULL OR ethnicity = '' OR
-      celebrity IS NULL OR celebrity = ''
-    )`);
-  }
-
   const limitSql = options.limit ? ` LIMIT ${options.limit}` : '';
   const response = await runD1(
-    `SELECT id, title, image_url, labels_json, features_json, classified_at, ethnicity, celebrity
+    `SELECT id, title, description, image_url, labels_json, celebrity
      FROM gallery_images
-     WHERE ${where.join(' AND ')}
+     WHERE image_url IS NOT NULL
+       AND TRIM(image_url) <> ''
+       AND LOWER(TRIM(celebrity)) = 'none'
      ORDER BY created_at ASC${limitSql};`,
     options
   );
@@ -315,31 +236,19 @@ function unwrapD1Results(response) {
 }
 
 function buildPrompt(row) {
-  return `Analyze this hairstyle image for HairMatch.
+  return `Analyze this gallery image for HairMatch.
 
-Return only structured data matching the provided schema. Use the visible hairstyle as the source of truth.
+Return only structured data matching the provided schema.
 
-Classify:
-- hair_type: straight, wavy, curly, or coily
-- hair_subtype: 1A, 1B, or 1C for straight hair; 2A, 2B, or 2C for wavy hair; 3A, 3B, or 3C for curly hair; 4A, 4B, or 4C for coily hair
-- length: very short, short, medium, long, or very long
-- face_shape: oval, round, square, heart, diamond, rectangle, or triangle
-- gender: male or female
-- ethnicity: black, south east asian, asian, south-asian, latino, middle-eastern, or white
-- celebrity: a public figure name only if can be recognized from the image; if this is not a famous celebrity but just a random person put exactly "none"
-- upkeep: low, medium, or high
-- haircut_name: concise salon-friendly haircut name
-- hair_colour: concise visible hair colour
-- vibe: casual, professional, classic, bold, soft, natural, or playful
-- maintenance: exactly two sentences explaining how to maintain it
-
-Hair Subtype guidance:
-- 1A is very straight/fine, 1B is straight with medium body, 1C is straight/coarser with slight bend.
-- 2A is loose waves, 2B is defined S-waves, 2C is strong waves with some curl.
-- 3A is loose curls, 3B is springy ringlets, 3C is tight corkscrew curls.
-- 4A is tight S-shaped coils, 4B is dense zig-zag coils, 4C is the tightest densely packed coil pattern.
+Goal:
+- If the image clearly shows, or the row context clearly identifies, a real public figure, celebrity, actor, athlete, musician, model, influencer, politician, or other notable person, return that person's commonly used full name.
+- If the person is not confidently identifiable as a public figure, return exactly "none".
+- Do not guess from resemblance. Only return a name when you are confident.
+- If multiple people are visible, return the most prominent public figure only when confidently identifiable; otherwise return "none".
 
 Existing gallery title: ${row.title || 'Untitled'}
+Existing gallery description: ${row.description || ''}
+Existing current celebrity value: ${row.celebrity || ''}
 Existing gallery image URL/source: ${row.image_url || ''}`;
 }
 
@@ -370,9 +279,9 @@ async function analyzeImage(row, apiKey, model) {
       text: {
         format: {
           type: 'json_schema',
-          name: 'haircut_image_analysis',
+          name: 'gallery_celebrity_analysis',
           strict: true,
-          schema: ANALYSIS_SCHEMA
+          schema: CELEBRITY_SCHEMA
         }
       }
     })
@@ -419,22 +328,31 @@ function extractOutputText(value) {
 }
 
 function validateAnalysis(value) {
-  const keys = ANALYSIS_SCHEMA.required;
-  for (const key of keys) {
-    if (typeof value?.[key] !== 'string' || !value[key].trim()) {
-      throw new Error(`OpenAI output is missing "${key}".`);
-    }
+  if (typeof value?.celebrity !== 'string' || !value.celebrity.trim()) {
+    throw new Error('OpenAI output is missing "celebrity".');
   }
 
-  const analysis = Object.fromEntries(keys.map((key) => [key, value[key].trim()]));
-  analysis.celebrity = normalizeCelebrity(analysis.celebrity);
-  return analysis;
+  return {
+    celebrity: normalizeCelebrity(value.celebrity)
+  };
 }
 
 function normalizeCelebrity(value) {
   const trimmed = value.trim();
   const normalized = trimmed.toLowerCase();
-  if (['none', 'no', 'unknown', 'n/a', 'na', 'not a celebrity', 'not celebrity'].includes(normalized)) {
+  if (
+    [
+      'none',
+      'no',
+      'unknown',
+      'n/a',
+      'na',
+      'not a celebrity',
+      'not celebrity',
+      'not identifiable',
+      'unidentified'
+    ].includes(normalized)
+  ) {
     return 'none';
   }
   return trimmed;
@@ -443,10 +361,6 @@ function normalizeCelebrity(value) {
 function sqlString(value) {
   if (value === null || value === undefined) return 'NULL';
   return `'${String(value).replaceAll("'", "''")}'`;
-}
-
-function normalizeUiGender(value) {
-  return value === 'male' ? 'Men' : 'Women';
 }
 
 function parseJsonList(value) {
@@ -460,22 +374,8 @@ function parseJsonList(value) {
   }
 }
 
-function mergeLabels(row, analysis) {
-  const labels = [
-    ...parseJsonList(row.labels_json),
-    ...parseJsonList(row.features_json),
-    analysis.hair_type,
-    analysis.hair_subtype,
-    analysis.length,
-    analysis.face_shape,
-    analysis.gender,
-    analysis.ethnicity,
-    analysis.celebrity === 'none' ? '' : analysis.celebrity,
-    analysis.upkeep,
-    analysis.haircut_name,
-    analysis.hair_colour,
-    analysis.vibe
-  ];
+function mergeCelebrityLabel(row, celebrity) {
+  const labels = [...parseJsonList(row.labels_json), celebrity];
   const seen = new Set();
 
   return labels.filter((label) => {
@@ -487,33 +387,35 @@ function mergeLabels(row, analysis) {
   });
 }
 
-async function updateRow(row, analysis, model, options) {
-  const labels = mergeLabels(row, analysis);
+async function updateRow(row, analysis, options) {
+  if (analysis.celebrity === 'none') {
+    if (options.dryRun) {
+      console.log(JSON.stringify({ id: row.id, title: row.title, celebrity: 'none', action: 'skip' }, null, 2));
+    }
+    return false;
+  }
+
+  const labels = mergeCelebrityLabel(row, analysis.celebrity);
   const sql = `UPDATE gallery_images
 SET
-  hair_type = ${sqlString(analysis.hair_type)},
-  hair_subtype = ${sqlString(analysis.hair_subtype)},
-  length = ${sqlString(analysis.length)},
-  face_shape = ${sqlString(analysis.face_shape)},
-  ethnicity = ${sqlString(analysis.ethnicity)},
   celebrity = ${sqlString(analysis.celebrity)},
-  upkeep = ${sqlString(analysis.upkeep)},
-  haircut_name = ${sqlString(analysis.haircut_name)},
-  hair_colour = ${sqlString(analysis.hair_colour)},
-  vibe = ${sqlString(analysis.vibe)},
-  maintenance = ${sqlString(analysis.maintenance)},
-  analysis_model = ${sqlString(model)},
-  classified_at = CURRENT_TIMESTAMP,
-  gender = ${sqlString(normalizeUiGender(analysis.gender))},
   labels_json = ${sqlString(JSON.stringify(labels))}
-WHERE id = ${sqlString(row.id)};`;
+WHERE id = ${sqlString(row.id)}
+  AND LOWER(TRIM(celebrity)) = 'none';`;
 
   if (options.dryRun) {
-    console.log(JSON.stringify({ id: row.id, title: row.title, analysis }, null, 2));
-    return;
+    console.log(
+      JSON.stringify(
+        { id: row.id, title: row.title, celebrity: analysis.celebrity, action: 'update' },
+        null,
+        2
+      )
+    );
+    return true;
   }
 
   await runD1(sql, options);
+  return true;
 }
 
 async function withRetries(label, attempts, task) {
@@ -536,19 +438,25 @@ async function withRetries(label, attempts, task) {
 }
 
 async function processRow(row, index, total, apiKey, model, options) {
-  console.log(`[${index + 1}/${total}] Analyzing ${row.id}: ${row.title || row.image_url}`);
+  console.log(`[${index + 1}/${total}] Checking ${row.id}: ${row.title || row.image_url}`);
 
   const analysis = await withRetries(
-    `OpenAI analysis for ${row.id}`,
+    `OpenAI celebrity analysis for ${row.id}`,
     options.retries,
     () => analyzeImage(row, apiKey, model)
   );
 
-  await withRetries(
-    `D1 update for ${row.id}`,
+  const updated = await withRetries(
+    `D1 celebrity update for ${row.id}`,
     options.retries,
-    () => updateRow(row, analysis, model, options)
+    () => updateRow(row, analysis, options)
   );
+
+  if (updated) {
+    console.log(`[${index + 1}/${total}] ${row.id}: ${analysis.celebrity}`);
+  } else {
+    console.log(`[${index + 1}/${total}] ${row.id}: no public figure found`);
+  }
 
   if (options.delayMs > 0) {
     await sleep(options.delayMs);
@@ -599,11 +507,11 @@ async function main() {
   const model = process.env.OPENAI_MODEL || DEFAULT_MODEL;
   const rows = await fetchRows(options);
 
-  console.log(`Found ${rows.length} gallery image row(s) to analyze in ${options.location} D1.`);
+  console.log(`Found ${rows.length} gallery image row(s) with celebrity = "none" in ${options.location} D1.`);
   const failures = await processRows(rows, apiKey, model, options);
 
   if (failures.length) {
-    console.error(`Gallery image analysis finished with ${failures.length} failed row(s):`);
+    console.error(`Gallery celebrity analysis finished with ${failures.length} failed row(s):`);
     for (const failure of failures) {
       console.error(`- ${failure.id}${failure.title ? ` (${failure.title})` : ''}: ${failure.error}`);
     }
@@ -611,7 +519,11 @@ async function main() {
     return;
   }
 
-  console.log(options.dryRun ? 'Dry run complete. No D1 rows were updated.' : 'Gallery image analysis complete.');
+  console.log(
+    options.dryRun
+      ? 'Dry run complete. No D1 rows were updated.'
+      : 'Gallery celebrity analysis complete.'
+  );
 }
 
 main().catch((error) => {

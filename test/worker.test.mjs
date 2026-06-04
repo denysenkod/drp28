@@ -305,13 +305,17 @@ test('stores and lists gallery images in D1', async () => {
   assert.equal(created.item.gender, 'Women');
   assert.equal(created.item.length, 'Medium');
   assert.equal(created.item.hairType, 'Wavy Hair');
+  assert.equal(created.item.hairThickness, '');
   assert.equal(created.item.maintenanceLevel, 'Low');
   assert.deepEqual(created.item.analysis, {
     hairType: 'Wavy Hair',
     hairSubtype: '',
+    hairThickness: '',
     length: 'Medium',
     faceShape: '',
     gender: 'Women',
+    ethnicity: '',
+    celebrity: 'none',
     upkeep: 'Low',
     haircutName: '',
     hairColour: '',
@@ -541,10 +545,26 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(app.includes('normalizeGender(item.gender)'));
   assert.ok(app.includes('inferGender'));
   assert.ok(app.includes('faceShape: normalizeFaceShape'));
+  assert.ok(app.includes('function preferenceOptions(question)'));
+  assert.ok(app.includes('function selectedPreferenceValues(question)'));
+  assert.ok(app.includes('!option.exclusive && !option.selectAll'));
   assert.ok(app.includes('function answerFilteredStyles()'));
   assert.ok(app.includes('function styleHaystack(style)'));
+  assert.ok(app.includes('function normalizeSearchText(value)'));
+  assert.ok(app.includes('function optionEthnicityMatch(style, option)'));
+  assert.ok(app.includes('function hairColourKey(value)'));
+  assert.ok(app.includes('const HAIR_COLOUR_FILTER ='));
+  assert.ok(app.includes('const HAIR_THICKNESS_FILTER ='));
+  assert.ok(app.includes('function optionHairColourMatch(style, option)'));
+  assert.ok(app.includes('function optionHairThicknessMatch(style, option)'));
   assert.ok(app.includes('optionGroupPasses(style, "face"'));
-  assert.ok(app.includes('const results = scoredStyles(filtered);'));
+  assert.ok(app.includes('optionGroupPasses(style, "ethnicity", (option) => optionEthnicityMatch(style, option))'));
+  assert.ok(app.includes('optionGroupPasses(style, "hair_colour", (option) => optionHairColourMatch(style, option))'));
+  assert.ok(app.includes('optionGroupPasses(style, "hair_thickness", (option) => optionHairThicknessMatch(style, option))'));
+  assert.ok(app.includes('const haystack = styleHaystack(style);'));
+  assert.ok(app.includes('hairColours.has(hairColourKey(style.hairColour))'));
+  assert.ok(app.includes('style.hairThickness === thickness'));
+  assert.ok(app.includes('const results = scoredStyles(refined);'));
   assert.ok(app.includes('toggleFavourite'));
   assert.ok(index.includes('data-filter="gender"'));
   assert.ok(index.includes('id="detail-gender"'));
@@ -597,7 +617,11 @@ test('gallery image AI analysis script is wired to D1 and structured outputs', a
   const subtypeMigration = await readFile(new URL('../migrations/0010_gallery_image_hair_subtype.sql', import.meta.url), 'utf8');
   const cleanupMigration = await readFile(new URL('../migrations/0011_remove_analysis_column_prefix.sql', import.meta.url), 'utf8');
   const blockedRowsMigration = await readFile(new URL('../migrations/0012_delete_blocked_allthingshair_rows.sql', import.meta.url), 'utf8');
+  const demographicsMigration = await readFile(new URL('../migrations/0013_gallery_image_demographics.sql', import.meta.url), 'utf8');
+  const hairAttributesMigration = await readFile(new URL('../migrations/0014_gallery_image_hair_thickness.sql', import.meta.url), 'utf8');
   const script = await readFile(new URL('../scripts/analyze-gallery-images.mjs', import.meta.url), 'utf8');
+  const celebrityScript = await readFile(new URL('../scripts/analyze-gallery-celebrities.mjs', import.meta.url), 'utf8');
+  const hairAttributesScript = await readFile(new URL('../scripts/analyze-gallery-hair-attributes.mjs', import.meta.url), 'utf8');
   const packageJson = await readFile(new URL('../package.json', import.meta.url), 'utf8');
 
   assert.match(migration, /analysis_hair_type/);
@@ -609,6 +633,11 @@ test('gallery image AI analysis script is wired to D1 and structured outputs', a
   assert.match(blockedRowsMigration, /ath-asianwomen-%/);
   assert.match(blockedRowsMigration, /assets\.unileversolutions\.com/);
   assert.match(blockedRowsMigration, /classified_at = ''/);
+  assert.match(demographicsMigration, /ADD COLUMN ethnicity/);
+  assert.match(demographicsMigration, /ADD COLUMN celebrity/);
+  assert.match(hairAttributesMigration, /ADD COLUMN hair_thickness/);
+  assert.match(hairAttributesMigration, /idx_gallery_images_hair_thickness/);
+  assert.match(hairAttributesMigration, /idx_gallery_images_hair_colour/);
   assert.match(migration, /analysis_face_shape/);
   assert.match(migration, /analysis_hair_colour/);
   assert.match(migration, /analysis_maintenance/);
@@ -621,11 +650,17 @@ test('gallery image AI analysis script is wired to D1 and structured outputs', a
   assert.match(script, /async function withRetries/);
   assert.match(script, /Promise\.all\(workers\)/);
   assert.match(script, /finished with \$\{failures\.length\} failed row/);
+  assert.match(script, /ethnicity IS NULL OR ethnicity = ''/);
+  assert.match(script, /celebrity IS NULL OR celebrity = ''/);
   assert.match(script, /type: 'json_schema'/);
   assert.match(script, /description: 'Broad visible curl pattern category/);
   assert.match(script, /Subtype guidance:/);
   assert.match(script, /enum: \['straight', 'wavy', 'curly', 'coily'\]/);
   assert.match(script, /enum: \['1A', '1B', '1C', '2A', '2B', '2C', '3A', '3B', '3C', '4A', '4B', '4C'\]/);
+  assert.match(script, /enum: \['black', 'south east asian', 'asian', 'south-asian', 'latino', 'middle-eastern', 'white'\]/);
+  assert.match(script, /celebrity: a public figure name only if/);
+  assert.match(script, /ethnicity =/);
+  assert.match(script, /celebrity =/);
   assert.match(script, /hair_subtype =/);
   assert.match(script, /classified_at = CURRENT_TIMESTAMP/);
   assert.match(script, /analysis_model =/);
@@ -634,6 +669,23 @@ test('gallery image AI analysis script is wired to D1 and structured outputs', a
   assert.match(script, /labels_json =/);
   assert.match(packageJson, /"analyze:gallery:local"/);
   assert.match(packageJson, /"analyze:gallery:remote"/);
+  assert.match(packageJson, /"analyze:celebrities:local"/);
+  assert.match(packageJson, /"analyze:celebrities:remote"/);
+  assert.match(packageJson, /"analyze:hair-attributes:local"/);
+  assert.match(packageJson, /"analyze:hair-attributes:remote"/);
+  assert.match(celebrityScript, /gallery_celebrity_analysis/);
+  assert.match(celebrityScript, /type: 'input_image'/);
+  assert.match(celebrityScript, /LOWER\(TRIM\(celebrity\)\) = 'none'/);
+  assert.match(celebrityScript, /celebrity =/);
+  assert.match(celebrityScript, /labels_json =/);
+  assert.doesNotMatch(celebrityScript, /hair_type =/);
+  assert.match(hairAttributesScript, /gallery_hair_attributes_analysis/);
+  assert.match(hairAttributesScript, /type: 'input_image'/);
+  assert.match(hairAttributesScript, /hair_thickness IS NULL OR hair_thickness = ''/);
+  assert.match(hairAttributesScript, /enum: \['especially thin', 'thin', 'thick', 'especially thick'\]/);
+  assert.match(hairAttributesScript, /enum: \['black', 'brown', 'blonde', 'red', 'grey', 'other'\]/);
+  assert.match(hairAttributesScript, /hair_thickness =/);
+  assert.match(hairAttributesScript, /hair_colour =/);
 });
 
 test('local dev seeds memory gallery from migration files', async () => {

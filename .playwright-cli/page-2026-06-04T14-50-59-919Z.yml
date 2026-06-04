@@ -1,0 +1,3122 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - button "HairMatch" [ref=e4] [cursor=pointer]
+    - generic [ref=e5]:
+      - img [ref=e7]
+      - searchbox [ref=e10]
+    - navigation "Primary" [ref=e11]:
+      - button "Saved 0" [ref=e12] [cursor=pointer]:
+        - generic [ref=e13]: ♥
+        - generic [ref=e14]: Saved
+        - generic [ref=e15]: "0"
+  - main [ref=e16]:
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - paragraph [ref=e20]: Search
+          - heading "Hair Styles" [level=1] [ref=e21]
+          - paragraph [ref=e22]: Browse freely and like photos. Each save gives your profile a clearer direction.
+        - button "Preferences" [ref=e24] [cursor=pointer]
+      - generic "Upload a photo to inform search" [ref=e26]:
+        - img [ref=e28]
+        - generic [ref=e30]: Upload photo
+      - generic [ref=e31]:
+        - generic [ref=e32]: 0 saved styles
+        - generic [ref=e33]: Saved photos become your working profile.
+      - generic [ref=e34]:
+        - article [ref=e35]:
+          - button "Open The clean grow-out 1" [ref=e36] [cursor=pointer]:
+            - img "The clean grow-out 1" [ref=e37]
+          - generic [ref=e38]:
+            - generic [ref=e39]:
+              - heading "The clean grow-out 1" [level=2] [ref=e40]
+              - paragraph [ref=e41]: Long length - Wavy Hair
+            - button "Save style" [ref=e42] [cursor=pointer]: ♡
+        - article [ref=e43]:
+          - button "Open The clean grow-out 2" [ref=e44] [cursor=pointer]:
+            - img "The clean grow-out 2" [ref=e45]
+          - generic [ref=e46]:
+            - generic [ref=e47]:
+              - heading "The clean grow-out 2" [level=2] [ref=e48]
+              - paragraph [ref=e49]: Long length - Wavy Hair
+            - button "Save style" [ref=e50] [cursor=pointer]: ♡
+        - article [ref=e51]:
+          - button "Open The classic centre part 1" [ref=e52] [cursor=pointer]:
+            - img "The classic centre part 1" [ref=e53]
+          - generic [ref=e54]:
+            - generic [ref=e55]:
+              - heading "The classic centre part 1" [level=2] [ref=e56]
+              - paragraph [ref=e57]: Medium length - Straight Hair
+            - button "Save style" [ref=e58] [cursor=pointer]: ♡
+        - article [ref=e59]:
+          - button "Open The classic centre part 2" [ref=e60] [cursor=pointer]:
+            - img "The classic centre part 2" [ref=e61]
+          - generic [ref=e62]:
+            - generic [ref=e63]:
+              - heading "The classic centre part 2" [level=2] [ref=e64]
+              - paragraph [ref=e65]: Medium length - Straight Hair
+            - button "Save style" [ref=e66] [cursor=pointer]: ♡
+        - article [ref=e67]:
+          - button "Open The curtain fringe 1" [ref=e68] [cursor=pointer]:
+            - img "The curtain fringe 1" [ref=e69]
+          - generic [ref=e70]:
+            - generic [ref=e71]:
+              - heading "The curtain fringe 1" [level=2] [ref=e72]
+              - paragraph [ref=e73]: Medium length - Wavy Hair
+            - button "Save style" [ref=e74] [cursor=pointer]: ♡
+        - article [ref=e75]:
+          - button "Open The curtain fringe 2" [ref=e76] [cursor=pointer]:
+            - img "The curtain fringe 2" [ref=e77]
+          - generic [ref=e78]:
+            - generic [ref=e79]:
+              - heading "The curtain fringe 2" [level=2] [ref=e80]
+              - paragraph [ref=e81]: Medium length - Wavy Hair
+            - button "Save style" [ref=e82] [cursor=pointer]: ♡
+        - article [ref=e83]:
+          - button "Open The Edgar" [ref=e84] [cursor=pointer]:
+            - img "The Edgar" [ref=e85]
+          - generic [ref=e86]:
+            - generic [ref=e87]:
+              - heading "The Edgar" [level=2] [ref=e88]
+              - paragraph [ref=e89]: Short length - Straight Hair
+            - button "Save style" [ref=e90] [cursor=pointer]: ♡
+        - article [ref=e91]:
+          - button "Open The longer beard 1" [ref=e92] [cursor=pointer]:
+            - img "The longer beard 1" [ref=e93]
+          - generic [ref=e94]:
+            - generic [ref=e95]:
+              - heading "The longer beard 1" [level=2] [ref=e96]
+              - paragraph [ref=e97]: Long length - Straight Hair
+            - button "Save style" [ref=e98] [cursor=pointer]: ♡
+        - article [ref=e99]:
+          - button "Open The longer beard 2" [ref=e100] [cursor=pointer]:
+            - img "The longer beard 2" [ref=e101]
+          - generic [ref=e102]:
+            - generic [ref=e103]:
+              - heading "The longer beard 2" [level=2] [ref=e104]
+              - paragraph [ref=e105]: Long length - Straight Hair
+            - button "Save style" [ref=e106] [cursor=pointer]: ♡
+        - article [ref=e107]:
+          - button "Open The mod-ish 1" [ref=e108] [cursor=pointer]:
+            - img "The mod-ish 1" [ref=e109]
+          - generic [ref=e110]:
+            - generic [ref=e111]:
+              - heading "The mod-ish 1" [level=2] [ref=e112]
+              - paragraph [ref=e113]: Medium length - Straight Hair
+            - button "Save style" [ref=e114] [cursor=pointer]: ♡
+        - article [ref=e115]:
+          - button "Open The mod-ish 2" [ref=e116] [cursor=pointer]:
+            - img "The mod-ish 2" [ref=e117]
+          - generic [ref=e118]:
+            - generic [ref=e119]:
+              - heading "The mod-ish 2" [level=2] [ref=e120]
+              - paragraph [ref=e121]: Medium length - Straight Hair
+            - button "Save style" [ref=e122] [cursor=pointer]: ♡
+        - article [ref=e123]:
+          - button "Open The baby mullet 1" [ref=e124] [cursor=pointer]:
+            - img "The baby mullet 1" [ref=e125]
+          - generic [ref=e126]:
+            - generic [ref=e127]:
+              - heading "The baby mullet 1" [level=2] [ref=e128]
+              - paragraph [ref=e129]: Medium length - Wavy Hair
+            - button "Save style" [ref=e130] [cursor=pointer]: ♡
+        - article [ref=e131]:
+          - button "Open The baby mullet 2" [ref=e132] [cursor=pointer]:
+            - img "The baby mullet 2" [ref=e133]
+          - generic [ref=e134]:
+            - generic [ref=e135]:
+              - heading "The baby mullet 2" [level=2] [ref=e136]
+              - paragraph [ref=e137]: Medium length - Wavy Hair
+            - button "Save style" [ref=e138] [cursor=pointer]: ♡
+        - article [ref=e139]:
+          - button "Open The frosted tips 1" [ref=e140] [cursor=pointer]:
+            - img "The frosted tips 1" [ref=e141]
+          - generic [ref=e142]:
+            - generic [ref=e143]:
+              - heading "The frosted tips 1" [level=2] [ref=e144]
+              - paragraph [ref=e145]: Medium length - Straight Hair
+            - button "Save style" [ref=e146] [cursor=pointer]: ♡
+        - article [ref=e147]:
+          - button "Open The frosted tips 2" [ref=e148] [cursor=pointer]:
+            - img "The frosted tips 2" [ref=e149]
+          - generic [ref=e150]:
+            - generic [ref=e151]:
+              - heading "The frosted tips 2" [level=2] [ref=e152]
+              - paragraph [ref=e153]: Medium length - Straight Hair
+            - button "Save style" [ref=e154] [cursor=pointer]: ♡
+        - article [ref=e155]:
+          - button "Open The dyed buzz cut 1" [ref=e156] [cursor=pointer]:
+            - img "The dyed buzz cut 1" [ref=e157]
+          - generic [ref=e158]:
+            - generic [ref=e159]:
+              - heading "The dyed buzz cut 1" [level=2] [ref=e160]
+              - paragraph [ref=e161]: Short length - Straight Hair
+            - button "Save style" [ref=e162] [cursor=pointer]: ♡
+        - article [ref=e163]:
+          - button "Open The dyed buzz cut 2" [ref=e164] [cursor=pointer]:
+            - img "The dyed buzz cut 2" [ref=e165]
+          - generic [ref=e166]:
+            - generic [ref=e167]:
+              - heading "The dyed buzz cut 2" [level=2] [ref=e168]
+              - paragraph [ref=e169]: Short length - Straight Hair
+            - button "Save style" [ref=e170] [cursor=pointer]: ♡
+        - article [ref=e171]:
+          - button "Open The rat tail" [ref=e172] [cursor=pointer]:
+            - img "The rat tail" [ref=e173]
+          - generic [ref=e174]:
+            - generic [ref=e175]:
+              - heading "The rat tail" [level=2] [ref=e176]
+              - paragraph [ref=e177]: Medium length - Straight Hair
+            - button "Save style" [ref=e178] [cursor=pointer]: ♡
+        - article [ref=e179]:
+          - button "Open The rockstar shag 1" [ref=e180] [cursor=pointer]:
+            - img "The rockstar shag 1" [ref=e181]
+          - generic [ref=e182]:
+            - generic [ref=e183]:
+              - heading "The rockstar shag 1" [level=2] [ref=e184]
+              - paragraph [ref=e185]: Medium length - Wavy Hair
+            - button "Save style" [ref=e186] [cursor=pointer]: ♡
+        - article [ref=e187]:
+          - button "Open The rockstar shag 2" [ref=e188] [cursor=pointer]:
+            - img "The rockstar shag 2" [ref=e189]
+          - generic [ref=e190]:
+            - generic [ref=e191]:
+              - heading "The rockstar shag 2" [level=2] [ref=e192]
+              - paragraph [ref=e193]: Medium length - Wavy Hair
+            - button "Save style" [ref=e194] [cursor=pointer]: ♡
+        - article [ref=e195]:
+          - button "Open The crew cut 1" [ref=e196] [cursor=pointer]:
+            - img "The crew cut 1" [ref=e197]
+          - generic [ref=e198]:
+            - generic [ref=e199]:
+              - heading "The crew cut 1" [level=2] [ref=e200]
+              - paragraph [ref=e201]: Short length - Straight Hair
+            - button "Save style" [ref=e202] [cursor=pointer]: ♡
+        - article [ref=e203]:
+          - button "Open The crew cut 2" [ref=e204] [cursor=pointer]:
+            - img "The crew cut 2" [ref=e205]
+          - generic [ref=e206]:
+            - generic [ref=e207]:
+              - heading "The crew cut 2" [level=2] [ref=e208]
+              - paragraph [ref=e209]: Short length - Straight Hair
+            - button "Save style" [ref=e210] [cursor=pointer]: ♡
+        - article [ref=e211]:
+          - button "Open The art dealer 1" [ref=e212] [cursor=pointer]:
+            - img "The art dealer 1" [ref=e213]
+          - generic [ref=e214]:
+            - generic [ref=e215]:
+              - heading "The art dealer 1" [level=2] [ref=e216]
+              - paragraph [ref=e217]: Long length - Straight Hair
+            - button "Save style" [ref=e218] [cursor=pointer]: ♡
+        - article [ref=e219]:
+          - button "Open The art dealer 2" [ref=e220] [cursor=pointer]:
+            - img "The art dealer 2" [ref=e221]
+          - generic [ref=e222]:
+            - generic [ref=e223]:
+              - heading "The art dealer 2" [level=2] [ref=e224]
+              - paragraph [ref=e225]: Long length - Straight Hair
+            - button "Save style" [ref=e226] [cursor=pointer]: ♡
+        - article [ref=e227]:
+          - button "Open The side parting 1" [ref=e228] [cursor=pointer]:
+            - img "The side parting 1" [ref=e229]
+          - generic [ref=e230]:
+            - generic [ref=e231]:
+              - heading "The side parting 1" [level=2] [ref=e232]
+              - paragraph [ref=e233]: Medium length - Straight Hair
+            - button "Save style" [ref=e234] [cursor=pointer]: ♡
+        - article [ref=e235]:
+          - button "Open The side parting 2" [ref=e236] [cursor=pointer]:
+            - img "The side parting 2" [ref=e237]
+          - generic [ref=e238]:
+            - generic [ref=e239]:
+              - heading "The side parting 2" [level=2] [ref=e240]
+              - paragraph [ref=e241]: Medium length - Straight Hair
+            - button "Save style" [ref=e242] [cursor=pointer]: ♡
+        - article [ref=e243]:
+          - button "Open The French Crop" [ref=e244] [cursor=pointer]:
+            - img "The French Crop" [ref=e245]
+          - generic [ref=e246]:
+            - generic [ref=e247]:
+              - heading "The French Crop" [level=2] [ref=e248]
+              - paragraph [ref=e249]: Short length - Straight Hair
+            - button "Save style" [ref=e250] [cursor=pointer]: ♡
+        - article [ref=e251]:
+          - button "Open The sweep-back 1" [ref=e252] [cursor=pointer]:
+            - img "The sweep-back 1" [ref=e253]
+          - generic [ref=e254]:
+            - generic [ref=e255]:
+              - heading "The sweep-back 1" [level=2] [ref=e256]
+              - paragraph [ref=e257]: Long length - Wavy Hair
+            - button "Save style" [ref=e258] [cursor=pointer]: ♡
+        - article [ref=e259]:
+          - button "Open The sweep-back 2" [ref=e260] [cursor=pointer]:
+            - img "The sweep-back 2" [ref=e261]
+          - generic [ref=e262]:
+            - generic [ref=e263]:
+              - heading "The sweep-back 2" [level=2] [ref=e264]
+              - paragraph [ref=e265]: Long length - Wavy Hair
+            - button "Save style" [ref=e266] [cursor=pointer]: ♡
+        - article [ref=e267]:
+          - button "Open The tailored buzz 1" [ref=e268] [cursor=pointer]:
+            - img "The tailored buzz 1" [ref=e269]
+          - generic [ref=e270]:
+            - generic [ref=e271]:
+              - heading "The tailored buzz 1" [level=2] [ref=e272]
+              - paragraph [ref=e273]: Short length - Straight Hair
+            - button "Save style" [ref=e274] [cursor=pointer]: ♡
+        - article [ref=e275]:
+          - button "Open The tailored buzz 2" [ref=e276] [cursor=pointer]:
+            - img "The tailored buzz 2" [ref=e277]
+          - generic [ref=e278]:
+            - generic [ref=e279]:
+              - heading "The tailored buzz 2" [level=2] [ref=e280]
+              - paragraph [ref=e281]: Short length - Straight Hair
+            - button "Save style" [ref=e282] [cursor=pointer]: ♡
+        - article [ref=e283]:
+          - button "Open The tight afro 1" [ref=e284] [cursor=pointer]:
+            - img "The tight afro 1" [ref=e285]
+          - generic [ref=e286]:
+            - generic [ref=e287]:
+              - heading "The tight afro 1" [level=2] [ref=e288]
+              - paragraph [ref=e289]: Short length - Curly Hair
+            - button "Save style" [ref=e290] [cursor=pointer]: ♡
+        - article [ref=e291]:
+          - button "Open The tight afro 2" [ref=e292] [cursor=pointer]:
+            - img "The tight afro 2" [ref=e293]
+          - generic [ref=e294]:
+            - generic [ref=e295]:
+              - heading "The tight afro 2" [level=2] [ref=e296]
+              - paragraph [ref=e297]: Short length - Curly Hair
+            - button "Save style" [ref=e298] [cursor=pointer]: ♡
+        - article [ref=e299]:
+          - button "Open The TikTok haircut 1" [ref=e300] [cursor=pointer]:
+            - img "The TikTok haircut 1" [ref=e301]
+          - generic [ref=e302]:
+            - generic [ref=e303]:
+              - heading "The TikTok haircut 1" [level=2] [ref=e304]
+              - paragraph [ref=e305]: Medium length - Straight Hair
+            - button "Save style" [ref=e306] [cursor=pointer]: ♡
+        - article [ref=e307]:
+          - button "Open The TikTok haircut 2" [ref=e308] [cursor=pointer]:
+            - img "The TikTok haircut 2" [ref=e309]
+          - generic [ref=e310]:
+            - generic [ref=e311]:
+              - heading "The TikTok haircut 2" [level=2] [ref=e312]
+              - paragraph [ref=e313]: Medium length - Straight Hair
+            - button "Save style" [ref=e314] [cursor=pointer]: ♡
+        - article [ref=e315]:
+          - button "Open The Wall Street 1" [ref=e316] [cursor=pointer]:
+            - img "The Wall Street 1" [ref=e317]
+          - generic [ref=e318]:
+            - generic [ref=e319]:
+              - heading "The Wall Street 1" [level=2] [ref=e320]
+              - paragraph [ref=e321]: Long length - Straight Hair
+            - button "Save style" [ref=e322] [cursor=pointer]: ♡
+        - article [ref=e323]:
+          - button "Open The Wall Street 2" [ref=e324] [cursor=pointer]:
+            - img "The Wall Street 2" [ref=e325]
+          - generic [ref=e326]:
+            - generic [ref=e327]:
+              - heading "The Wall Street 2" [level=2] [ref=e328]
+              - paragraph [ref=e329]: Long length - Straight Hair
+            - button "Save style" [ref=e330] [cursor=pointer]: ♡
+        - article [ref=e331]:
+          - button "Open Itty-Bitty Bob 1" [ref=e332] [cursor=pointer]:
+            - img "Itty-Bitty Bob 1" [ref=e333]
+          - generic [ref=e334]:
+            - generic [ref=e335]:
+              - heading "Itty-Bitty Bob 1" [level=2] [ref=e336]
+              - paragraph [ref=e337]: Short length - Straight Hair
+            - button "Save style" [ref=e338] [cursor=pointer]: ♡
+        - article [ref=e339]:
+          - button "Open Itty-Bitty Bob 2" [ref=e340] [cursor=pointer]:
+            - img "Itty-Bitty Bob 2" [ref=e341]
+          - generic [ref=e342]:
+            - generic [ref=e343]:
+              - heading "Itty-Bitty Bob 2" [level=2] [ref=e344]
+              - paragraph [ref=e345]: Short length - Straight Hair
+            - button "Save style" [ref=e346] [cursor=pointer]: ♡
+        - article [ref=e347]:
+          - button "Open Bold Bangs 1" [ref=e348] [cursor=pointer]:
+            - img "Bold Bangs 1" [ref=e349]
+          - generic [ref=e350]:
+            - generic [ref=e351]:
+              - heading "Bold Bangs 1" [level=2] [ref=e352]
+              - paragraph [ref=e353]: Medium length - Straight Hair
+            - button "Save style" [ref=e354] [cursor=pointer]: ♡
+        - article [ref=e355]:
+          - button "Open Bold Bangs 2" [ref=e356] [cursor=pointer]:
+            - img "Bold Bangs 2" [ref=e357]
+          - generic [ref=e358]:
+            - generic [ref=e359]:
+              - heading "Bold Bangs 2" [level=2] [ref=e360]
+              - paragraph [ref=e361]: Medium length - Straight Hair
+            - button "Save style" [ref=e362] [cursor=pointer]: ♡
+        - article [ref=e363]:
+          - button "Open Waterfall Layers 1" [ref=e364] [cursor=pointer]:
+            - img "Waterfall Layers 1" [ref=e365]
+          - generic [ref=e366]:
+            - generic [ref=e367]:
+              - heading "Waterfall Layers 1" [level=2] [ref=e368]
+              - paragraph [ref=e369]: Long length - Straight Hair
+            - button "Save style" [ref=e370] [cursor=pointer]: ♡
+        - article [ref=e371]:
+          - button "Open Waterfall Layers 2" [ref=e372] [cursor=pointer]:
+            - img "Waterfall Layers 2" [ref=e373]
+          - generic [ref=e374]:
+            - generic [ref=e375]:
+              - heading "Waterfall Layers 2" [level=2] [ref=e376]
+              - paragraph [ref=e377]: Long length - Straight Hair
+            - button "Save style" [ref=e378] [cursor=pointer]: ♡
+        - article [ref=e379]:
+          - button "Open Off-Duty Lob 1" [ref=e380] [cursor=pointer]:
+            - img "Off-Duty Lob 1" [ref=e381]
+          - generic [ref=e382]:
+            - generic [ref=e383]:
+              - heading "Off-Duty Lob 1" [level=2] [ref=e384]
+              - paragraph [ref=e385]: Medium length - Straight Hair
+            - button "Save style" [ref=e386] [cursor=pointer]: ♡
+        - article [ref=e387]:
+          - button "Open Off-Duty Lob 2" [ref=e388] [cursor=pointer]:
+            - img "Off-Duty Lob 2" [ref=e389]
+          - generic [ref=e390]:
+            - generic [ref=e391]:
+              - heading "Off-Duty Lob 2" [level=2] [ref=e392]
+              - paragraph [ref=e393]: Medium length - Straight Hair
+            - button "Save style" [ref=e394] [cursor=pointer]: ♡
+        - article [ref=e395]:
+          - button "Open Tinkerbell Haircut 1" [ref=e396] [cursor=pointer]:
+            - img "Tinkerbell Haircut 1" [ref=e397]
+          - generic [ref=e398]:
+            - generic [ref=e399]:
+              - heading "Tinkerbell Haircut 1" [level=2] [ref=e400]
+              - paragraph [ref=e401]: Medium length - Straight Hair
+            - button "Save style" [ref=e402] [cursor=pointer]: ♡
+        - article [ref=e403]:
+          - button "Open Tinkerbell Haircut 2" [ref=e404] [cursor=pointer]:
+            - img "Tinkerbell Haircut 2" [ref=e405]
+          - generic [ref=e406]:
+            - generic [ref=e407]:
+              - heading "Tinkerbell Haircut 2" [level=2] [ref=e408]
+              - paragraph [ref=e409]: Medium length - Straight Hair
+            - button "Save style" [ref=e410] [cursor=pointer]: ♡
+        - article [ref=e411]:
+          - button "Open Modern Shag" [ref=e412] [cursor=pointer]:
+            - img "Modern Shag" [ref=e413]
+          - generic [ref=e414]:
+            - generic [ref=e415]:
+              - heading "Modern Shag" [level=2] [ref=e416]
+              - paragraph [ref=e417]: Medium length - Wavy Hair
+            - button "Save style" [ref=e418] [cursor=pointer]: ♡
+        - article [ref=e419]:
+          - button "Open Curly Shag" [ref=e420] [cursor=pointer]:
+            - img "Curly Shag" [ref=e421]
+          - generic [ref=e422]:
+            - generic [ref=e423]:
+              - heading "Curly Shag" [level=2] [ref=e424]
+              - paragraph [ref=e425]: Medium length - Curly Hair
+            - button "Save style" [ref=e426] [cursor=pointer]: ♡
+        - article [ref=e427]:
+          - button "Open Flippy Ends 1" [ref=e428] [cursor=pointer]:
+            - img "Flippy Ends 1" [ref=e429]
+          - generic [ref=e430]:
+            - generic [ref=e431]:
+              - heading "Flippy Ends 1" [level=2] [ref=e432]
+              - paragraph [ref=e433]: Medium length - Straight Hair
+            - button "Save style" [ref=e434] [cursor=pointer]: ♡
+        - article [ref=e435]:
+          - button "Open Flippy Ends 2" [ref=e436] [cursor=pointer]:
+            - img "Flippy Ends 2" [ref=e437]
+          - generic [ref=e438]:
+            - generic [ref=e439]:
+              - heading "Flippy Ends 2" [level=2] [ref=e440]
+              - paragraph [ref=e441]: Medium length - Straight Hair
+            - button "Save style" [ref=e442] [cursor=pointer]: ♡
+        - article [ref=e443]:
+          - button "Open Long and Sleek 1" [ref=e444] [cursor=pointer]:
+            - img "Long and Sleek 1" [ref=e445]
+          - generic [ref=e446]:
+            - generic [ref=e447]:
+              - heading "Long and Sleek 1" [level=2] [ref=e448]
+              - paragraph [ref=e449]: Long length - Straight Hair
+            - button "Save style" [ref=e450] [cursor=pointer]: ♡
+        - article [ref=e451]:
+          - button "Open Long and Sleek 2" [ref=e452] [cursor=pointer]:
+            - img "Long and Sleek 2" [ref=e453]
+          - generic [ref=e454]:
+            - generic [ref=e455]:
+              - heading "Long and Sleek 2" [level=2] [ref=e456]
+              - paragraph [ref=e457]: Long length - Straight Hair
+            - button "Save style" [ref=e458] [cursor=pointer]: ♡
+        - article [ref=e459]:
+          - button "Open Italian Bob 1" [ref=e460] [cursor=pointer]:
+            - img "Italian Bob 1" [ref=e461]
+          - generic [ref=e462]:
+            - generic [ref=e463]:
+              - heading "Italian Bob 1" [level=2] [ref=e464]
+              - paragraph [ref=e465]: Short length - Straight Hair
+            - button "Save style" [ref=e466] [cursor=pointer]: ♡
+        - article [ref=e467]:
+          - button "Open Italian Bob 2" [ref=e468] [cursor=pointer]:
+            - img "Italian Bob 2" [ref=e469]
+          - generic [ref=e470]:
+            - generic [ref=e471]:
+              - heading "Italian Bob 2" [level=2] [ref=e472]
+              - paragraph [ref=e473]: Short length - Straight Hair
+            - button "Save style" [ref=e474] [cursor=pointer]: ♡
+        - article [ref=e475]:
+          - button "Open Birkin Bangs 1" [ref=e476] [cursor=pointer]:
+            - img "Birkin Bangs 1" [ref=e477]
+          - generic [ref=e478]:
+            - generic [ref=e479]:
+              - heading "Birkin Bangs 1" [level=2] [ref=e480]
+              - paragraph [ref=e481]: Medium length - Straight Hair
+            - button "Save style" [ref=e482] [cursor=pointer]: ♡
+        - article [ref=e483]:
+          - button "Open Birkin Bangs 2" [ref=e484] [cursor=pointer]:
+            - img "Birkin Bangs 2" [ref=e485]
+          - generic [ref=e486]:
+            - generic [ref=e487]:
+              - heading "Birkin Bangs 2" [level=2] [ref=e488]
+              - paragraph [ref=e489]: Medium length - Straight Hair
+            - button "Save style" [ref=e490] [cursor=pointer]: ♡
+        - article [ref=e491]:
+          - button "Open Whisper Pixie 1" [ref=e492] [cursor=pointer]:
+            - img "Whisper Pixie 1" [ref=e493]
+          - generic [ref=e494]:
+            - generic [ref=e495]:
+              - heading "Whisper Pixie 1" [level=2] [ref=e496]
+              - paragraph [ref=e497]: Short length - Straight Hair
+            - button "Save style" [ref=e498] [cursor=pointer]: ♡
+        - article [ref=e499]:
+          - button "Open Whisper Pixie 2" [ref=e500] [cursor=pointer]:
+            - img "Whisper Pixie 2" [ref=e501]
+          - generic [ref=e502]:
+            - generic [ref=e503]:
+              - heading "Whisper Pixie 2" [level=2] [ref=e504]
+              - paragraph [ref=e505]: Short length - Straight Hair
+            - button "Save style" [ref=e506] [cursor=pointer]: ♡
+        - article [ref=e507]:
+          - button "Open Beach Bob 1" [ref=e508] [cursor=pointer]:
+            - img "Beach Bob 1" [ref=e509]
+          - generic [ref=e510]:
+            - generic [ref=e511]:
+              - heading "Beach Bob 1" [level=2] [ref=e512]
+              - paragraph [ref=e513]: Short length - Straight Hair
+            - button "Save style" [ref=e514] [cursor=pointer]: ♡
+        - article [ref=e515]:
+          - button "Open Beach Bob 2" [ref=e516] [cursor=pointer]:
+            - img "Beach Bob 2" [ref=e517]
+          - generic [ref=e518]:
+            - generic [ref=e519]:
+              - heading "Beach Bob 2" [level=2] [ref=e520]
+              - paragraph [ref=e521]: Short length - Straight Hair
+            - button "Save style" [ref=e522] [cursor=pointer]: ♡
+        - article [ref=e523]:
+          - button "Open Old Hollywood Bob 1" [ref=e524] [cursor=pointer]:
+            - img "Old Hollywood Bob 1" [ref=e525]
+          - generic [ref=e526]:
+            - generic [ref=e527]:
+              - heading "Old Hollywood Bob 1" [level=2] [ref=e528]
+              - paragraph [ref=e529]: Short length - Straight Hair
+            - button "Save style" [ref=e530] [cursor=pointer]: ♡
+        - article [ref=e531]:
+          - button "Open Old Hollywood Bob 2" [ref=e532] [cursor=pointer]:
+            - img "Old Hollywood Bob 2" [ref=e533]
+          - generic [ref=e534]:
+            - generic [ref=e535]:
+              - heading "Old Hollywood Bob 2" [level=2] [ref=e536]
+              - paragraph [ref=e537]: Short length - Straight Hair
+            - button "Save style" [ref=e538] [cursor=pointer]: ♡
+        - article [ref=e539]:
+          - button "Open Tousled Deconstructed Bob" [ref=e540] [cursor=pointer]:
+            - img "Tousled Deconstructed Bob" [ref=e541]
+          - generic [ref=e542]:
+            - generic [ref=e543]:
+              - heading "Tousled Deconstructed Bob" [level=2] [ref=e544]
+              - paragraph [ref=e545]: Short length - Straight Hair
+            - button "Save style" [ref=e546] [cursor=pointer]: ♡
+        - article [ref=e547]:
+          - button "Open French Girl Chic 1" [ref=e548] [cursor=pointer]:
+            - img "French Girl Chic 1" [ref=e549]
+          - generic [ref=e550]:
+            - generic [ref=e551]:
+              - heading "French Girl Chic 1" [level=2] [ref=e552]
+              - paragraph [ref=e553]: Medium length - Straight Hair
+            - button "Save style" [ref=e554] [cursor=pointer]: ♡
+        - article [ref=e555]:
+          - button "Open French Girl Chic 2" [ref=e556] [cursor=pointer]:
+            - img "French Girl Chic 2" [ref=e557]
+          - generic [ref=e558]:
+            - generic [ref=e559]:
+              - heading "French Girl Chic 2" [level=2] [ref=e560]
+              - paragraph [ref=e561]: Medium length - Straight Hair
+            - button "Save style" [ref=e562] [cursor=pointer]: ♡
+        - article [ref=e563]:
+          - button "Open ’90s Layers 1" [ref=e564] [cursor=pointer]:
+            - img "’90s Layers 1" [ref=e565]
+          - generic [ref=e566]:
+            - generic [ref=e567]:
+              - heading "’90s Layers 1" [level=2] [ref=e568]
+              - paragraph [ref=e569]: Long length - Straight Hair
+            - button "Save style" [ref=e570] [cursor=pointer]: ♡
+        - article [ref=e571]:
+          - button "Open ’90s Layers 2" [ref=e572] [cursor=pointer]:
+            - img "’90s Layers 2" [ref=e573]
+          - generic [ref=e574]:
+            - generic [ref=e575]:
+              - heading "’90s Layers 2" [level=2] [ref=e576]
+              - paragraph [ref=e577]: Long length - Straight Hair
+            - button "Save style" [ref=e578] [cursor=pointer]: ♡
+        - article [ref=e579]:
+          - button "Open Medium Cut 1" [ref=e580] [cursor=pointer]:
+            - img "Medium Cut 1" [ref=e581]
+          - generic [ref=e582]:
+            - generic [ref=e583]:
+              - heading "Medium Cut 1" [level=2] [ref=e584]
+              - paragraph [ref=e585]: Medium length - Straight Hair
+            - button "Save style" [ref=e586] [cursor=pointer]: ♡
+        - article [ref=e587]:
+          - button "Open Medium Cut 2" [ref=e588] [cursor=pointer]:
+            - img "Medium Cut 2" [ref=e589]
+          - generic [ref=e590]:
+            - generic [ref=e591]:
+              - heading "Medium Cut 2" [level=2] [ref=e592]
+              - paragraph [ref=e593]: Medium length - Straight Hair
+            - button "Save style" [ref=e594] [cursor=pointer]: ♡
+        - article [ref=e595]:
+          - button "Open Blunt Bob 1" [ref=e596] [cursor=pointer]:
+            - img "Blunt Bob 1" [ref=e597]
+          - generic [ref=e598]:
+            - generic [ref=e599]:
+              - heading "Blunt Bob 1" [level=2] [ref=e600]
+              - paragraph [ref=e601]: Short length - Straight Hair
+            - button "Save style" [ref=e602] [cursor=pointer]: ♡
+        - article [ref=e603]:
+          - button "Open Blunt Bob 2" [ref=e604] [cursor=pointer]:
+            - img "Blunt Bob 2" [ref=e605]
+          - generic [ref=e606]:
+            - generic [ref=e607]:
+              - heading "Blunt Bob 2" [level=2] [ref=e608]
+              - paragraph [ref=e609]: Short length - Straight Hair
+            - button "Save style" [ref=e610] [cursor=pointer]: ♡
+        - article [ref=e611]:
+          - button "Open Easy Waves 1" [ref=e612] [cursor=pointer]:
+            - img "Easy Waves 1" [ref=e613]
+          - generic [ref=e614]:
+            - generic [ref=e615]:
+              - heading "Easy Waves 1" [level=2] [ref=e616]
+              - paragraph [ref=e617]: Medium length - Wavy Hair
+            - button "Save style" [ref=e618] [cursor=pointer]: ♡
+        - article [ref=e619]:
+          - button "Open Easy Waves 2" [ref=e620] [cursor=pointer]:
+            - img "Easy Waves 2" [ref=e621]
+          - generic [ref=e622]:
+            - generic [ref=e623]:
+              - heading "Easy Waves 2" [level=2] [ref=e624]
+              - paragraph [ref=e625]: Medium length - Wavy Hair
+            - button "Save style" [ref=e626] [cursor=pointer]: ♡
+        - article [ref=e627]:
+          - button "Open Easy Waves 3" [ref=e628] [cursor=pointer]:
+            - img "Easy Waves 3" [ref=e629]
+          - generic [ref=e630]:
+            - generic [ref=e631]:
+              - heading "Easy Waves 3" [level=2] [ref=e632]
+              - paragraph [ref=e633]: Medium length - Wavy Hair
+            - button "Save style" [ref=e634] [cursor=pointer]: ♡
+        - article [ref=e635]:
+          - button "Open Curtain Bangs 1" [ref=e636] [cursor=pointer]:
+            - img "Curtain Bangs 1" [ref=e637]
+          - generic [ref=e638]:
+            - generic [ref=e639]:
+              - heading "Curtain Bangs 1" [level=2] [ref=e640]
+              - paragraph [ref=e641]: Medium length - Straight Hair
+            - button "Save style" [ref=e642] [cursor=pointer]: ♡
+        - article [ref=e643]:
+          - button "Open Curtain Bangs 2" [ref=e644] [cursor=pointer]:
+            - img "Curtain Bangs 2" [ref=e645]
+          - generic [ref=e646]:
+            - generic [ref=e647]:
+              - heading "Curtain Bangs 2" [level=2] [ref=e648]
+              - paragraph [ref=e649]: Medium length - Straight Hair
+            - button "Save style" [ref=e650] [cursor=pointer]: ♡
+        - article [ref=e651]:
+          - button "Open Chandelier Layers" [ref=e652] [cursor=pointer]:
+            - img "Chandelier Layers" [ref=e653]
+          - generic [ref=e654]:
+            - generic [ref=e655]:
+              - heading "Chandelier Layers" [level=2] [ref=e656]
+              - paragraph [ref=e657]: Long length - Straight Hair
+            - button "Save style" [ref=e658] [cursor=pointer]: ♡
+        - article [ref=e659]:
+          - button "Open Tight Crop 1" [ref=e660] [cursor=pointer]:
+            - img "Tight Crop 1" [ref=e661]
+          - generic [ref=e662]:
+            - generic [ref=e663]:
+              - heading "Tight Crop 1" [level=2] [ref=e664]
+              - paragraph [ref=e665]: Short length - Straight Hair
+            - button "Save style" [ref=e666] [cursor=pointer]: ♡
+        - article [ref=e667]:
+          - button "Open Tight Crop 2" [ref=e668] [cursor=pointer]:
+            - img "Tight Crop 2" [ref=e669]
+          - generic [ref=e670]:
+            - generic [ref=e671]:
+              - heading "Tight Crop 2" [level=2] [ref=e672]
+              - paragraph [ref=e673]: Short length - Straight Hair
+            - button "Save style" [ref=e674] [cursor=pointer]: ♡
+        - article [ref=e675]:
+          - button "Open Asymmetrical Cut" [ref=e676] [cursor=pointer]:
+            - img "Asymmetrical Cut" [ref=e677]
+          - generic [ref=e678]:
+            - generic [ref=e679]:
+              - heading "Asymmetrical Cut" [level=2] [ref=e680]
+              - paragraph [ref=e681]: Medium length - Straight Hair
+            - button "Save style" [ref=e682] [cursor=pointer]: ♡
+        - article [ref=e683]:
+          - button "Open Invisible Layers 1" [ref=e684] [cursor=pointer]:
+            - img "Invisible Layers 1" [ref=e685]
+          - generic [ref=e686]:
+            - generic [ref=e687]:
+              - heading "Invisible Layers 1" [level=2] [ref=e688]
+              - paragraph [ref=e689]: Long length - Straight Hair
+            - button "Save style" [ref=e690] [cursor=pointer]: ♡
+        - article [ref=e691]:
+          - button "Open Invisible Layers 2" [ref=e692] [cursor=pointer]:
+            - img "Invisible Layers 2" [ref=e693]
+          - generic [ref=e694]:
+            - generic [ref=e695]:
+              - heading "Invisible Layers 2" [level=2] [ref=e696]
+              - paragraph [ref=e697]: Long length - Straight Hair
+            - button "Save style" [ref=e698] [cursor=pointer]: ♡
+        - article [ref=e699]:
+          - button "Open Textured Bob" [ref=e700] [cursor=pointer]:
+            - img "Textured Bob" [ref=e701]
+          - generic [ref=e702]:
+            - generic [ref=e703]:
+              - heading "Textured Bob" [level=2] [ref=e704]
+              - paragraph [ref=e705]: Short length - Straight Hair
+            - button "Save style" [ref=e706] [cursor=pointer]: ♡
+        - article [ref=e707]:
+          - button "Open Blunt Bangs" [ref=e708] [cursor=pointer]:
+            - img "Blunt Bangs" [ref=e709]
+          - generic [ref=e710]:
+            - generic [ref=e711]:
+              - heading "Blunt Bangs" [level=2] [ref=e712]
+              - paragraph [ref=e713]: Medium length - Straight Hair
+            - button "Save style" [ref=e714] [cursor=pointer]: ♡
+        - article [ref=e715]:
+          - button "Open ’90s Chop 1" [ref=e716] [cursor=pointer]:
+            - img "’90s Chop 1" [ref=e717]
+          - generic [ref=e718]:
+            - generic [ref=e719]:
+              - heading "’90s Chop 1" [level=2] [ref=e720]
+              - paragraph [ref=e721]: Medium length - Straight Hair
+            - button "Save style" [ref=e722] [cursor=pointer]: ♡
+        - article [ref=e723]:
+          - button "Open ’90s Chop 2" [ref=e724] [cursor=pointer]:
+            - img "’90s Chop 2" [ref=e725]
+          - generic [ref=e726]:
+            - generic [ref=e727]:
+              - heading "’90s Chop 2" [level=2] [ref=e728]
+              - paragraph [ref=e729]: Medium length - Straight Hair
+            - button "Save style" [ref=e730] [cursor=pointer]: ♡
+        - article [ref=e731]:
+          - button "Open Curly Bangs" [ref=e732] [cursor=pointer]:
+            - img "Curly Bangs" [ref=e733]
+          - generic [ref=e734]:
+            - generic [ref=e735]:
+              - heading "Curly Bangs" [level=2] [ref=e736]
+              - paragraph [ref=e737]: Medium length - Curly Hair
+            - button "Save style" [ref=e738] [cursor=pointer]: ♡
+        - article [ref=e739]:
+          - button "Open Polished Bob" [ref=e740] [cursor=pointer]:
+            - img "Polished Bob" [ref=e741]
+          - generic [ref=e742]:
+            - generic [ref=e743]:
+              - heading "Polished Bob" [level=2] [ref=e744]
+              - paragraph [ref=e745]: Short length - Straight Hair
+            - button "Save style" [ref=e746] [cursor=pointer]: ♡
+        - article [ref=e747]:
+          - button "Open Tapered Cut 1" [ref=e748] [cursor=pointer]:
+            - img "Tapered Cut 1" [ref=e749]
+          - generic [ref=e750]:
+            - generic [ref=e751]:
+              - heading "Tapered Cut 1" [level=2] [ref=e752]
+              - paragraph [ref=e753]: Medium length - Straight Hair
+            - button "Save style" [ref=e754] [cursor=pointer]: ♡
+        - article [ref=e755]:
+          - button "Open Tapered Cut 2" [ref=e756] [cursor=pointer]:
+            - img "Tapered Cut 2" [ref=e757]
+          - generic [ref=e758]:
+            - generic [ref=e759]:
+              - heading "Tapered Cut 2" [level=2] [ref=e760]
+              - paragraph [ref=e761]: Medium length - Straight Hair
+            - button "Save style" [ref=e762] [cursor=pointer]: ♡
+        - article [ref=e763]:
+          - button "Open Curly Layers 1" [ref=e764] [cursor=pointer]:
+            - img "Curly Layers 1" [ref=e765]
+          - generic [ref=e766]:
+            - generic [ref=e767]:
+              - heading "Curly Layers 1" [level=2] [ref=e768]
+              - paragraph [ref=e769]: Long length - Curly Hair
+            - button "Save style" [ref=e770] [cursor=pointer]: ♡
+        - article [ref=e771]:
+          - button "Open Curly Layers 2" [ref=e772] [cursor=pointer]:
+            - img "Curly Layers 2" [ref=e773]
+          - generic [ref=e774]:
+            - generic [ref=e775]:
+              - heading "Curly Layers 2" [level=2] [ref=e776]
+              - paragraph [ref=e777]: Long length - Curly Hair
+            - button "Save style" [ref=e778] [cursor=pointer]: ♡
+        - article [ref=e779]:
+          - button "Open Mermaid Shag 1" [ref=e780] [cursor=pointer]:
+            - img "Mermaid Shag 1" [ref=e781]
+          - generic [ref=e782]:
+            - generic [ref=e783]:
+              - heading "Mermaid Shag 1" [level=2] [ref=e784]
+              - paragraph [ref=e785]: Medium length - Wavy Hair
+            - button "Save style" [ref=e786] [cursor=pointer]: ♡
+        - article [ref=e787]:
+          - button "Open Mermaid Shag 2" [ref=e788] [cursor=pointer]:
+            - img "Mermaid Shag 2" [ref=e789]
+          - generic [ref=e790]:
+            - generic [ref=e791]:
+              - heading "Mermaid Shag 2" [level=2] [ref=e792]
+              - paragraph [ref=e793]: Medium length - Wavy Hair
+            - button "Save style" [ref=e794] [cursor=pointer]: ♡
+        - article [ref=e795]:
+          - button "Open Face-Framing Layers 1" [ref=e796] [cursor=pointer]:
+            - img "Face-Framing Layers 1" [ref=e797]
+          - generic [ref=e798]:
+            - generic [ref=e799]:
+              - heading "Face-Framing Layers 1" [level=2] [ref=e800]
+              - paragraph [ref=e801]: Long length - Straight Hair
+            - button "Save style" [ref=e802] [cursor=pointer]: ♡
+        - article [ref=e803]:
+          - button "Open Face-Framing Layers 2" [ref=e804] [cursor=pointer]:
+            - img "Face-Framing Layers 2" [ref=e805]
+          - generic [ref=e806]:
+            - generic [ref=e807]:
+              - heading "Face-Framing Layers 2" [level=2] [ref=e808]
+              - paragraph [ref=e809]: Long length - Straight Hair
+            - button "Save style" [ref=e810] [cursor=pointer]: ♡
+        - article [ref=e811]:
+          - button "Open Face-Framing Layers 3" [ref=e812] [cursor=pointer]:
+            - img "Face-Framing Layers 3" [ref=e813]
+          - generic [ref=e814]:
+            - generic [ref=e815]:
+              - heading "Face-Framing Layers 3" [level=2] [ref=e816]
+              - paragraph [ref=e817]: Long length - Straight Hair
+            - button "Save style" [ref=e818] [cursor=pointer]: ♡
+        - article [ref=e819]:
+          - button "Open Razor-Cut Hair 1" [ref=e820] [cursor=pointer]:
+            - img "Razor-Cut Hair 1" [ref=e821]
+          - generic [ref=e822]:
+            - generic [ref=e823]:
+              - heading "Razor-Cut Hair 1" [level=2] [ref=e824]
+              - paragraph [ref=e825]: Medium length - Straight Hair
+            - button "Save style" [ref=e826] [cursor=pointer]: ♡
+        - article [ref=e827]:
+          - button "Open Razor-Cut Hair 2" [ref=e828] [cursor=pointer]:
+            - img "Razor-Cut Hair 2" [ref=e829]
+          - generic [ref=e830]:
+            - generic [ref=e831]:
+              - heading "Razor-Cut Hair 2" [level=2] [ref=e832]
+              - paragraph [ref=e833]: Medium length - Straight Hair
+            - button "Save style" [ref=e834] [cursor=pointer]: ♡
+        - article [ref=e835]:
+          - button "Open Freeform Dreadlocks High Top Haircut" [ref=e836] [cursor=pointer]:
+            - img "Freeform Dreadlocks High Top Haircut" [ref=e837]
+          - generic [ref=e838]:
+            - generic [ref=e839]:
+              - heading "Freeform Dreadlocks High Top Haircut" [level=2] [ref=e840]
+              - paragraph [ref=e841]: Medium length - Straight Hair
+            - button "Save style" [ref=e842] [cursor=pointer]: ♡
+        - article [ref=e843]:
+          - button "Open Flat Top with Custom Undershave" [ref=e844] [cursor=pointer]:
+            - img "Flat Top with Custom Undershave" [ref=e845]
+          - generic [ref=e846]:
+            - generic [ref=e847]:
+              - heading "Flat Top with Custom Undershave" [level=2] [ref=e848]
+              - paragraph [ref=e849]: Medium length - Straight Hair
+            - button "Save style" [ref=e850] [cursor=pointer]: ♡
+        - article [ref=e851]:
+          - button "Open Textured Afro with Temple Fade" [ref=e852] [cursor=pointer]:
+            - img "Textured Afro with Temple Fade" [ref=e853]
+          - generic [ref=e854]:
+            - generic [ref=e855]:
+              - heading "Textured Afro with Temple Fade" [level=2] [ref=e856]
+              - paragraph [ref=e857]: Short length - Curly Hair
+            - button "Save style" [ref=e858] [cursor=pointer]: ♡
+        - article [ref=e859]:
+          - button "Open Short Dreadlocks with Undercut Design" [ref=e860] [cursor=pointer]:
+            - img "Short Dreadlocks with Undercut Design" [ref=e861]
+          - generic [ref=e862]:
+            - generic [ref=e863]:
+              - heading "Short Dreadlocks with Undercut Design" [level=2] [ref=e864]
+              - paragraph [ref=e865]: Medium length - Straight Hair
+            - button "Save style" [ref=e866] [cursor=pointer]: ♡
+        - article [ref=e867]:
+          - button "Open Bold Fade with a Beard" [ref=e868] [cursor=pointer]:
+            - img "Bold Fade with a Beard" [ref=e869]
+          - generic [ref=e870]:
+            - generic [ref=e871]:
+              - heading "Bold Fade with a Beard" [level=2] [ref=e872]
+              - paragraph [ref=e873]: Long length - Straight Hair
+            - button "Save style" [ref=e874] [cursor=pointer]: ♡
+        - article [ref=e875]:
+          - button "Open Clean Afro Temple Fade" [ref=e876] [cursor=pointer]:
+            - img "Clean Afro Temple Fade" [ref=e877]
+          - generic [ref=e878]:
+            - generic [ref=e879]:
+              - heading "Clean Afro Temple Fade" [level=2] [ref=e880]
+              - paragraph [ref=e881]: Short length - Curly Hair
+            - button "Save style" [ref=e882] [cursor=pointer]: ♡
+        - article [ref=e883]:
+          - button "Open Designed Faux-Mohawk" [ref=e884] [cursor=pointer]:
+            - img "Designed Faux-Mohawk" [ref=e885]
+          - generic [ref=e886]:
+            - generic [ref=e887]:
+              - heading "Designed Faux-Mohawk" [level=2] [ref=e888]
+              - paragraph [ref=e889]: Medium length - Straight Hair
+            - button "Save style" [ref=e890] [cursor=pointer]: ♡
+        - article [ref=e891]:
+          - button "Open High Fade with Textured Top" [ref=e892] [cursor=pointer]:
+            - img "High Fade with Textured Top" [ref=e893]
+          - generic [ref=e894]:
+            - generic [ref=e895]:
+              - heading "High Fade with Textured Top" [level=2] [ref=e896]
+              - paragraph [ref=e897]: Medium length - Straight Hair
+            - button "Save style" [ref=e898] [cursor=pointer]: ♡
+        - article [ref=e899]:
+          - button "Open High Skin Fade Afro Quiff" [ref=e900] [cursor=pointer]:
+            - img "High Skin Fade Afro Quiff" [ref=e901]
+          - generic [ref=e902]:
+            - generic [ref=e903]:
+              - heading "High Skin Fade Afro Quiff" [level=2] [ref=e904]
+              - paragraph [ref=e905]: Short length - Curly Hair
+            - button "Save style" [ref=e906] [cursor=pointer]: ♡
+        - article [ref=e907]:
+          - button "Open Super-Short Wavy Line Up" [ref=e908] [cursor=pointer]:
+            - img "Super-Short Wavy Line Up" [ref=e909]
+          - generic [ref=e910]:
+            - generic [ref=e911]:
+              - heading "Super-Short Wavy Line Up" [level=2] [ref=e912]
+              - paragraph [ref=e913]: Medium length - Wavy Hair
+            - button "Save style" [ref=e914] [cursor=pointer]: ♡
+        - article [ref=e915]:
+          - button "Open Afro Mid Fade with Full Beard" [ref=e916] [cursor=pointer]:
+            - img "Afro Mid Fade with Full Beard" [ref=e917]
+          - generic [ref=e918]:
+            - generic [ref=e919]:
+              - heading "Afro Mid Fade with Full Beard" [level=2] [ref=e920]
+              - paragraph [ref=e921]: Short length - Curly Hair
+            - button "Save style" [ref=e922] [cursor=pointer]: ♡
+        - article [ref=e923]:
+          - button "Open Curly Low Taper Fade" [ref=e924] [cursor=pointer]:
+            - img "Curly Low Taper Fade" [ref=e925]
+          - generic [ref=e926]:
+            - generic [ref=e927]:
+              - heading "Curly Low Taper Fade" [level=2] [ref=e928]
+              - paragraph [ref=e929]: Medium length - Curly Hair
+            - button "Save style" [ref=e930] [cursor=pointer]: ♡
+        - article [ref=e931]:
+          - button "Open Natural High Top Haircut" [ref=e932] [cursor=pointer]:
+            - img "Natural High Top Haircut" [ref=e933]
+          - generic [ref=e934]:
+            - generic [ref=e935]:
+              - heading "Natural High Top Haircut" [level=2] [ref=e936]
+              - paragraph [ref=e937]: Medium length - Straight Hair
+            - button "Save style" [ref=e938] [cursor=pointer]: ♡
+        - article [ref=e939]:
+          - button "Open Clean Fade with 360 Waves" [ref=e940] [cursor=pointer]:
+            - img "Clean Fade with 360 Waves" [ref=e941]
+          - generic [ref=e942]:
+            - generic [ref=e943]:
+              - heading "Clean Fade with 360 Waves" [level=2] [ref=e944]
+              - paragraph [ref=e945]: Medium length - Wavy Hair
+            - button "Save style" [ref=e946] [cursor=pointer]: ♡
+        - article [ref=e947]:
+          - button "Open Round Afro with Burst Fade" [ref=e948] [cursor=pointer]:
+            - img "Round Afro with Burst Fade" [ref=e949]
+          - generic [ref=e950]:
+            - generic [ref=e951]:
+              - heading "Round Afro with Burst Fade" [level=2] [ref=e952]
+              - paragraph [ref=e953]: Short length - Curly Hair
+            - button "Save style" [ref=e954] [cursor=pointer]: ♡
+        - article [ref=e955]:
+          - button "Open Coiled Mohawk" [ref=e956] [cursor=pointer]:
+            - img "Coiled Mohawk" [ref=e957]
+          - generic [ref=e958]:
+            - generic [ref=e959]:
+              - heading "Coiled Mohawk" [level=2] [ref=e960]
+              - paragraph [ref=e961]: Medium length - Straight Hair
+            - button "Save style" [ref=e962] [cursor=pointer]: ♡
+        - article [ref=e963]:
+          - button "Open Skin Fade with a Side Part" [ref=e964] [cursor=pointer]:
+            - img "Skin Fade with a Side Part" [ref=e965]
+          - generic [ref=e966]:
+            - generic [ref=e967]:
+              - heading "Skin Fade with a Side Part" [level=2] [ref=e968]
+              - paragraph [ref=e969]: Medium length - Straight Hair
+            - button "Save style" [ref=e970] [cursor=pointer]: ♡
+        - article [ref=e971]:
+          - button "Open Angular Line Up" [ref=e972] [cursor=pointer]:
+            - img "Angular Line Up" [ref=e973]
+          - generic [ref=e974]:
+            - generic [ref=e975]:
+              - heading "Angular Line Up" [level=2] [ref=e976]
+              - paragraph [ref=e977]: Medium length - Straight Hair
+            - button "Save style" [ref=e978] [cursor=pointer]: ♡
+        - article [ref=e979]:
+          - button "Open Curly Low Taper" [ref=e980] [cursor=pointer]:
+            - img "Curly Low Taper" [ref=e981]
+          - generic [ref=e982]:
+            - generic [ref=e983]:
+              - heading "Curly Low Taper" [level=2] [ref=e984]
+              - paragraph [ref=e985]: Medium length - Curly Hair
+            - button "Save style" [ref=e986] [cursor=pointer]: ♡
+        - article [ref=e987]:
+          - button "Open Clean Buzz Cut" [ref=e988] [cursor=pointer]:
+            - img "Clean Buzz Cut" [ref=e989]
+          - generic [ref=e990]:
+            - generic [ref=e991]:
+              - heading "Clean Buzz Cut" [level=2] [ref=e992]
+              - paragraph [ref=e993]: Short length - Straight Hair
+            - button "Save style" [ref=e994] [cursor=pointer]: ♡
+        - article [ref=e995]:
+          - button "Open Cornrows with Low Fade" [ref=e996] [cursor=pointer]:
+            - img "Cornrows with Low Fade" [ref=e997]
+          - generic [ref=e998]:
+            - generic [ref=e999]:
+              - heading "Cornrows with Low Fade" [level=2] [ref=e1000]
+              - paragraph [ref=e1001]: Medium length - Straight Hair
+            - button "Save style" [ref=e1002] [cursor=pointer]: ♡
+        - article [ref=e1003]:
+          - button "Open Dreadlocks with Clean Undercut" [ref=e1004] [cursor=pointer]:
+            - img "Dreadlocks with Clean Undercut" [ref=e1005]
+          - generic [ref=e1006]:
+            - generic [ref=e1007]:
+              - heading "Dreadlocks with Clean Undercut" [level=2] [ref=e1008]
+              - paragraph [ref=e1009]: Medium length - Straight Hair
+            - button "Save style" [ref=e1010] [cursor=pointer]: ♡
+        - article [ref=e1011]:
+          - button "Open Buzz Cut with Double Lined Design" [ref=e1012] [cursor=pointer]:
+            - img "Buzz Cut with Double Lined Design" [ref=e1013]
+          - generic [ref=e1014]:
+            - generic [ref=e1015]:
+              - heading "Buzz Cut with Double Lined Design" [level=2] [ref=e1016]
+              - paragraph [ref=e1017]: Short length - Straight Hair
+            - button "Save style" [ref=e1018] [cursor=pointer]: ♡
+        - article [ref=e1019]:
+          - button "Open Twistouts and Freestyle Undercut" [ref=e1020] [cursor=pointer]:
+            - img "Twistouts and Freestyle Undercut" [ref=e1021]
+          - generic [ref=e1022]:
+            - generic [ref=e1023]:
+              - heading "Twistouts and Freestyle Undercut" [level=2] [ref=e1024]
+              - paragraph [ref=e1025]: Medium length - Straight Hair
+            - button "Save style" [ref=e1026] [cursor=pointer]: ♡
+        - article [ref=e1027]:
+          - button "Open 360 Waves with a Curved Shave" [ref=e1028] [cursor=pointer]:
+            - img "360 Waves with a Curved Shave" [ref=e1029]
+          - generic [ref=e1030]:
+            - generic [ref=e1031]:
+              - heading "360 Waves with a Curved Shave" [level=2] [ref=e1032]
+              - paragraph [ref=e1033]: Medium length - Wavy Hair
+            - button "Save style" [ref=e1034] [cursor=pointer]: ♡
+        - article [ref=e1035]:
+          - button "Open Short Afro with Shaved Temples" [ref=e1036] [cursor=pointer]:
+            - img "Short Afro with Shaved Temples" [ref=e1037]
+          - generic [ref=e1038]:
+            - generic [ref=e1039]:
+              - heading "Short Afro with Shaved Temples" [level=2] [ref=e1040]
+              - paragraph [ref=e1041]: Short length - Curly Hair
+            - button "Save style" [ref=e1042] [cursor=pointer]: ♡
+        - article [ref=e1043]:
+          - button "Open 360 Waves with Tapered Nape" [ref=e1044] [cursor=pointer]:
+            - img "360 Waves with Tapered Nape" [ref=e1045]
+          - generic [ref=e1046]:
+            - generic [ref=e1047]:
+              - heading "360 Waves with Tapered Nape" [level=2] [ref=e1048]
+              - paragraph [ref=e1049]: Medium length - Wavy Hair
+            - button "Save style" [ref=e1050] [cursor=pointer]: ♡
+        - article [ref=e1051]:
+          - button "Open Low Fade Afro" [ref=e1052] [cursor=pointer]:
+            - img "Low Fade Afro" [ref=e1053]
+          - generic [ref=e1054]:
+            - generic [ref=e1055]:
+              - heading "Low Fade Afro" [level=2] [ref=e1056]
+              - paragraph [ref=e1057]: Short length - Curly Hair
+            - button "Save style" [ref=e1058] [cursor=pointer]: ♡
+        - article [ref=e1059]:
+          - button "Open Box Braids with Shaded Sides" [ref=e1060] [cursor=pointer]:
+            - img "Box Braids with Shaded Sides" [ref=e1061]
+          - generic [ref=e1062]:
+            - generic [ref=e1063]:
+              - heading "Box Braids with Shaded Sides" [level=2] [ref=e1064]
+              - paragraph [ref=e1065]: Medium length - Straight Hair
+            - button "Save style" [ref=e1066] [cursor=pointer]: ♡
+        - article [ref=e1067]:
+          - button "Open Freeform Textured Locs" [ref=e1068] [cursor=pointer]:
+            - img "Freeform Textured Locs" [ref=e1069]
+          - generic [ref=e1070]:
+            - generic [ref=e1071]:
+              - heading "Freeform Textured Locs" [level=2] [ref=e1072]
+              - paragraph [ref=e1073]: Medium length - Straight Hair
+            - button "Save style" [ref=e1074] [cursor=pointer]: ♡
+        - article [ref=e1075]:
+          - button "Open Clean Cut Flat Top" [ref=e1076] [cursor=pointer]:
+            - img "Clean Cut Flat Top" [ref=e1077]
+          - generic [ref=e1078]:
+            - generic [ref=e1079]:
+              - heading "Clean Cut Flat Top" [level=2] [ref=e1080]
+              - paragraph [ref=e1081]: Medium length - Straight Hair
+            - button "Save style" [ref=e1082] [cursor=pointer]: ♡
+        - article [ref=e1083]:
+          - button "Open Two-Strand Twists" [ref=e1084] [cursor=pointer]:
+            - img "Two-Strand Twists" [ref=e1085]
+          - generic [ref=e1086]:
+            - generic [ref=e1087]:
+              - heading "Two-Strand Twists" [level=2] [ref=e1088]
+              - paragraph [ref=e1089]: Medium length - Straight Hair
+            - button "Save style" [ref=e1090] [cursor=pointer]: ♡
+        - article [ref=e1091]:
+          - button "Open Pompadour Afro with Temple Fade" [ref=e1092] [cursor=pointer]:
+            - img "Pompadour Afro with Temple Fade" [ref=e1093]
+          - generic [ref=e1094]:
+            - generic [ref=e1095]:
+              - heading "Pompadour Afro with Temple Fade" [level=2] [ref=e1096]
+              - paragraph [ref=e1097]: Short length - Curly Hair
+            - button "Save style" [ref=e1098] [cursor=pointer]: ♡
+        - article [ref=e1099]:
+          - button "Open Mid-Length Dreads with Shape Up Cut" [ref=e1100] [cursor=pointer]:
+            - img "Mid-Length Dreads with Shape Up Cut" [ref=e1101]
+          - generic [ref=e1102]:
+            - generic [ref=e1103]:
+              - heading "Mid-Length Dreads with Shape Up Cut" [level=2] [ref=e1104]
+              - paragraph [ref=e1105]: Medium length - Straight Hair
+            - button "Save style" [ref=e1106] [cursor=pointer]: ♡
+        - article [ref=e1107]:
+          - button "Open Skin Fade with Waves at Top" [ref=e1108] [cursor=pointer]:
+            - img "Skin Fade with Waves at Top" [ref=e1109]
+          - generic [ref=e1110]:
+            - generic [ref=e1111]:
+              - heading "Skin Fade with Waves at Top" [level=2] [ref=e1112]
+              - paragraph [ref=e1113]: Medium length - Wavy Hair
+            - button "Save style" [ref=e1114] [cursor=pointer]: ♡
+        - article [ref=e1115]:
+          - button "Open Short Sides with Long Curly Top" [ref=e1116] [cursor=pointer]:
+            - img "Short Sides with Long Curly Top" [ref=e1117]
+          - generic [ref=e1118]:
+            - generic [ref=e1119]:
+              - heading "Short Sides with Long Curly Top" [level=2] [ref=e1120]
+              - paragraph [ref=e1121]: Long length - Curly Hair
+            - button "Save style" [ref=e1122] [cursor=pointer]: ♡
+        - article [ref=e1123]:
+          - button "Open Buzz-Cut Waves with Nape Design" [ref=e1124] [cursor=pointer]:
+            - img "Buzz-Cut Waves with Nape Design" [ref=e1125]
+          - generic [ref=e1126]:
+            - generic [ref=e1127]:
+              - heading "Buzz-Cut Waves with Nape Design" [level=2] [ref=e1128]
+              - paragraph [ref=e1129]: Short length - Wavy Hair
+            - button "Save style" [ref=e1130] [cursor=pointer]: ♡
+        - article [ref=e1131]:
+          - button "Open Coily Buzz Fade" [ref=e1132] [cursor=pointer]:
+            - img "Coily Buzz Fade" [ref=e1133]
+          - generic [ref=e1134]:
+            - generic [ref=e1135]:
+              - heading "Coily Buzz Fade" [level=2] [ref=e1136]
+              - paragraph [ref=e1137]: Short length - Coily Hair
+            - button "Save style" [ref=e1138] [cursor=pointer]: ♡
+        - article [ref=e1139]:
+          - button "Open Bleached Faded Mohawk" [ref=e1140] [cursor=pointer]:
+            - img "Bleached Faded Mohawk" [ref=e1141]
+          - generic [ref=e1142]:
+            - generic [ref=e1143]:
+              - heading "Bleached Faded Mohawk" [level=2] [ref=e1144]
+              - paragraph [ref=e1145]: Medium length - Straight Hair
+            - button "Save style" [ref=e1146] [cursor=pointer]: ♡
+        - article [ref=e1147]:
+          - button "Open Cornrows with Bun and Shaved Design" [ref=e1148] [cursor=pointer]:
+            - img "Cornrows with Bun and Shaved Design" [ref=e1149]
+          - generic [ref=e1150]:
+            - generic [ref=e1151]:
+              - heading "Cornrows with Bun and Shaved Design" [level=2] [ref=e1152]
+              - paragraph [ref=e1153]: Medium length - Straight Hair
+            - button "Save style" [ref=e1154] [cursor=pointer]: ♡
+        - article [ref=e1155]:
+          - button "Open Modern Mullet" [ref=e1156] [cursor=pointer]:
+            - img "Modern Mullet" [ref=e1157]
+          - generic [ref=e1158]:
+            - generic [ref=e1159]:
+              - heading "Modern Mullet" [level=2] [ref=e1160]
+              - paragraph [ref=e1161]: Medium length - Wavy Hair
+            - button "Save style" [ref=e1162] [cursor=pointer]: ♡
+        - article [ref=e1163]:
+          - button "Open Burst Fade" [ref=e1164] [cursor=pointer]:
+            - img "Burst Fade" [ref=e1165]
+          - generic [ref=e1166]:
+            - generic [ref=e1167]:
+              - heading "Burst Fade" [level=2] [ref=e1168]
+              - paragraph [ref=e1169]: Medium length - Straight Hair
+            - button "Save style" [ref=e1170] [cursor=pointer]: ♡
+        - article [ref=e1171]:
+          - button "Open Curtain Bangs" [ref=e1172] [cursor=pointer]:
+            - img "Curtain Bangs" [ref=e1173]
+          - generic [ref=e1174]:
+            - generic [ref=e1175]:
+              - heading "Curtain Bangs" [level=2] [ref=e1176]
+              - paragraph [ref=e1177]: Medium length - Straight Hair
+            - button "Save style" [ref=e1178] [cursor=pointer]: ♡
+        - article [ref=e1179]:
+          - button "Open Low Taper" [ref=e1180] [cursor=pointer]:
+            - img "Low Taper" [ref=e1181]
+          - generic [ref=e1182]:
+            - generic [ref=e1183]:
+              - heading "Low Taper" [level=2] [ref=e1184]
+              - paragraph [ref=e1185]: Medium length - Straight Hair
+            - button "Save style" [ref=e1186] [cursor=pointer]: ♡
+        - article [ref=e1187]:
+          - button "Open Ponytail" [ref=e1188] [cursor=pointer]:
+            - img "Ponytail" [ref=e1189]
+          - generic [ref=e1190]:
+            - generic [ref=e1191]:
+              - heading "Ponytail" [level=2] [ref=e1192]
+              - paragraph [ref=e1193]: Medium length - Straight Hair
+            - button "Save style" [ref=e1194] [cursor=pointer]: ♡
+        - article [ref=e1195]:
+          - button "Open Textured Fringe" [ref=e1196] [cursor=pointer]:
+            - img "Textured Fringe" [ref=e1197]
+          - generic [ref=e1198]:
+            - generic [ref=e1199]:
+              - heading "Textured Fringe" [level=2] [ref=e1200]
+              - paragraph [ref=e1201]: Medium length - Wavy Hair
+            - button "Save style" [ref=e1202] [cursor=pointer]: ♡
+        - article [ref=e1203]:
+          - button "Open Edgar Haircut" [ref=e1204] [cursor=pointer]:
+            - img "Edgar Haircut" [ref=e1205]
+          - generic [ref=e1206]:
+            - generic [ref=e1207]:
+              - heading "Edgar Haircut" [level=2] [ref=e1208]
+              - paragraph [ref=e1209]: Short length - Straight Hair
+            - button "Save style" [ref=e1210] [cursor=pointer]: ♡
+        - article [ref=e1211]:
+          - button "Open Crew Cut" [ref=e1212] [cursor=pointer]:
+            - img "Crew Cut" [ref=e1213]
+          - generic [ref=e1214]:
+            - generic [ref=e1215]:
+              - heading "Crew Cut" [level=2] [ref=e1216]
+              - paragraph [ref=e1217]: Short length - Straight Hair
+            - button "Save style" [ref=e1218] [cursor=pointer]: ♡
+        - article [ref=e1219]:
+          - button "Open Drop Fade" [ref=e1220] [cursor=pointer]:
+            - img "Drop Fade" [ref=e1221]
+          - generic [ref=e1222]:
+            - generic [ref=e1223]:
+              - heading "Drop Fade" [level=2] [ref=e1224]
+              - paragraph [ref=e1225]: Medium length - Straight Hair
+            - button "Save style" [ref=e1226] [cursor=pointer]: ♡
+        - article [ref=e1227]:
+          - button "Open Bowl Cut" [ref=e1228] [cursor=pointer]:
+            - img "Bowl Cut" [ref=e1229]
+          - generic [ref=e1230]:
+            - generic [ref=e1231]:
+              - heading "Bowl Cut" [level=2] [ref=e1232]
+              - paragraph [ref=e1233]: Medium length - Straight Hair
+            - button "Save style" [ref=e1234] [cursor=pointer]: ♡
+        - article [ref=e1235]:
+          - button "Open French Crop" [ref=e1236] [cursor=pointer]:
+            - img "French Crop" [ref=e1237]
+          - generic [ref=e1238]:
+            - generic [ref=e1239]:
+              - heading "French Crop" [level=2] [ref=e1240]
+              - paragraph [ref=e1241]: Short length - Straight Hair
+            - button "Save style" [ref=e1242] [cursor=pointer]: ♡
+        - article [ref=e1243]:
+          - button "Open Mohawk" [ref=e1244] [cursor=pointer]:
+            - img "Mohawk" [ref=e1245]
+          - generic [ref=e1246]:
+            - generic [ref=e1247]:
+              - heading "Mohawk" [level=2] [ref=e1248]
+              - paragraph [ref=e1249]: Medium length - Straight Hair
+            - button "Save style" [ref=e1250] [cursor=pointer]: ♡
+        - article [ref=e1251]:
+          - button "Open Shag Haircut" [ref=e1252] [cursor=pointer]:
+            - img "Shag Haircut" [ref=e1253]
+          - generic [ref=e1254]:
+            - generic [ref=e1255]:
+              - heading "Shag Haircut" [level=2] [ref=e1256]
+              - paragraph [ref=e1257]: Medium length - Wavy Hair
+            - button "Save style" [ref=e1258] [cursor=pointer]: ♡
+        - article [ref=e1259]:
+          - button "Open Angled Fringe" [ref=e1260] [cursor=pointer]:
+            - img "Angled Fringe" [ref=e1261]
+          - generic [ref=e1262]:
+            - generic [ref=e1263]:
+              - heading "Angled Fringe" [level=2] [ref=e1264]
+              - paragraph [ref=e1265]: Medium length - Wavy Hair
+            - button "Save style" [ref=e1266] [cursor=pointer]: ♡
+        - article [ref=e1267]:
+          - button "Open Side Swept Fringe" [ref=e1268] [cursor=pointer]:
+            - img "Side Swept Fringe" [ref=e1269]
+          - generic [ref=e1270]:
+            - generic [ref=e1271]:
+              - heading "Side Swept Fringe" [level=2] [ref=e1272]
+              - paragraph [ref=e1273]: Medium length - Wavy Hair
+            - button "Save style" [ref=e1274] [cursor=pointer]: ♡
+        - article [ref=e1275]:
+          - button "Open Skin Fade" [ref=e1276] [cursor=pointer]:
+            - img "Skin Fade" [ref=e1277]
+          - generic [ref=e1278]:
+            - generic [ref=e1279]:
+              - heading "Skin Fade" [level=2] [ref=e1280]
+              - paragraph [ref=e1281]: Medium length - Straight Hair
+            - button "Save style" [ref=e1282] [cursor=pointer]: ♡
+        - article [ref=e1283]:
+          - button "Open Pompadour" [ref=e1284] [cursor=pointer]:
+            - img "Pompadour" [ref=e1285]
+          - generic [ref=e1286]:
+            - generic [ref=e1287]:
+              - heading "Pompadour" [level=2] [ref=e1288]
+              - paragraph [ref=e1289]: Medium length - Straight Hair
+            - button "Save style" [ref=e1290] [cursor=pointer]: ♡
+        - article [ref=e1291]:
+          - button "Open Textured Crop" [ref=e1292] [cursor=pointer]:
+            - img "Textured Crop" [ref=e1293]
+          - generic [ref=e1294]:
+            - generic [ref=e1295]:
+              - heading "Textured Crop" [level=2] [ref=e1296]
+              - paragraph [ref=e1297]: Short length - Straight Hair
+            - button "Save style" [ref=e1298] [cursor=pointer]: ♡
+        - article [ref=e1299]:
+          - button "Open Middle Part" [ref=e1300] [cursor=pointer]:
+            - img "Middle Part" [ref=e1301]
+          - generic [ref=e1302]:
+            - generic [ref=e1303]:
+              - heading "Middle Part" [level=2] [ref=e1304]
+              - paragraph [ref=e1305]: Medium length - Straight Hair
+            - button "Save style" [ref=e1306] [cursor=pointer]: ♡
+        - article [ref=e1307]:
+          - button "Open Hard Part" [ref=e1308] [cursor=pointer]:
+            - img "Hard Part" [ref=e1309]
+          - generic [ref=e1310]:
+            - generic [ref=e1311]:
+              - heading "Hard Part" [level=2] [ref=e1312]
+              - paragraph [ref=e1313]: Medium length - Straight Hair
+            - button "Save style" [ref=e1314] [cursor=pointer]: ♡
+        - article [ref=e1315]:
+          - button "Open Messy Fringe" [ref=e1316] [cursor=pointer]:
+            - img "Messy Fringe" [ref=e1317]
+          - generic [ref=e1318]:
+            - generic [ref=e1319]:
+              - heading "Messy Fringe" [level=2] [ref=e1320]
+              - paragraph [ref=e1321]: Medium length - Wavy Hair
+            - button "Save style" [ref=e1322] [cursor=pointer]: ♡
+        - article [ref=e1323]:
+          - button "Open Man Bun" [ref=e1324] [cursor=pointer]:
+            - img "Man Bun" [ref=e1325]
+          - generic [ref=e1326]:
+            - generic [ref=e1327]:
+              - heading "Man Bun" [level=2] [ref=e1328]
+              - paragraph [ref=e1329]: Medium length - Straight Hair
+            - button "Save style" [ref=e1330] [cursor=pointer]: ♡
+        - article [ref=e1331]:
+          - button "Open Caesar Cut" [ref=e1332] [cursor=pointer]:
+            - img "Caesar Cut" [ref=e1333]
+          - generic [ref=e1334]:
+            - generic [ref=e1335]:
+              - heading "Caesar Cut" [level=2] [ref=e1336]
+              - paragraph [ref=e1337]: Medium length - Straight Hair
+            - button "Save style" [ref=e1338] [cursor=pointer]: ♡
+        - article [ref=e1339]:
+          - button "Open Slick Back" [ref=e1340] [cursor=pointer]:
+            - img "Slick Back" [ref=e1341]
+          - generic [ref=e1342]:
+            - generic [ref=e1343]:
+              - heading "Slick Back" [level=2] [ref=e1344]
+              - paragraph [ref=e1345]: Medium length - Straight Hair
+            - button "Save style" [ref=e1346] [cursor=pointer]: ♡
+        - article [ref=e1347]:
+          - button "Open Quiff" [ref=e1348] [cursor=pointer]:
+            - img "Quiff" [ref=e1349]
+          - generic [ref=e1350]:
+            - generic [ref=e1351]:
+              - heading "Quiff" [level=2] [ref=e1352]
+              - paragraph [ref=e1353]: Medium length - Straight Hair
+            - button "Save style" [ref=e1354] [cursor=pointer]: ♡
+        - article [ref=e1355]:
+          - button "Open Taper Fade" [ref=e1356] [cursor=pointer]:
+            - img "Taper Fade" [ref=e1357]
+          - generic [ref=e1358]:
+            - generic [ref=e1359]:
+              - heading "Taper Fade" [level=2] [ref=e1360]
+              - paragraph [ref=e1361]: Medium length - Straight Hair
+            - button "Save style" [ref=e1362] [cursor=pointer]: ♡
+        - article [ref=e1363]:
+          - button "Open Side Part" [ref=e1364] [cursor=pointer]:
+            - img "Side Part" [ref=e1365]
+          - generic [ref=e1366]:
+            - generic [ref=e1367]:
+              - heading "Side Part" [level=2] [ref=e1368]
+              - paragraph [ref=e1369]: Medium length - Straight Hair
+            - button "Save style" [ref=e1370] [cursor=pointer]: ♡
+        - article [ref=e1371]:
+          - button "Open Faux Hawk" [ref=e1372] [cursor=pointer]:
+            - img "Faux Hawk" [ref=e1373]
+          - generic [ref=e1374]:
+            - generic [ref=e1375]:
+              - heading "Faux Hawk" [level=2] [ref=e1376]
+              - paragraph [ref=e1377]: Medium length - Straight Hair
+            - button "Save style" [ref=e1378] [cursor=pointer]: ♡
+        - article [ref=e1379]:
+          - button "Open Temple Fade" [ref=e1380] [cursor=pointer]:
+            - img "Temple Fade" [ref=e1381]
+          - generic [ref=e1382]:
+            - generic [ref=e1383]:
+              - heading "Temple Fade" [level=2] [ref=e1384]
+              - paragraph [ref=e1385]: Medium length - Straight Hair
+            - button "Save style" [ref=e1386] [cursor=pointer]: ♡
+        - article [ref=e1387]:
+          - button "Open Comb Over" [ref=e1388] [cursor=pointer]:
+            - img "Comb Over" [ref=e1389]
+          - generic [ref=e1390]:
+            - generic [ref=e1391]:
+              - heading "Comb Over" [level=2] [ref=e1392]
+              - paragraph [ref=e1393]: Medium length - Straight Hair
+            - button "Save style" [ref=e1394] [cursor=pointer]: ♡
+        - article [ref=e1395]:
+          - button "Open Spiky Hair" [ref=e1396] [cursor=pointer]:
+            - img "Spiky Hair" [ref=e1397]
+          - generic [ref=e1398]:
+            - generic [ref=e1399]:
+              - heading "Spiky Hair" [level=2] [ref=e1400]
+              - paragraph [ref=e1401]: Medium length - Straight Hair
+            - button "Save style" [ref=e1402] [cursor=pointer]: ♡
+        - article [ref=e1403]:
+          - button "Open Two Block" [ref=e1404] [cursor=pointer]:
+            - img "Two Block" [ref=e1405]
+          - generic [ref=e1406]:
+            - generic [ref=e1407]:
+              - heading "Two Block" [level=2] [ref=e1408]
+              - paragraph [ref=e1409]: Medium length - Straight Hair
+            - button "Save style" [ref=e1410] [cursor=pointer]: ♡
+        - article [ref=e1411]:
+          - button "Open Ivy League Cut" [ref=e1412] [cursor=pointer]:
+            - img "Ivy League Cut" [ref=e1413]
+          - generic [ref=e1414]:
+            - generic [ref=e1415]:
+              - heading "Ivy League Cut" [level=2] [ref=e1416]
+              - paragraph [ref=e1417]: Medium length - Straight Hair
+            - button "Save style" [ref=e1418] [cursor=pointer]: ♡
+        - article [ref=e1419]:
+          - button "Open Layered Haircut" [ref=e1420] [cursor=pointer]:
+            - img "Layered Haircut" [ref=e1421]
+          - generic [ref=e1422]:
+            - generic [ref=e1423]:
+              - heading "Layered Haircut" [level=2] [ref=e1424]
+              - paragraph [ref=e1425]: Long length - Straight Hair
+            - button "Save style" [ref=e1426] [cursor=pointer]: ♡
+        - article [ref=e1427]:
+          - button "Open Long Fringe" [ref=e1428] [cursor=pointer]:
+            - img "Long Fringe" [ref=e1429]
+          - generic [ref=e1430]:
+            - generic [ref=e1431]:
+              - heading "Long Fringe" [level=2] [ref=e1432]
+              - paragraph [ref=e1433]: Long length - Wavy Hair
+            - button "Save style" [ref=e1434] [cursor=pointer]: ♡
+        - article [ref=e1435]:
+          - button "Open Mop Top" [ref=e1436] [cursor=pointer]:
+            - img "Mop Top" [ref=e1437]
+          - generic [ref=e1438]:
+            - generic [ref=e1439]:
+              - heading "Mop Top" [level=2] [ref=e1440]
+              - paragraph [ref=e1441]: Medium length - Straight Hair
+            - button "Save style" [ref=e1442] [cursor=pointer]: ♡
+        - article [ref=e1443]:
+          - button "Open Disconnected Undercut" [ref=e1444] [cursor=pointer]:
+            - img "Disconnected Undercut" [ref=e1445]
+          - generic [ref=e1446]:
+            - generic [ref=e1447]:
+              - heading "Disconnected Undercut" [level=2] [ref=e1448]
+              - paragraph [ref=e1449]: Medium length - Straight Hair
+            - button "Save style" [ref=e1450] [cursor=pointer]: ♡
+        - article [ref=e1451]:
+          - button "Open Short Straight Hair" [ref=e1452] [cursor=pointer]:
+            - img "Short Straight Hair" [ref=e1453]
+          - generic [ref=e1454]:
+            - generic [ref=e1455]:
+              - heading "Short Straight Hair" [level=2] [ref=e1456]
+              - paragraph [ref=e1457]: Medium length - Straight Hair
+            - button "Save style" [ref=e1458] [cursor=pointer]: ♡
+        - article [ref=e1459]:
+          - button "Open Long Straight Hair" [ref=e1460] [cursor=pointer]:
+            - img "Long Straight Hair" [ref=e1461]
+          - generic [ref=e1462]:
+            - generic [ref=e1463]:
+              - heading "Long Straight Hair" [level=2] [ref=e1464]
+              - paragraph [ref=e1465]: Long length - Straight Hair
+            - button "Save style" [ref=e1466] [cursor=pointer]: ♡
+        - article [ref=e1467]:
+          - button "Open Bro Flow" [ref=e1468] [cursor=pointer]:
+            - img "Bro Flow" [ref=e1469]
+          - generic [ref=e1470]:
+            - generic [ref=e1471]:
+              - heading "Bro Flow" [level=2] [ref=e1472]
+              - paragraph [ref=e1473]: Medium length - Straight Hair
+            - button "Save style" [ref=e1474] [cursor=pointer]: ♡
+        - article [ref=e1475]:
+          - button "Open Blunt Bob" [ref=e1476] [cursor=pointer]:
+            - img "Blunt Bob" [ref=e1477]
+          - generic [ref=e1478]:
+            - generic [ref=e1479]:
+              - heading "Blunt Bob" [level=2] [ref=e1480]
+              - paragraph [ref=e1481]: Short length - Straight Hair
+            - button "Save style" [ref=e1482] [cursor=pointer]: ♡
+        - article [ref=e1483]:
+          - button "Open Textured Bob" [ref=e1484] [cursor=pointer]:
+            - img "Textured Bob" [ref=e1485]
+          - generic [ref=e1486]:
+            - generic [ref=e1487]:
+              - heading "Textured Bob" [level=2] [ref=e1488]
+              - paragraph [ref=e1489]: Short length - Straight Hair
+            - button "Save style" [ref=e1490] [cursor=pointer]: ♡
+        - article [ref=e1491]:
+          - button "Open Asymmetrical Bob" [ref=e1492] [cursor=pointer]:
+            - img "Asymmetrical Bob" [ref=e1493]
+          - generic [ref=e1494]:
+            - generic [ref=e1495]:
+              - heading "Asymmetrical Bob" [level=2] [ref=e1496]
+              - paragraph [ref=e1497]: Short length - Straight Hair
+            - button "Save style" [ref=e1498] [cursor=pointer]: ♡
+        - article [ref=e1499]:
+          - button "Open Inverted Bob" [ref=e1500] [cursor=pointer]:
+            - img "Inverted Bob" [ref=e1501]
+          - generic [ref=e1502]:
+            - generic [ref=e1503]:
+              - heading "Inverted Bob" [level=2] [ref=e1504]
+              - paragraph [ref=e1505]: Short length - Straight Hair
+            - button "Save style" [ref=e1506] [cursor=pointer]: ♡
+        - article [ref=e1507]:
+          - button "Open Wavy Bob" [ref=e1508] [cursor=pointer]:
+            - img "Wavy Bob" [ref=e1509]
+          - generic [ref=e1510]:
+            - generic [ref=e1511]:
+              - heading "Wavy Bob" [level=2] [ref=e1512]
+              - paragraph [ref=e1513]: Short length - Wavy Hair
+            - button "Save style" [ref=e1514] [cursor=pointer]: ♡
+        - article [ref=e1515]:
+          - button "Open Curly Bob" [ref=e1516] [cursor=pointer]:
+            - img "Curly Bob" [ref=e1517]
+          - generic [ref=e1518]:
+            - generic [ref=e1519]:
+              - heading "Curly Bob" [level=2] [ref=e1520]
+              - paragraph [ref=e1521]: Short length - Curly Hair
+            - button "Save style" [ref=e1522] [cursor=pointer]: ♡
+        - article [ref=e1523]:
+          - button "Open Shaggy Bob" [ref=e1524] [cursor=pointer]:
+            - img "Shaggy Bob" [ref=e1525]
+          - generic [ref=e1526]:
+            - generic [ref=e1527]:
+              - heading "Shaggy Bob" [level=2] [ref=e1528]
+              - paragraph [ref=e1529]: Short length - Wavy Hair
+            - button "Save style" [ref=e1530] [cursor=pointer]: ♡
+        - article [ref=e1531]:
+          - button "Open French Bob" [ref=e1532] [cursor=pointer]:
+            - img "French Bob" [ref=e1533]
+          - generic [ref=e1534]:
+            - generic [ref=e1535]:
+              - heading "French Bob" [level=2] [ref=e1536]
+              - paragraph [ref=e1537]: Short length - Straight Hair
+            - button "Save style" [ref=e1538] [cursor=pointer]: ♡
+        - article [ref=e1539]:
+          - button "Open Lob (Long Bob)" [ref=e1540] [cursor=pointer]:
+            - img "Lob (Long Bob)" [ref=e1541]
+          - generic [ref=e1542]:
+            - generic [ref=e1543]:
+              - heading "Lob (Long Bob)" [level=2] [ref=e1544]
+              - paragraph [ref=e1545]: Short length - Straight Hair
+            - button "Save style" [ref=e1546] [cursor=pointer]: ♡
+        - article [ref=e1547]:
+          - button "Open Boyfriend Bob" [ref=e1548] [cursor=pointer]:
+            - img "Boyfriend Bob" [ref=e1549]
+          - generic [ref=e1550]:
+            - generic [ref=e1551]:
+              - heading "Boyfriend Bob" [level=2] [ref=e1552]
+              - paragraph [ref=e1553]: Short length - Straight Hair
+            - button "Save style" [ref=e1554] [cursor=pointer]: ♡
+        - article [ref=e1555]:
+          - button "Open Classic Pixie" [ref=e1556] [cursor=pointer]:
+            - img "Classic Pixie" [ref=e1557]
+          - generic [ref=e1558]:
+            - generic [ref=e1559]:
+              - heading "Classic Pixie" [level=2] [ref=e1560]
+              - paragraph [ref=e1561]: Short length - Straight Hair
+            - button "Save style" [ref=e1562] [cursor=pointer]: ♡
+        - article [ref=e1563]:
+          - button "Open Textured Pixie" [ref=e1564] [cursor=pointer]:
+            - img "Textured Pixie" [ref=e1565]
+          - generic [ref=e1566]:
+            - generic [ref=e1567]:
+              - heading "Textured Pixie" [level=2] [ref=e1568]
+              - paragraph [ref=e1569]: Short length - Straight Hair
+            - button "Save style" [ref=e1570] [cursor=pointer]: ♡
+        - article [ref=e1571]:
+          - button "Open Undercut Pixie" [ref=e1572] [cursor=pointer]:
+            - img "Undercut Pixie" [ref=e1573]
+          - generic [ref=e1574]:
+            - generic [ref=e1575]:
+              - heading "Undercut Pixie" [level=2] [ref=e1576]
+              - paragraph [ref=e1577]: Short length - Straight Hair
+            - button "Save style" [ref=e1578] [cursor=pointer]: ♡
+        - article [ref=e1579]:
+          - button "Open Long Pixie with Bangs" [ref=e1580] [cursor=pointer]:
+            - img "Long Pixie with Bangs" [ref=e1581]
+          - generic [ref=e1582]:
+            - generic [ref=e1583]:
+              - heading "Long Pixie with Bangs" [level=2] [ref=e1584]
+              - paragraph [ref=e1585]: Short length - Straight Hair
+            - button "Save style" [ref=e1586] [cursor=pointer]: ♡
+        - article [ref=e1587]:
+          - button "Open Pixie with Micro Fringe" [ref=e1588] [cursor=pointer]:
+            - img "Pixie with Micro Fringe" [ref=e1589]
+          - generic [ref=e1590]:
+            - generic [ref=e1591]:
+              - heading "Pixie with Micro Fringe" [level=2] [ref=e1592]
+              - paragraph [ref=e1593]: Short length - Wavy Hair
+            - button "Save style" [ref=e1594] [cursor=pointer]: ♡
+        - article [ref=e1595]:
+          - button "Open Curly Pixie" [ref=e1596] [cursor=pointer]:
+            - img "Curly Pixie" [ref=e1597]
+          - generic [ref=e1598]:
+            - generic [ref=e1599]:
+              - heading "Curly Pixie" [level=2] [ref=e1600]
+              - paragraph [ref=e1601]: Short length - Curly Hair
+            - button "Save style" [ref=e1602] [cursor=pointer]: ♡
+        - article [ref=e1603]:
+          - button "Open Wispy Pixie" [ref=e1604] [cursor=pointer]:
+            - img "Wispy Pixie" [ref=e1605]
+          - generic [ref=e1606]:
+            - generic [ref=e1607]:
+              - heading "Wispy Pixie" [level=2] [ref=e1608]
+              - paragraph [ref=e1609]: Short length - Straight Hair
+            - button "Save style" [ref=e1610] [cursor=pointer]: ♡
+        - article [ref=e1611]:
+          - button "Open Boyish Crop" [ref=e1612] [cursor=pointer]:
+            - img "Boyish Crop" [ref=e1613]
+          - generic [ref=e1614]:
+            - generic [ref=e1615]:
+              - heading "Boyish Crop" [level=2] [ref=e1616]
+              - paragraph [ref=e1617]: Short length - Straight Hair
+            - button "Save style" [ref=e1618] [cursor=pointer]: ♡
+        - article [ref=e1619]:
+          - button "Open Layered Pixie" [ref=e1620] [cursor=pointer]:
+            - img "Layered Pixie" [ref=e1621]
+          - generic [ref=e1622]:
+            - generic [ref=e1623]:
+              - heading "Layered Pixie" [level=2] [ref=e1624]
+              - paragraph [ref=e1625]: Short length - Straight Hair
+            - button "Save style" [ref=e1626] [cursor=pointer]: ♡
+        - article [ref=e1627]:
+          - button "Open Spiked Pixie" [ref=e1628] [cursor=pointer]:
+            - img "Spiked Pixie" [ref=e1629]
+          - generic [ref=e1630]:
+            - generic [ref=e1631]:
+              - heading "Spiked Pixie" [level=2] [ref=e1632]
+              - paragraph [ref=e1633]: Short length - Straight Hair
+            - button "Save style" [ref=e1634] [cursor=pointer]: ♡
+        - article [ref=e1635]:
+          - button "Open Bixie Cut" [ref=e1636] [cursor=pointer]:
+            - img "Bixie Cut" [ref=e1637]
+          - generic [ref=e1638]:
+            - generic [ref=e1639]:
+              - heading "Bixie Cut" [level=2] [ref=e1640]
+              - paragraph [ref=e1641]: Medium length - Straight Hair
+            - button "Save style" [ref=e1642] [cursor=pointer]: ♡
+        - article [ref=e1643]:
+          - button "Open Mixie Cut" [ref=e1644] [cursor=pointer]:
+            - img "Mixie Cut" [ref=e1645]
+          - generic [ref=e1646]:
+            - generic [ref=e1647]:
+              - heading "Mixie Cut" [level=2] [ref=e1648]
+              - paragraph [ref=e1649]: Medium length - Straight Hair
+            - button "Save style" [ref=e1650] [cursor=pointer]: ♡
+        - article [ref=e1651]:
+          - button "Open Tassel Cut" [ref=e1652] [cursor=pointer]:
+            - img "Tassel Cut" [ref=e1653]
+          - generic [ref=e1654]:
+            - generic [ref=e1655]:
+              - heading "Tassel Cut" [level=2] [ref=e1656]
+              - paragraph [ref=e1657]: Medium length - Straight Hair
+            - button "Save style" [ref=e1658] [cursor=pointer]: ♡
+        - article [ref=e1659]:
+          - button "Open Shag with Micro Fringe" [ref=e1660] [cursor=pointer]:
+            - img "Shag with Micro Fringe" [ref=e1661]
+          - generic [ref=e1662]:
+            - generic [ref=e1663]:
+              - heading "Shag with Micro Fringe" [level=2] [ref=e1664]
+              - paragraph [ref=e1665]: Medium length - Wavy Hair
+            - button "Save style" [ref=e1666] [cursor=pointer]: ♡
+        - article [ref=e1667]:
+          - button "Open Modern Shag" [ref=e1668] [cursor=pointer]:
+            - img "Modern Shag" [ref=e1669]
+          - generic [ref=e1670]:
+            - generic [ref=e1671]:
+              - heading "Modern Shag" [level=2] [ref=e1672]
+              - paragraph [ref=e1673]: Medium length - Wavy Hair
+            - button "Save style" [ref=e1674] [cursor=pointer]: ♡
+        - article [ref=e1675]:
+          - button "Open Wolf Cut" [ref=e1676] [cursor=pointer]:
+            - img "Wolf Cut" [ref=e1677]
+          - generic [ref=e1678]:
+            - generic [ref=e1679]:
+              - heading "Wolf Cut" [level=2] [ref=e1680]
+              - paragraph [ref=e1681]: Medium length - Straight Hair
+            - button "Save style" [ref=e1682] [cursor=pointer]: ♡
+        - article [ref=e1683]:
+          - button "Open Buzz Cut" [ref=e1684] [cursor=pointer]:
+            - img "Buzz Cut" [ref=e1685]
+          - generic [ref=e1686]:
+            - generic [ref=e1687]:
+              - heading "Buzz Cut" [level=2] [ref=e1688]
+              - paragraph [ref=e1689]: Short length - Straight Hair
+            - button "Save style" [ref=e1690] [cursor=pointer]: ♡
+        - article [ref=e1691]:
+          - button "Open Short Mullet" [ref=e1692] [cursor=pointer]:
+            - img "Short Mullet" [ref=e1693]
+          - generic [ref=e1694]:
+            - generic [ref=e1695]:
+              - heading "Short Mullet" [level=2] [ref=e1696]
+              - paragraph [ref=e1697]: Medium length - Wavy Hair
+            - button "Save style" [ref=e1698] [cursor=pointer]: ♡
+        - article [ref=e1699]:
+          - button "Open Choppy Crop" [ref=e1700] [cursor=pointer]:
+            - img "Choppy Crop" [ref=e1701]
+          - generic [ref=e1702]:
+            - generic [ref=e1703]:
+              - heading "Choppy Crop" [level=2] [ref=e1704]
+              - paragraph [ref=e1705]: Short length - Straight Hair
+            - button "Save style" [ref=e1706] [cursor=pointer]: ♡
+        - article [ref=e1707]:
+          - button "Open Tapered Cut" [ref=e1708] [cursor=pointer]:
+            - img "Tapered Cut" [ref=e1709]
+          - generic [ref=e1710]:
+            - generic [ref=e1711]:
+              - heading "Tapered Cut" [level=2] [ref=e1712]
+              - paragraph [ref=e1713]: Medium length - Straight Hair
+            - button "Save style" [ref=e1714] [cursor=pointer]: ♡
+        - article [ref=e1715]:
+          - button "Open Bob with Full Bangs" [ref=e1716] [cursor=pointer]:
+            - img "Bob with Full Bangs" [ref=e1717]
+          - generic [ref=e1718]:
+            - generic [ref=e1719]:
+              - heading "Bob with Full Bangs" [level=2] [ref=e1720]
+              - paragraph [ref=e1721]: Short length - Straight Hair
+            - button "Save style" [ref=e1722] [cursor=pointer]: ♡
+        - article [ref=e1723]:
+          - button "Open Pixie with Curtain Bangs" [ref=e1724] [cursor=pointer]:
+            - img "Pixie with Curtain Bangs" [ref=e1725]
+          - generic [ref=e1726]:
+            - generic [ref=e1727]:
+              - heading "Pixie with Curtain Bangs" [level=2] [ref=e1728]
+              - paragraph [ref=e1729]: Short length - Straight Hair
+            - button "Save style" [ref=e1730] [cursor=pointer]: ♡
+        - article [ref=e1731]:
+          - button "Open Bob with Side-Swept Bangs" [ref=e1732] [cursor=pointer]:
+            - img "Bob with Side-Swept Bangs" [ref=e1733]
+          - generic [ref=e1734]:
+            - generic [ref=e1735]:
+              - heading "Bob with Side-Swept Bangs" [level=2] [ref=e1736]
+              - paragraph [ref=e1737]: Short length - Straight Hair
+            - button "Save style" [ref=e1738] [cursor=pointer]: ♡
+        - article [ref=e1739]:
+          - button "Open Shag with Wispy Bangs" [ref=e1740] [cursor=pointer]:
+            - img "Shag with Wispy Bangs" [ref=e1741]
+          - generic [ref=e1742]:
+            - generic [ref=e1743]:
+              - heading "Shag with Wispy Bangs" [level=2] [ref=e1744]
+              - paragraph [ref=e1745]: Medium length - Wavy Hair
+            - button "Save style" [ref=e1746] [cursor=pointer]: ♡
+        - article [ref=e1747]:
+          - button "Open Precision-Cut Fringe" [ref=e1748] [cursor=pointer]:
+            - img "Precision-Cut Fringe" [ref=e1749]
+          - generic [ref=e1750]:
+            - generic [ref=e1751]:
+              - heading "Precision-Cut Fringe" [level=2] [ref=e1752]
+              - paragraph [ref=e1753]: Medium length - Wavy Hair
+            - button "Save style" [ref=e1754] [cursor=pointer]: ♡
+        - article [ref=e1755]:
+          - button "Open Short Layers with Cheekbone Framing" [ref=e1756] [cursor=pointer]:
+            - img "Short Layers with Cheekbone Framing" [ref=e1757]
+          - generic [ref=e1758]:
+            - generic [ref=e1759]:
+              - heading "Short Layers with Cheekbone Framing" [level=2] [ref=e1760]
+              - paragraph [ref=e1761]: Long length - Straight Hair
+            - button "Save style" [ref=e1762] [cursor=pointer]: ♡
+        - article [ref=e1763]:
+          - button "Open Feathered Cut" [ref=e1764] [cursor=pointer]:
+            - img "Feathered Cut" [ref=e1765]
+          - generic [ref=e1766]:
+            - generic [ref=e1767]:
+              - heading "Feathered Cut" [level=2] [ref=e1768]
+              - paragraph [ref=e1769]: Medium length - Straight Hair
+            - button "Save style" [ref=e1770] [cursor=pointer]: ♡
+        - article [ref=e1771]:
+          - button "Open Razor Cut Bob" [ref=e1772] [cursor=pointer]:
+            - img "Razor Cut Bob" [ref=e1773]
+          - generic [ref=e1774]:
+            - generic [ref=e1775]:
+              - heading "Razor Cut Bob" [level=2] [ref=e1776]
+              - paragraph [ref=e1777]: Short length - Straight Hair
+            - button "Save style" [ref=e1778] [cursor=pointer]: ♡
+        - article [ref=e1779]:
+          - button "Open Graduated Bob" [ref=e1780] [cursor=pointer]:
+            - img "Graduated Bob" [ref=e1781]
+          - generic [ref=e1782]:
+            - generic [ref=e1783]:
+              - heading "Graduated Bob" [level=2] [ref=e1784]
+              - paragraph [ref=e1785]: Short length - Straight Hair
+            - button "Save style" [ref=e1786] [cursor=pointer]: ♡
+        - article [ref=e1787]:
+          - button "Open Piecey Layers" [ref=e1788] [cursor=pointer]:
+            - img "Piecey Layers" [ref=e1789]
+          - generic [ref=e1790]:
+            - generic [ref=e1791]:
+              - heading "Piecey Layers" [level=2] [ref=e1792]
+              - paragraph [ref=e1793]: Long length - Straight Hair
+            - button "Save style" [ref=e1794] [cursor=pointer]: ♡
+        - article [ref=e1795]:
+          - button "Open Finger Wave Style" [ref=e1796] [cursor=pointer]:
+            - img "Finger Wave Style" [ref=e1797]
+          - generic [ref=e1798]:
+            - generic [ref=e1799]:
+              - heading "Finger Wave Style" [level=2] [ref=e1800]
+              - paragraph [ref=e1801]: Medium length - Wavy Hair
+            - button "Save style" [ref=e1802] [cursor=pointer]: ♡
+        - article [ref=e1803]:
+          - button "Open Pin Curl Bob" [ref=e1804] [cursor=pointer]:
+            - img "Pin Curl Bob" [ref=e1805]
+          - generic [ref=e1806]:
+            - generic [ref=e1807]:
+              - heading "Pin Curl Bob" [level=2] [ref=e1808]
+              - paragraph [ref=e1809]: Short length - Curly Hair
+            - button "Save style" [ref=e1810] [cursor=pointer]: ♡
+        - article [ref=e1811]:
+          - button "Open Victory Rolls Pixie" [ref=e1812] [cursor=pointer]:
+            - img "Victory Rolls Pixie" [ref=e1813]
+          - generic [ref=e1814]:
+            - generic [ref=e1815]:
+              - heading "Victory Rolls Pixie" [level=2] [ref=e1816]
+              - paragraph [ref=e1817]: Short length - Straight Hair
+            - button "Save style" [ref=e1818] [cursor=pointer]: ♡
+        - article [ref=e1819]:
+          - button "Open Retro Flip" [ref=e1820] [cursor=pointer]:
+            - img "Retro Flip" [ref=e1821]
+          - generic [ref=e1822]:
+            - generic [ref=e1823]:
+              - heading "Retro Flip" [level=2] [ref=e1824]
+              - paragraph [ref=e1825]: Medium length - Straight Hair
+            - button "Save style" [ref=e1826] [cursor=pointer]: ♡
+        - article [ref=e1827]:
+          - button "Open Natural Curl Support Cut" [ref=e1828] [cursor=pointer]:
+            - img "Natural Curl Support Cut" [ref=e1829]
+          - generic [ref=e1830]:
+            - generic [ref=e1831]:
+              - heading "Natural Curl Support Cut" [level=2] [ref=e1832]
+              - paragraph [ref=e1833]: Medium length - Curly Hair
+            - button "Save style" [ref=e1834] [cursor=pointer]: ♡
+        - article [ref=e1835]:
+          - button "Open Coily Pixie" [ref=e1836] [cursor=pointer]:
+            - img "Coily Pixie" [ref=e1837]
+          - generic [ref=e1838]:
+            - generic [ref=e1839]:
+              - heading "Coily Pixie" [level=2] [ref=e1840]
+              - paragraph [ref=e1841]: Short length - Coily Hair
+            - button "Save style" [ref=e1842] [cursor=pointer]: ♡
+        - article [ref=e1843]:
+          - button "Open Wavy Shag" [ref=e1844] [cursor=pointer]:
+            - img "Wavy Shag" [ref=e1845]
+          - generic [ref=e1846]:
+            - generic [ref=e1847]:
+              - heading "Wavy Shag" [level=2] [ref=e1848]
+              - paragraph [ref=e1849]: Medium length - Wavy Hair
+            - button "Save style" [ref=e1850] [cursor=pointer]: ♡
+        - article [ref=e1851]:
+          - button "Open Wolf Cut" [ref=e1852] [cursor=pointer]:
+            - img "Wolf Cut" [ref=e1853]
+          - generic [ref=e1854]:
+            - generic [ref=e1855]:
+              - heading "Wolf Cut" [level=2] [ref=e1856]
+              - paragraph [ref=e1857]: Medium length - Straight Hair
+            - button "Save style" [ref=e1858] [cursor=pointer]: ♡
+        - article [ref=e1859]:
+          - button "Open Mullet" [ref=e1860] [cursor=pointer]:
+            - img "Mullet" [ref=e1861]
+          - generic [ref=e1862]:
+            - generic [ref=e1863]:
+              - heading "Mullet" [level=2] [ref=e1864]
+              - paragraph [ref=e1865]: Medium length - Wavy Hair
+            - button "Save style" [ref=e1866] [cursor=pointer]: ♡
+        - article [ref=e1867]:
+          - button "Open Drop Fade" [ref=e1868] [cursor=pointer]:
+            - img "Drop Fade" [ref=e1869]
+          - generic [ref=e1870]:
+            - generic [ref=e1871]:
+              - heading "Drop Fade" [level=2] [ref=e1872]
+              - paragraph [ref=e1873]: Medium length - Straight Hair
+            - button "Save style" [ref=e1874] [cursor=pointer]: ♡
+        - article [ref=e1875]:
+          - button "Open Textured Fringe" [ref=e1876] [cursor=pointer]:
+            - img "Textured Fringe" [ref=e1877]
+          - generic [ref=e1878]:
+            - generic [ref=e1879]:
+              - heading "Textured Fringe" [level=2] [ref=e1880]
+              - paragraph [ref=e1881]: Medium length - Wavy Hair
+            - button "Save style" [ref=e1882] [cursor=pointer]: ♡
+        - article [ref=e1883]:
+          - button "Open Comma Hair" [ref=e1884] [cursor=pointer]:
+            - img "Comma Hair" [ref=e1885]
+          - generic [ref=e1886]:
+            - generic [ref=e1887]:
+              - heading "Comma Hair" [level=2] [ref=e1888]
+              - paragraph [ref=e1889]: Medium length - Straight Hair
+            - button "Save style" [ref=e1890] [cursor=pointer]: ♡
+        - article [ref=e1891]:
+          - button "Open Middle Part" [ref=e1892] [cursor=pointer]:
+            - img "Middle Part" [ref=e1893]
+          - generic [ref=e1894]:
+            - generic [ref=e1895]:
+              - heading "Middle Part" [level=2] [ref=e1896]
+              - paragraph [ref=e1897]: Medium length - Straight Hair
+            - button "Save style" [ref=e1898] [cursor=pointer]: ♡
+        - article [ref=e1899]:
+          - button "Open Korean Down Perm" [ref=e1900] [cursor=pointer]:
+            - img "Korean Down Perm" [ref=e1901]
+          - generic [ref=e1902]:
+            - generic [ref=e1903]:
+              - heading "Korean Down Perm" [level=2] [ref=e1904]
+              - paragraph [ref=e1905]: Medium length - Straight Hair
+            - button "Save style" [ref=e1906] [cursor=pointer]: ♡
+        - article [ref=e1907]:
+          - button "Open Korean Side Part" [ref=e1908] [cursor=pointer]:
+            - img "Korean Side Part" [ref=e1909]
+          - generic [ref=e1910]:
+            - generic [ref=e1911]:
+              - heading "Korean Side Part" [level=2] [ref=e1912]
+              - paragraph [ref=e1913]: Medium length - Straight Hair
+            - button "Save style" [ref=e1914] [cursor=pointer]: ♡
+        - article [ref=e1915]:
+          - button "Open Korean Taper Fade" [ref=e1916] [cursor=pointer]:
+            - img "Korean Taper Fade" [ref=e1917]
+          - generic [ref=e1918]:
+            - generic [ref=e1919]:
+              - heading "Korean Taper Fade" [level=2] [ref=e1920]
+              - paragraph [ref=e1921]: Medium length - Straight Hair
+            - button "Save style" [ref=e1922] [cursor=pointer]: ♡
+        - article [ref=e1923]:
+          - button "Open Korean French Crop" [ref=e1924] [cursor=pointer]:
+            - img "Korean French Crop" [ref=e1925]
+          - generic [ref=e1926]:
+            - generic [ref=e1927]:
+              - heading "Korean French Crop" [level=2] [ref=e1928]
+              - paragraph [ref=e1929]: Short length - Straight Hair
+            - button "Save style" [ref=e1930] [cursor=pointer]: ♡
+        - article [ref=e1931]:
+          - button "Open Korean Ivy League" [ref=e1932] [cursor=pointer]:
+            - img "Korean Ivy League" [ref=e1933]
+          - generic [ref=e1934]:
+            - generic [ref=e1935]:
+              - heading "Korean Ivy League" [level=2] [ref=e1936]
+              - paragraph [ref=e1937]: Medium length - Straight Hair
+            - button "Save style" [ref=e1938] [cursor=pointer]: ♡
+        - article [ref=e1939]:
+          - button "Open Textured Crop" [ref=e1940] [cursor=pointer]:
+            - img "Textured Crop" [ref=e1941]
+          - generic [ref=e1942]:
+            - generic [ref=e1943]:
+              - heading "Textured Crop" [level=2] [ref=e1944]
+              - paragraph [ref=e1945]: Short length - Straight Hair
+            - button "Save style" [ref=e1946] [cursor=pointer]: ♡
+        - article [ref=e1947]:
+          - button "Open Two Block" [ref=e1948] [cursor=pointer]:
+            - img "Two Block" [ref=e1949]
+          - generic [ref=e1950]:
+            - generic [ref=e1951]:
+              - heading "Two Block" [level=2] [ref=e1952]
+              - paragraph [ref=e1953]: Medium length - Straight Hair
+            - button "Save style" [ref=e1954] [cursor=pointer]: ♡
+        - article [ref=e1955]:
+          - button "Open S-Shaped Fringe" [ref=e1956] [cursor=pointer]:
+            - img "S-Shaped Fringe" [ref=e1957]
+          - generic [ref=e1958]:
+            - generic [ref=e1959]:
+              - heading "S-Shaped Fringe" [level=2] [ref=e1960]
+              - paragraph [ref=e1961]: Medium length - Wavy Hair
+            - button "Save style" [ref=e1962] [cursor=pointer]: ♡
+        - article [ref=e1963]:
+          - button "Open Caesar Cut" [ref=e1964] [cursor=pointer]:
+            - img "Caesar Cut" [ref=e1965]
+          - generic [ref=e1966]:
+            - generic [ref=e1967]:
+              - heading "Caesar Cut" [level=2] [ref=e1968]
+              - paragraph [ref=e1969]: Medium length - Straight Hair
+            - button "Save style" [ref=e1970] [cursor=pointer]: ♡
+        - article [ref=e1971]:
+          - button "Open Layered Cut" [ref=e1972] [cursor=pointer]:
+            - img "Layered Cut" [ref=e1973]
+          - generic [ref=e1974]:
+            - generic [ref=e1975]:
+              - heading "Layered Cut" [level=2] [ref=e1976]
+              - paragraph [ref=e1977]: Long length - Straight Hair
+            - button "Save style" [ref=e1978] [cursor=pointer]: ♡
+        - article [ref=e1979]:
+          - button "Open Bowl Cut" [ref=e1980] [cursor=pointer]:
+            - img "Bowl Cut" [ref=e1981]
+          - generic [ref=e1982]:
+            - generic [ref=e1983]:
+              - heading "Bowl Cut" [level=2] [ref=e1984]
+              - paragraph [ref=e1985]: Medium length - Straight Hair
+            - button "Save style" [ref=e1986] [cursor=pointer]: ♡
+        - article [ref=e1987]:
+          - button "Open Curtain Haircut" [ref=e1988] [cursor=pointer]:
+            - img "Curtain Haircut" [ref=e1989]
+          - generic [ref=e1990]:
+            - generic [ref=e1991]:
+              - heading "Curtain Haircut" [level=2] [ref=e1992]
+              - paragraph [ref=e1993]: Medium length - Straight Hair
+            - button "Save style" [ref=e1994] [cursor=pointer]: ♡
+        - article [ref=e1995]:
+          - button "Open Side Bangs" [ref=e1996] [cursor=pointer]:
+            - img "Side Bangs" [ref=e1997]
+          - generic [ref=e1998]:
+            - generic [ref=e1999]:
+              - heading "Side Bangs" [level=2] [ref=e2000]
+              - paragraph [ref=e2001]: Medium length - Straight Hair
+            - button "Save style" [ref=e2002] [cursor=pointer]: ♡
+        - article [ref=e2003]:
+          - button "Open Korean Perm" [ref=e2004] [cursor=pointer]:
+            - img "Korean Perm" [ref=e2005]
+          - generic [ref=e2006]:
+            - generic [ref=e2007]:
+              - heading "Korean Perm" [level=2] [ref=e2008]
+              - paragraph [ref=e2009]: Medium length - Straight Hair
+            - button "Save style" [ref=e2010] [cursor=pointer]: ♡
+        - article [ref=e2011]:
+          - button "Open Messy Haircut" [ref=e2012] [cursor=pointer]:
+            - img "Messy Haircut" [ref=e2013]
+          - generic [ref=e2014]:
+            - generic [ref=e2015]:
+              - heading "Messy Haircut" [level=2] [ref=e2016]
+              - paragraph [ref=e2017]: Medium length - Straight Hair
+            - button "Save style" [ref=e2018] [cursor=pointer]: ♡
+        - article [ref=e2019]:
+          - button "Open Side Swept Fringe" [ref=e2020] [cursor=pointer]:
+            - img "Side Swept Fringe" [ref=e2021]
+          - generic [ref=e2022]:
+            - generic [ref=e2023]:
+              - heading "Side Swept Fringe" [level=2] [ref=e2024]
+              - paragraph [ref=e2025]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2026] [cursor=pointer]: ♡
+        - article [ref=e2027]:
+          - button "Open Tapered Cut" [ref=e2028] [cursor=pointer]:
+            - img "Tapered Cut" [ref=e2029]
+          - generic [ref=e2030]:
+            - generic [ref=e2031]:
+              - heading "Tapered Cut" [level=2] [ref=e2032]
+              - paragraph [ref=e2033]: Medium length - Straight Hair
+            - button "Save style" [ref=e2034] [cursor=pointer]: ♡
+        - article [ref=e2035]:
+          - button "Open Shaggy Cut" [ref=e2036] [cursor=pointer]:
+            - img "Shaggy Cut" [ref=e2037]
+          - generic [ref=e2038]:
+            - generic [ref=e2039]:
+              - heading "Shaggy Cut" [level=2] [ref=e2040]
+              - paragraph [ref=e2041]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2042] [cursor=pointer]: ♡
+        - article [ref=e2043]:
+          - button "Open Long Bangs" [ref=e2044] [cursor=pointer]:
+            - img "Long Bangs" [ref=e2045]
+          - generic [ref=e2046]:
+            - generic [ref=e2047]:
+              - heading "Long Bangs" [level=2] [ref=e2048]
+              - paragraph [ref=e2049]: Long length - Straight Hair
+            - button "Save style" [ref=e2050] [cursor=pointer]: ♡
+        - article [ref=e2051]:
+          - button "Open Short Korean Haircut" [ref=e2052] [cursor=pointer]:
+            - img "Short Korean Haircut" [ref=e2053]
+          - generic [ref=e2054]:
+            - generic [ref=e2055]:
+              - heading "Short Korean Haircut" [level=2] [ref=e2056]
+              - paragraph [ref=e2057]: Medium length - Straight Hair
+            - button "Save style" [ref=e2058] [cursor=pointer]: ♡
+        - article [ref=e2059]:
+          - button "Open Bangs with Ponytail" [ref=e2060] [cursor=pointer]:
+            - img "Bangs with Ponytail" [ref=e2061]
+          - generic [ref=e2062]:
+            - generic [ref=e2063]:
+              - heading "Bangs with Ponytail" [level=2] [ref=e2064]
+              - paragraph [ref=e2065]: Medium length - Straight Hair
+            - button "Save style" [ref=e2066] [cursor=pointer]: ♡
+        - article [ref=e2067]:
+          - button "Open Surfer Cut" [ref=e2068] [cursor=pointer]:
+            - img "Surfer Cut" [ref=e2069]
+          - generic [ref=e2070]:
+            - generic [ref=e2071]:
+              - heading "Surfer Cut" [level=2] [ref=e2072]
+              - paragraph [ref=e2073]: Medium length - Straight Hair
+            - button "Save style" [ref=e2074] [cursor=pointer]: ♡
+        - article [ref=e2075]:
+          - button "Open Long Korean Haircut" [ref=e2076] [cursor=pointer]:
+            - img "Long Korean Haircut" [ref=e2077]
+          - generic [ref=e2078]:
+            - generic [ref=e2079]:
+              - heading "Long Korean Haircut" [level=2] [ref=e2080]
+              - paragraph [ref=e2081]: Long length - Straight Hair
+            - button "Save style" [ref=e2082] [cursor=pointer]: ♡
+        - article [ref=e2083]:
+          - button "Open See Through Bangs" [ref=e2084] [cursor=pointer]:
+            - img "See Through Bangs" [ref=e2085]
+          - generic [ref=e2086]:
+            - generic [ref=e2087]:
+              - heading "See Through Bangs" [level=2] [ref=e2088]
+              - paragraph [ref=e2089]: Medium length - Straight Hair
+            - button "Save style" [ref=e2090] [cursor=pointer]: ♡
+        - article [ref=e2091]:
+          - button "Open Textured Hair" [ref=e2092] [cursor=pointer]:
+            - img "Textured Hair" [ref=e2093]
+          - generic [ref=e2094]:
+            - generic [ref=e2095]:
+              - heading "Textured Hair" [level=2] [ref=e2096]
+              - paragraph [ref=e2097]: Medium length - Straight Hair
+            - button "Save style" [ref=e2098] [cursor=pointer]: ♡
+        - article [ref=e2099]:
+          - button "Open Kpop Hairstyle" [ref=e2100] [cursor=pointer]:
+            - img "Kpop Hairstyle" [ref=e2101]
+          - generic [ref=e2102]:
+            - generic [ref=e2103]:
+              - heading "Kpop Hairstyle" [level=2] [ref=e2104]
+              - paragraph [ref=e2105]: Medium length - Straight Hair
+            - button "Save style" [ref=e2106] [cursor=pointer]: ♡
+        - article [ref=e2107]:
+          - button "Open Flow Cut" [ref=e2108] [cursor=pointer]:
+            - img "Flow Cut" [ref=e2109]
+          - generic [ref=e2110]:
+            - generic [ref=e2111]:
+              - heading "Flow Cut" [level=2] [ref=e2112]
+              - paragraph [ref=e2113]: Medium length - Straight Hair
+            - button "Save style" [ref=e2114] [cursor=pointer]: ♡
+        - article [ref=e2115]:
+          - button "Open Korean Undercut" [ref=e2116] [cursor=pointer]:
+            - img "Korean Undercut" [ref=e2117]
+          - generic [ref=e2118]:
+            - generic [ref=e2119]:
+              - heading "Korean Undercut" [level=2] [ref=e2120]
+              - paragraph [ref=e2121]: Medium length - Straight Hair
+            - button "Save style" [ref=e2122] [cursor=pointer]: ♡
+        - article [ref=e2123]:
+          - button "Open Dandy Cut" [ref=e2124] [cursor=pointer]:
+            - img "Dandy Cut" [ref=e2125]
+          - generic [ref=e2126]:
+            - generic [ref=e2127]:
+              - heading "Dandy Cut" [level=2] [ref=e2128]
+              - paragraph [ref=e2129]: Medium length - Straight Hair
+            - button "Save style" [ref=e2130] [cursor=pointer]: ♡
+        - article [ref=e2131]:
+          - button "Open Natural Flow" [ref=e2132] [cursor=pointer]:
+            - img "Natural Flow" [ref=e2133]
+          - generic [ref=e2134]:
+            - generic [ref=e2135]:
+              - heading "Natural Flow" [level=2] [ref=e2136]
+              - paragraph [ref=e2137]: Medium length - Straight Hair
+            - button "Save style" [ref=e2138] [cursor=pointer]: ♡
+        - article [ref=e2139]:
+          - button "Open Korean Curly Hair" [ref=e2140] [cursor=pointer]:
+            - img "Korean Curly Hair" [ref=e2141]
+          - generic [ref=e2142]:
+            - generic [ref=e2143]:
+              - heading "Korean Curly Hair" [level=2] [ref=e2144]
+              - paragraph [ref=e2145]: Medium length - Curly Hair
+            - button "Save style" [ref=e2146] [cursor=pointer]: ♡
+        - article [ref=e2147]:
+          - button "Open Korean Medium Hairstyle" [ref=e2148] [cursor=pointer]:
+            - img "Korean Medium Hairstyle" [ref=e2149]
+          - generic [ref=e2150]:
+            - generic [ref=e2151]:
+              - heading "Korean Medium Hairstyle" [level=2] [ref=e2152]
+              - paragraph [ref=e2153]: Medium length - Straight Hair
+            - button "Save style" [ref=e2154] [cursor=pointer]: ♡
+        - article [ref=e2155]:
+          - button "Open Leaf Perm" [ref=e2156] [cursor=pointer]:
+            - img "Leaf Perm" [ref=e2157]
+          - generic [ref=e2158]:
+            - generic [ref=e2159]:
+              - heading "Leaf Perm" [level=2] [ref=e2160]
+              - paragraph [ref=e2161]: Medium length - Straight Hair
+            - button "Save style" [ref=e2162] [cursor=pointer]: ♡
+        - article [ref=e2163]:
+          - button "Open Wavy Korean Hair" [ref=e2164] [cursor=pointer]:
+            - img "Wavy Korean Hair" [ref=e2165]
+          - generic [ref=e2166]:
+            - generic [ref=e2167]:
+              - heading "Wavy Korean Hair" [level=2] [ref=e2168]
+              - paragraph [ref=e2169]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2170] [cursor=pointer]: ♡
+        - article [ref=e2171]:
+          - button "Open Curly Mullet" [ref=e2172] [cursor=pointer]:
+            - img "Curly Mullet" [ref=e2173]
+          - generic [ref=e2174]:
+            - generic [ref=e2175]:
+              - heading "Curly Mullet" [level=2] [ref=e2176]
+              - paragraph [ref=e2177]: Medium length - Curly Hair
+            - button "Save style" [ref=e2178] [cursor=pointer]: ♡
+        - article [ref=e2179]:
+          - button "Open Low Taper Fade Curly Hair" [ref=e2180] [cursor=pointer]:
+            - img "Low Taper Fade Curly Hair" [ref=e2181]
+          - generic [ref=e2182]:
+            - generic [ref=e2183]:
+              - heading "Low Taper Fade Curly Hair" [level=2] [ref=e2184]
+              - paragraph [ref=e2185]: Medium length - Curly Hair
+            - button "Save style" [ref=e2186] [cursor=pointer]: ♡
+        - article [ref=e2187]:
+          - button "Open Burst Fade Curly Hair" [ref=e2188] [cursor=pointer]:
+            - img "Burst Fade Curly Hair" [ref=e2189]
+          - generic [ref=e2190]:
+            - generic [ref=e2191]:
+              - heading "Burst Fade Curly Hair" [level=2] [ref=e2192]
+              - paragraph [ref=e2193]: Medium length - Curly Hair
+            - button "Save style" [ref=e2194] [cursor=pointer]: ♡
+        - article [ref=e2195]:
+          - button "Open Taper Fade Curly Hair" [ref=e2196] [cursor=pointer]:
+            - img "Taper Fade Curly Hair" [ref=e2197]
+          - generic [ref=e2198]:
+            - generic [ref=e2199]:
+              - heading "Taper Fade Curly Hair" [level=2] [ref=e2200]
+              - paragraph [ref=e2201]: Medium length - Curly Hair
+            - button "Save style" [ref=e2202] [cursor=pointer]: ♡
+        - article [ref=e2203]:
+          - button "Open Short Curly Hair" [ref=e2204] [cursor=pointer]:
+            - img "Short Curly Hair" [ref=e2205]
+          - generic [ref=e2206]:
+            - generic [ref=e2207]:
+              - heading "Short Curly Hair" [level=2] [ref=e2208]
+              - paragraph [ref=e2209]: Medium length - Curly Hair
+            - button "Save style" [ref=e2210] [cursor=pointer]: ♡
+        - article [ref=e2211]:
+          - button "Open Curly Hair Fade" [ref=e2212] [cursor=pointer]:
+            - img "Curly Hair Fade" [ref=e2213]
+          - generic [ref=e2214]:
+            - generic [ref=e2215]:
+              - heading "Curly Hair Fade" [level=2] [ref=e2216]
+              - paragraph [ref=e2217]: Medium length - Curly Hair
+            - button "Save style" [ref=e2218] [cursor=pointer]: ♡
+        - article [ref=e2219]:
+          - button "Open Mid Fade Curly Hair" [ref=e2220] [cursor=pointer]:
+            - img "Mid Fade Curly Hair" [ref=e2221]
+          - generic [ref=e2222]:
+            - generic [ref=e2223]:
+              - heading "Mid Fade Curly Hair" [level=2] [ref=e2224]
+              - paragraph [ref=e2225]: Medium length - Curly Hair
+            - button "Save style" [ref=e2226] [cursor=pointer]: ♡
+        - article [ref=e2227]:
+          - button "Open Curly Bangs" [ref=e2228] [cursor=pointer]:
+            - img "Curly Bangs" [ref=e2229]
+          - generic [ref=e2230]:
+            - generic [ref=e2231]:
+              - heading "Curly Bangs" [level=2] [ref=e2232]
+              - paragraph [ref=e2233]: Medium length - Curly Hair
+            - button "Save style" [ref=e2234] [cursor=pointer]: ♡
+        - article [ref=e2235]:
+          - button "Open Low Fade Curly Hair" [ref=e2236] [cursor=pointer]:
+            - img "Low Fade Curly Hair" [ref=e2237]
+          - generic [ref=e2238]:
+            - generic [ref=e2239]:
+              - heading "Low Fade Curly Hair" [level=2] [ref=e2240]
+              - paragraph [ref=e2241]: Medium length - Curly Hair
+            - button "Save style" [ref=e2242] [cursor=pointer]: ♡
+        - article [ref=e2243]:
+          - button "Open Long Curly Hair" [ref=e2244] [cursor=pointer]:
+            - img "Long Curly Hair" [ref=e2245]
+          - generic [ref=e2246]:
+            - generic [ref=e2247]:
+              - heading "Long Curly Hair" [level=2] [ref=e2248]
+              - paragraph [ref=e2249]: Long length - Curly Hair
+            - button "Save style" [ref=e2250] [cursor=pointer]: ♡
+        - article [ref=e2251]:
+          - button "Open Drop Fade Curly Hair" [ref=e2252] [cursor=pointer]:
+            - img "Drop Fade Curly Hair" [ref=e2253]
+          - generic [ref=e2254]:
+            - generic [ref=e2255]:
+              - heading "Drop Fade Curly Hair" [level=2] [ref=e2256]
+              - paragraph [ref=e2257]: Medium length - Curly Hair
+            - button "Save style" [ref=e2258] [cursor=pointer]: ♡
+        - article [ref=e2259]:
+          - button "Open Mid Taper Curly Hair" [ref=e2260] [cursor=pointer]:
+            - img "Mid Taper Curly Hair" [ref=e2261]
+          - generic [ref=e2262]:
+            - generic [ref=e2263]:
+              - heading "Mid Taper Curly Hair" [level=2] [ref=e2264]
+              - paragraph [ref=e2265]: Medium length - Curly Hair
+            - button "Save style" [ref=e2266] [cursor=pointer]: ♡
+        - article [ref=e2267]:
+          - button "Open Curly Wolf Cut" [ref=e2268] [cursor=pointer]:
+            - img "Curly Wolf Cut" [ref=e2269]
+          - generic [ref=e2270]:
+            - generic [ref=e2271]:
+              - heading "Curly Wolf Cut" [level=2] [ref=e2272]
+              - paragraph [ref=e2273]: Medium length - Curly Hair
+            - button "Save style" [ref=e2274] [cursor=pointer]: ♡
+        - article [ref=e2275]:
+          - button "Open Curly Bob" [ref=e2276] [cursor=pointer]:
+            - img "Curly Bob" [ref=e2277]
+          - generic [ref=e2278]:
+            - generic [ref=e2279]:
+              - heading "Curly Bob" [level=2] [ref=e2280]
+              - paragraph [ref=e2281]: Short length - Curly Hair
+            - button "Save style" [ref=e2282] [cursor=pointer]: ♡
+        - article [ref=e2283]:
+          - button "Open Curly Flow" [ref=e2284] [cursor=pointer]:
+            - img "Curly Flow" [ref=e2285]
+          - generic [ref=e2286]:
+            - generic [ref=e2287]:
+              - heading "Curly Flow" [level=2] [ref=e2288]
+              - paragraph [ref=e2289]: Medium length - Curly Hair
+            - button "Save style" [ref=e2290] [cursor=pointer]: ♡
+        - article [ref=e2291]:
+          - button "Open Broccoli Cut" [ref=e2292] [cursor=pointer]:
+            - img "Broccoli Cut" [ref=e2293]
+          - generic [ref=e2294]:
+            - generic [ref=e2295]:
+              - heading "Broccoli Cut" [level=2] [ref=e2296]
+              - paragraph [ref=e2297]: Medium length - Curly Hair
+            - button "Save style" [ref=e2298] [cursor=pointer]: ♡
+        - article [ref=e2299]:
+          - button "Open Curly Perm" [ref=e2300] [cursor=pointer]:
+            - img "Curly Perm" [ref=e2301]
+          - generic [ref=e2302]:
+            - generic [ref=e2303]:
+              - heading "Curly Perm" [level=2] [ref=e2304]
+              - paragraph [ref=e2305]: Medium length - Curly Hair
+            - button "Save style" [ref=e2306] [cursor=pointer]: ♡
+        - article [ref=e2307]:
+          - button "Open Curly Edgar" [ref=e2308] [cursor=pointer]:
+            - img "Curly Edgar" [ref=e2309]
+          - generic [ref=e2310]:
+            - generic [ref=e2311]:
+              - heading "Curly Edgar" [level=2] [ref=e2312]
+              - paragraph [ref=e2313]: Short length - Curly Hair
+            - button "Save style" [ref=e2314] [cursor=pointer]: ♡
+        - article [ref=e2315]:
+          - button "Open Curly Fringe" [ref=e2316] [cursor=pointer]:
+            - img "Curly Fringe" [ref=e2317]
+          - generic [ref=e2318]:
+            - generic [ref=e2319]:
+              - heading "Curly Fringe" [level=2] [ref=e2320]
+              - paragraph [ref=e2321]: Medium length - Curly Hair
+            - button "Save style" [ref=e2322] [cursor=pointer]: ♡
+        - article [ref=e2323]:
+          - button "Open Curly Shag" [ref=e2324] [cursor=pointer]:
+            - img "Curly Shag" [ref=e2325]
+          - generic [ref=e2326]:
+            - generic [ref=e2327]:
+              - heading "Curly Shag" [level=2] [ref=e2328]
+              - paragraph [ref=e2329]: Medium length - Curly Hair
+            - button "Save style" [ref=e2330] [cursor=pointer]: ♡
+        - article [ref=e2331]:
+          - button "Open Curly Undercut" [ref=e2332] [cursor=pointer]:
+            - img "Curly Undercut" [ref=e2333]
+          - generic [ref=e2334]:
+            - generic [ref=e2335]:
+              - heading "Curly Undercut" [level=2] [ref=e2336]
+              - paragraph [ref=e2337]: Medium length - Curly Hair
+            - button "Save style" [ref=e2338] [cursor=pointer]: ♡
+        - article [ref=e2339]:
+          - button "Open Curly Mohawk" [ref=e2340] [cursor=pointer]:
+            - img "Curly Mohawk" [ref=e2341]
+          - generic [ref=e2342]:
+            - generic [ref=e2343]:
+              - heading "Curly Mohawk" [level=2] [ref=e2344]
+              - paragraph [ref=e2345]: Medium length - Curly Hair
+            - button "Save style" [ref=e2346] [cursor=pointer]: ♡
+        - article [ref=e2347]:
+          - button "Open Curly Ponytail" [ref=e2348] [cursor=pointer]:
+            - img "Curly Ponytail" [ref=e2349]
+          - generic [ref=e2350]:
+            - generic [ref=e2351]:
+              - heading "Curly Ponytail" [level=2] [ref=e2352]
+              - paragraph [ref=e2353]: Medium length - Curly Hair
+            - button "Save style" [ref=e2354] [cursor=pointer]: ♡
+        - article [ref=e2355]:
+          - button "Open Curly Afro" [ref=e2356] [cursor=pointer]:
+            - img "Curly Afro" [ref=e2357]
+          - generic [ref=e2358]:
+            - generic [ref=e2359]:
+              - heading "Curly Afro" [level=2] [ref=e2360]
+              - paragraph [ref=e2361]: Short length - Curly Hair
+            - button "Save style" [ref=e2362] [cursor=pointer]: ♡
+        - article [ref=e2363]:
+          - button "Open Layered Curly Hair" [ref=e2364] [cursor=pointer]:
+            - img "Layered Curly Hair" [ref=e2365]
+          - generic [ref=e2366]:
+            - generic [ref=e2367]:
+              - heading "Layered Curly Hair" [level=2] [ref=e2368]
+              - paragraph [ref=e2369]: Long length - Curly Hair
+            - button "Save style" [ref=e2370] [cursor=pointer]: ♡
+        - article [ref=e2371]:
+          - button "Open Curly Curtain Bangs" [ref=e2372] [cursor=pointer]:
+            - img "Curly Curtain Bangs" [ref=e2373]
+          - generic [ref=e2374]:
+            - generic [ref=e2375]:
+              - heading "Curly Curtain Bangs" [level=2] [ref=e2376]
+              - paragraph [ref=e2377]: Medium length - Curly Hair
+            - button "Save style" [ref=e2378] [cursor=pointer]: ♡
+        - article [ref=e2379]:
+          - button "Open Curly Textured Crop" [ref=e2380] [cursor=pointer]:
+            - img "Curly Textured Crop" [ref=e2381]
+          - generic [ref=e2382]:
+            - generic [ref=e2383]:
+              - heading "Curly Textured Crop" [level=2] [ref=e2384]
+              - paragraph [ref=e2385]: Short length - Curly Hair
+            - button "Save style" [ref=e2386] [cursor=pointer]: ♡
+        - article [ref=e2387]:
+          - button "Open Curly Middle Part" [ref=e2388] [cursor=pointer]:
+            - img "Curly Middle Part" [ref=e2389]
+          - generic [ref=e2390]:
+            - generic [ref=e2391]:
+              - heading "Curly Middle Part" [level=2] [ref=e2392]
+              - paragraph [ref=e2393]: Medium length - Curly Hair
+            - button "Save style" [ref=e2394] [cursor=pointer]: ♡
+        - article [ref=e2395]:
+          - button "Open Natural Curly Hair" [ref=e2396] [cursor=pointer]:
+            - img "Natural Curly Hair" [ref=e2397]
+          - generic [ref=e2398]:
+            - generic [ref=e2399]:
+              - heading "Natural Curly Hair" [level=2] [ref=e2400]
+              - paragraph [ref=e2401]: Medium length - Curly Hair
+            - button "Save style" [ref=e2402] [cursor=pointer]: ♡
+        - article [ref=e2403]:
+          - button "Open Curly Top Fade" [ref=e2404] [cursor=pointer]:
+            - img "Curly Top Fade" [ref=e2405]
+          - generic [ref=e2406]:
+            - generic [ref=e2407]:
+              - heading "Curly Top Fade" [level=2] [ref=e2408]
+              - paragraph [ref=e2409]: Medium length - Curly Hair
+            - button "Save style" [ref=e2410] [cursor=pointer]: ♡
+        - article [ref=e2411]:
+          - button "Open Medium Length Curly Hair" [ref=e2412] [cursor=pointer]:
+            - img "Medium Length Curly Hair" [ref=e2413]
+          - generic [ref=e2414]:
+            - generic [ref=e2415]:
+              - heading "Medium Length Curly Hair" [level=2] [ref=e2416]
+              - paragraph [ref=e2417]: Medium length - Curly Hair
+            - button "Save style" [ref=e2418] [cursor=pointer]: ♡
+        - article [ref=e2419]:
+          - button "Open Curly Quiff" [ref=e2420] [cursor=pointer]:
+            - img "Curly Quiff" [ref=e2421]
+          - generic [ref=e2422]:
+            - generic [ref=e2423]:
+              - heading "Curly Quiff" [level=2] [ref=e2424]
+              - paragraph [ref=e2425]: Medium length - Curly Hair
+            - button "Save style" [ref=e2426] [cursor=pointer]: ♡
+        - article [ref=e2427]:
+          - button "Open Curly Slick Back" [ref=e2428] [cursor=pointer]:
+            - img "Curly Slick Back" [ref=e2429]
+          - generic [ref=e2430]:
+            - generic [ref=e2431]:
+              - heading "Curly Slick Back" [level=2] [ref=e2432]
+              - paragraph [ref=e2433]: Medium length - Curly Hair
+            - button "Save style" [ref=e2434] [cursor=pointer]: ♡
+        - article [ref=e2435]:
+          - button "Open Curly Bowl Cut" [ref=e2436] [cursor=pointer]:
+            - img "Curly Bowl Cut" [ref=e2437]
+          - generic [ref=e2438]:
+            - generic [ref=e2439]:
+              - heading "Curly Bowl Cut" [level=2] [ref=e2440]
+              - paragraph [ref=e2441]: Medium length - Curly Hair
+            - button "Save style" [ref=e2442] [cursor=pointer]: ♡
+        - article [ref=e2443]:
+          - button "Open Curly Crew Cut" [ref=e2444] [cursor=pointer]:
+            - img "Curly Crew Cut" [ref=e2445]
+          - generic [ref=e2446]:
+            - generic [ref=e2447]:
+              - heading "Curly Crew Cut" [level=2] [ref=e2448]
+              - paragraph [ref=e2449]: Short length - Curly Hair
+            - button "Save style" [ref=e2450] [cursor=pointer]: ♡
+        - article [ref=e2451]:
+          - button "Open Curly Pompadour" [ref=e2452] [cursor=pointer]:
+            - img "Curly Pompadour" [ref=e2453]
+          - generic [ref=e2454]:
+            - generic [ref=e2455]:
+              - heading "Curly Pompadour" [level=2] [ref=e2456]
+              - paragraph [ref=e2457]: Medium length - Curly Hair
+            - button "Save style" [ref=e2458] [cursor=pointer]: ♡
+        - article [ref=e2459]:
+          - button "Open Messy Curly Hair" [ref=e2460] [cursor=pointer]:
+            - img "Messy Curly Hair" [ref=e2461]
+          - generic [ref=e2462]:
+            - generic [ref=e2463]:
+              - heading "Messy Curly Hair" [level=2] [ref=e2464]
+              - paragraph [ref=e2465]: Medium length - Curly Hair
+            - button "Save style" [ref=e2466] [cursor=pointer]: ♡
+        - article [ref=e2467]:
+          - button "Open Surfer Curls" [ref=e2468] [cursor=pointer]:
+            - img "Surfer Curls" [ref=e2469]
+          - generic [ref=e2470]:
+            - generic [ref=e2471]:
+              - heading "Surfer Curls" [level=2] [ref=e2472]
+              - paragraph [ref=e2473]: Medium length - Curly Hair
+            - button "Save style" [ref=e2474] [cursor=pointer]: ♡
+        - article [ref=e2475]:
+          - button "Open Beachy Waves" [ref=e2476] [cursor=pointer]:
+            - img "Beachy Waves" [ref=e2477]
+          - generic [ref=e2478]:
+            - generic [ref=e2479]:
+              - heading "Beachy Waves" [level=2] [ref=e2480]
+              - paragraph [ref=e2481]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2482] [cursor=pointer]: ♡
+        - article [ref=e2483]:
+          - button "Open Wavy Perm" [ref=e2484] [cursor=pointer]:
+            - img "Wavy Perm" [ref=e2485]
+          - generic [ref=e2486]:
+            - generic [ref=e2487]:
+              - heading "Wavy Perm" [level=2] [ref=e2488]
+              - paragraph [ref=e2489]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2490] [cursor=pointer]: ♡
+        - article [ref=e2491]:
+          - button "Open Short Wavy Hair" [ref=e2492] [cursor=pointer]:
+            - img "Short Wavy Hair" [ref=e2493]
+          - generic [ref=e2494]:
+            - generic [ref=e2495]:
+              - heading "Short Wavy Hair" [level=2] [ref=e2496]
+              - paragraph [ref=e2497]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2498] [cursor=pointer]: ♡
+        - article [ref=e2499]:
+          - button "Open Wavy Mullet" [ref=e2500] [cursor=pointer]:
+            - img "Wavy Mullet" [ref=e2501]
+          - generic [ref=e2502]:
+            - generic [ref=e2503]:
+              - heading "Wavy Mullet" [level=2] [ref=e2504]
+              - paragraph [ref=e2505]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2506] [cursor=pointer]: ♡
+        - article [ref=e2507]:
+          - button "Open Wavy Bob" [ref=e2508] [cursor=pointer]:
+            - img "Wavy Bob" [ref=e2509]
+          - generic [ref=e2510]:
+            - generic [ref=e2511]:
+              - heading "Wavy Bob" [level=2] [ref=e2512]
+              - paragraph [ref=e2513]: Short length - Wavy Hair
+            - button "Save style" [ref=e2514] [cursor=pointer]: ♡
+        - article [ref=e2515]:
+          - button "Open Medium Length Wavy Hairstyle" [ref=e2516] [cursor=pointer]:
+            - img "Medium Length Wavy Hairstyle" [ref=e2517]
+          - generic [ref=e2518]:
+            - generic [ref=e2519]:
+              - heading "Medium Length Wavy Hairstyle" [level=2] [ref=e2520]
+              - paragraph [ref=e2521]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2522] [cursor=pointer]: ♡
+        - article [ref=e2523]:
+          - button "Open Wavy Curly Hair" [ref=e2524] [cursor=pointer]:
+            - img "Wavy Curly Hair" [ref=e2525]
+          - generic [ref=e2526]:
+            - generic [ref=e2527]:
+              - heading "Wavy Curly Hair" [level=2] [ref=e2528]
+              - paragraph [ref=e2529]: Medium length - Curly Hair
+            - button "Save style" [ref=e2530] [cursor=pointer]: ♡
+        - article [ref=e2531]:
+          - button "Open Wavy Surfer Hair" [ref=e2532] [cursor=pointer]:
+            - img "Wavy Surfer Hair" [ref=e2533]
+          - generic [ref=e2534]:
+            - generic [ref=e2535]:
+              - heading "Wavy Surfer Hair" [level=2] [ref=e2536]
+              - paragraph [ref=e2537]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2538] [cursor=pointer]: ♡
+        - article [ref=e2539]:
+          - button "Open Layered Wavy Hair" [ref=e2540] [cursor=pointer]:
+            - img "Layered Wavy Hair" [ref=e2541]
+          - generic [ref=e2542]:
+            - generic [ref=e2543]:
+              - heading "Layered Wavy Hair" [level=2] [ref=e2544]
+              - paragraph [ref=e2545]: Long length - Wavy Hair
+            - button "Save style" [ref=e2546] [cursor=pointer]: ♡
+        - article [ref=e2547]:
+          - button "Open Wavy Mod Cut" [ref=e2548] [cursor=pointer]:
+            - img "Wavy Mod Cut" [ref=e2549]
+          - generic [ref=e2550]:
+            - generic [ref=e2551]:
+              - heading "Wavy Mod Cut" [level=2] [ref=e2552]
+              - paragraph [ref=e2553]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2554] [cursor=pointer]: ♡
+        - article [ref=e2555]:
+          - button "Open Wavy Middle Part" [ref=e2556] [cursor=pointer]:
+            - img "Wavy Middle Part" [ref=e2557]
+          - generic [ref=e2558]:
+            - generic [ref=e2559]:
+              - heading "Wavy Middle Part" [level=2] [ref=e2560]
+              - paragraph [ref=e2561]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2562] [cursor=pointer]: ♡
+        - article [ref=e2563]:
+          - button "Open Wavy Loose Waves" [ref=e2564] [cursor=pointer]:
+            - img "Wavy Loose Waves" [ref=e2565]
+          - generic [ref=e2566]:
+            - generic [ref=e2567]:
+              - heading "Wavy Loose Waves" [level=2] [ref=e2568]
+              - paragraph [ref=e2569]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2570] [cursor=pointer]: ♡
+        - article [ref=e2571]:
+          - button "Open Asian Wavy Hair" [ref=e2572] [cursor=pointer]:
+            - img "Asian Wavy Hair" [ref=e2573]
+          - generic [ref=e2574]:
+            - generic [ref=e2575]:
+              - heading "Asian Wavy Hair" [level=2] [ref=e2576]
+              - paragraph [ref=e2577]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2578] [cursor=pointer]: ♡
+        - article [ref=e2579]:
+          - button "Open Wavy Long Layers" [ref=e2580] [cursor=pointer]:
+            - img "Wavy Long Layers" [ref=e2581]
+          - generic [ref=e2582]:
+            - generic [ref=e2583]:
+              - heading "Wavy Long Layers" [level=2] [ref=e2584]
+              - paragraph [ref=e2585]: Long length - Wavy Hair
+            - button "Save style" [ref=e2586] [cursor=pointer]: ♡
+        - article [ref=e2587]:
+          - button "Open Wolf Cut Wavy Hair" [ref=e2588] [cursor=pointer]:
+            - img "Wolf Cut Wavy Hair" [ref=e2589]
+          - generic [ref=e2590]:
+            - generic [ref=e2591]:
+              - heading "Wolf Cut Wavy Hair" [level=2] [ref=e2592]
+              - paragraph [ref=e2593]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2594] [cursor=pointer]: ♡
+        - article [ref=e2595]:
+          - button "Open Shoulder Length Wavy Hair" [ref=e2596] [cursor=pointer]:
+            - img "Shoulder Length Wavy Hair" [ref=e2597]
+          - generic [ref=e2598]:
+            - generic [ref=e2599]:
+              - heading "Shoulder Length Wavy Hair" [level=2] [ref=e2600]
+              - paragraph [ref=e2601]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2602] [cursor=pointer]: ♡
+        - article [ref=e2603]:
+          - button "Open Wavy Fringe" [ref=e2604] [cursor=pointer]:
+            - img "Wavy Fringe" [ref=e2605]
+          - generic [ref=e2606]:
+            - generic [ref=e2607]:
+              - heading "Wavy Fringe" [level=2] [ref=e2608]
+              - paragraph [ref=e2609]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2610] [cursor=pointer]: ♡
+        - article [ref=e2611]:
+          - button "Open Wavy Quiff" [ref=e2612] [cursor=pointer]:
+            - img "Wavy Quiff" [ref=e2613]
+          - generic [ref=e2614]:
+            - generic [ref=e2615]:
+              - heading "Wavy Quiff" [level=2] [ref=e2616]
+              - paragraph [ref=e2617]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2618] [cursor=pointer]: ♡
+        - article [ref=e2619]:
+          - button "Open Wavy Blonde Hair" [ref=e2620] [cursor=pointer]:
+            - img "Wavy Blonde Hair" [ref=e2621]
+          - generic [ref=e2622]:
+            - generic [ref=e2623]:
+              - heading "Wavy Blonde Hair" [level=2] [ref=e2624]
+              - paragraph [ref=e2625]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2626] [cursor=pointer]: ♡
+        - article [ref=e2627]:
+          - button "Open Wavy Hair Undercut" [ref=e2628] [cursor=pointer]:
+            - img "Wavy Hair Undercut" [ref=e2629]
+          - generic [ref=e2630]:
+            - generic [ref=e2631]:
+              - heading "Wavy Hair Undercut" [level=2] [ref=e2632]
+              - paragraph [ref=e2633]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2634] [cursor=pointer]: ♡
+        - article [ref=e2635]:
+          - button "Open Wavy Shag Haircut" [ref=e2636] [cursor=pointer]:
+            - img "Wavy Shag Haircut" [ref=e2637]
+          - generic [ref=e2638]:
+            - generic [ref=e2639]:
+              - heading "Wavy Shag Haircut" [level=2] [ref=e2640]
+              - paragraph [ref=e2641]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2642] [cursor=pointer]: ♡
+        - article [ref=e2643]:
+          - button "Open Wavy Slick Back" [ref=e2644] [cursor=pointer]:
+            - img "Wavy Slick Back" [ref=e2645]
+          - generic [ref=e2646]:
+            - generic [ref=e2647]:
+              - heading "Wavy Slick Back" [level=2] [ref=e2648]
+              - paragraph [ref=e2649]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2650] [cursor=pointer]: ♡
+        - article [ref=e2651]:
+          - button "Open Burst Fade Wavy Hair" [ref=e2652] [cursor=pointer]:
+            - img "Burst Fade Wavy Hair" [ref=e2653]
+          - generic [ref=e2654]:
+            - generic [ref=e2655]:
+              - heading "Burst Fade Wavy Hair" [level=2] [ref=e2656]
+              - paragraph [ref=e2657]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2658] [cursor=pointer]: ♡
+        - article [ref=e2659]:
+          - button "Open Thick Wavy Hair" [ref=e2660] [cursor=pointer]:
+            - img "Thick Wavy Hair" [ref=e2661]
+          - generic [ref=e2662]:
+            - generic [ref=e2663]:
+              - heading "Thick Wavy Hair" [level=2] [ref=e2664]
+              - paragraph [ref=e2665]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2666] [cursor=pointer]: ♡
+        - article [ref=e2667]:
+          - button "Open Low Fade Wavy Hair" [ref=e2668] [cursor=pointer]:
+            - img "Low Fade Wavy Hair" [ref=e2669]
+          - generic [ref=e2670]:
+            - generic [ref=e2671]:
+              - heading "Low Fade Wavy Hair" [level=2] [ref=e2672]
+              - paragraph [ref=e2673]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2674] [cursor=pointer]: ♡
+        - article [ref=e2675]:
+          - button "Open Wavy Side Part" [ref=e2676] [cursor=pointer]:
+            - img "Wavy Side Part" [ref=e2677]
+          - generic [ref=e2678]:
+            - generic [ref=e2679]:
+              - heading "Wavy Side Part" [level=2] [ref=e2680]
+              - paragraph [ref=e2681]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2682] [cursor=pointer]: ♡
+        - article [ref=e2683]:
+          - button "Open Korean Wavy Hair" [ref=e2684] [cursor=pointer]:
+            - img "Korean Wavy Hair" [ref=e2685]
+          - generic [ref=e2686]:
+            - generic [ref=e2687]:
+              - heading "Korean Wavy Hair" [level=2] [ref=e2688]
+              - paragraph [ref=e2689]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2690] [cursor=pointer]: ♡
+        - article [ref=e2691]:
+          - button "Open Wavy Textured Crop" [ref=e2692] [cursor=pointer]:
+            - img "Wavy Textured Crop" [ref=e2693]
+          - generic [ref=e2694]:
+            - generic [ref=e2695]:
+              - heading "Wavy Textured Crop" [level=2] [ref=e2696]
+              - paragraph [ref=e2697]: Short length - Wavy Hair
+            - button "Save style" [ref=e2698] [cursor=pointer]: ♡
+        - article [ref=e2699]:
+          - button "Open Low Taper Wavy Hair" [ref=e2700] [cursor=pointer]:
+            - img "Low Taper Wavy Hair" [ref=e2701]
+          - generic [ref=e2702]:
+            - generic [ref=e2703]:
+              - heading "Low Taper Wavy Hair" [level=2] [ref=e2704]
+              - paragraph [ref=e2705]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2706] [cursor=pointer]: ♡
+        - article [ref=e2707]:
+          - button "Open Wavy Textured Fringe" [ref=e2708] [cursor=pointer]:
+            - img "Wavy Textured Fringe" [ref=e2709]
+          - generic [ref=e2710]:
+            - generic [ref=e2711]:
+              - heading "Wavy Textured Fringe" [level=2] [ref=e2712]
+              - paragraph [ref=e2713]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2714] [cursor=pointer]: ♡
+        - article [ref=e2715]:
+          - button "Open Taper Fade Wavy Hair" [ref=e2716] [cursor=pointer]:
+            - img "Taper Fade Wavy Hair" [ref=e2717]
+          - generic [ref=e2718]:
+            - generic [ref=e2719]:
+              - heading "Taper Fade Wavy Hair" [level=2] [ref=e2720]
+              - paragraph [ref=e2721]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2722] [cursor=pointer]: ♡
+        - article [ref=e2723]:
+          - button "Open Wavy Ponytail" [ref=e2724] [cursor=pointer]:
+            - img "Wavy Ponytail" [ref=e2725]
+          - generic [ref=e2726]:
+            - generic [ref=e2727]:
+              - heading "Wavy Ponytail" [level=2] [ref=e2728]
+              - paragraph [ref=e2729]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2730] [cursor=pointer]: ♡
+        - article [ref=e2731]:
+          - button "Open Messy Wavy Hair" [ref=e2732] [cursor=pointer]:
+            - img "Messy Wavy Hair" [ref=e2733]
+          - generic [ref=e2734]:
+            - generic [ref=e2735]:
+              - heading "Messy Wavy Hair" [level=2] [ref=e2736]
+              - paragraph [ref=e2737]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2738] [cursor=pointer]: ♡
+        - article [ref=e2739]:
+          - button "Open Wavy Textured Waves" [ref=e2740] [cursor=pointer]:
+            - img "Wavy Textured Waves" [ref=e2741]
+          - generic [ref=e2742]:
+            - generic [ref=e2743]:
+              - heading "Wavy Textured Waves" [level=2] [ref=e2744]
+              - paragraph [ref=e2745]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2746] [cursor=pointer]: ♡
+        - article [ref=e2747]:
+          - button "Open Wavy French Crop" [ref=e2748] [cursor=pointer]:
+            - img "Wavy French Crop" [ref=e2749]
+          - generic [ref=e2750]:
+            - generic [ref=e2751]:
+              - heading "Wavy French Crop" [level=2] [ref=e2752]
+              - paragraph [ref=e2753]: Short length - Wavy Hair
+            - button "Save style" [ref=e2754] [cursor=pointer]: ♡
+        - article [ref=e2755]:
+          - button "Open Wavy Flow" [ref=e2756] [cursor=pointer]:
+            - img "Wavy Flow" [ref=e2757]
+          - generic [ref=e2758]:
+            - generic [ref=e2759]:
+              - heading "Wavy Flow" [level=2] [ref=e2760]
+              - paragraph [ref=e2761]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2762] [cursor=pointer]: ♡
+        - article [ref=e2763]:
+          - button "Open Wavy Curtain Bangs" [ref=e2764] [cursor=pointer]:
+            - img "Wavy Curtain Bangs" [ref=e2765]
+          - generic [ref=e2766]:
+            - generic [ref=e2767]:
+              - heading "Wavy Curtain Bangs" [level=2] [ref=e2768]
+              - paragraph [ref=e2769]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2770] [cursor=pointer]: ♡
+        - article [ref=e2771]:
+          - button "Open Wavy Hair Fade" [ref=e2772] [cursor=pointer]:
+            - img "Wavy Hair Fade" [ref=e2773]
+          - generic [ref=e2774]:
+            - generic [ref=e2775]:
+              - heading "Wavy Hair Fade" [level=2] [ref=e2776]
+              - paragraph [ref=e2777]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2778] [cursor=pointer]: ♡
+        - article [ref=e2779]:
+          - button "Open Wavy Fluffy Hair" [ref=e2780] [cursor=pointer]:
+            - img "Wavy Fluffy Hair" [ref=e2781]
+          - generic [ref=e2782]:
+            - generic [ref=e2783]:
+              - heading "Wavy Fluffy Hair" [level=2] [ref=e2784]
+              - paragraph [ref=e2785]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2786] [cursor=pointer]: ♡
+        - article [ref=e2787]:
+          - button "Open Wavy Pompadour" [ref=e2788] [cursor=pointer]:
+            - img "Wavy Pompadour" [ref=e2789]
+          - generic [ref=e2790]:
+            - generic [ref=e2791]:
+              - heading "Wavy Pompadour" [level=2] [ref=e2792]
+              - paragraph [ref=e2793]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2794] [cursor=pointer]: ♡
+        - article [ref=e2795]:
+          - button "Open Black Layered Lob with Fringe" [ref=e2796] [cursor=pointer]:
+            - img "Black Layered Lob with Fringe" [ref=e2797]
+          - generic [ref=e2798]:
+            - generic [ref=e2799]:
+              - heading "Black Layered Lob with Fringe" [level=2] [ref=e2800]
+              - paragraph [ref=e2801]: Long length - Wavy Hair
+            - button "Save style" [ref=e2802] [cursor=pointer]: ♡
+        - article [ref=e2803]:
+          - button "Open Money Piece Highlights" [ref=e2804] [cursor=pointer]:
+            - img "Money Piece Highlights" [ref=e2805]
+          - generic [ref=e2806]:
+            - generic [ref=e2807]:
+              - heading "Money Piece Highlights" [level=2] [ref=e2808]
+              - paragraph [ref=e2809]: Medium length - Straight Hair
+            - button "Save style" [ref=e2810] [cursor=pointer]: ♡
+        - article [ref=e2811]:
+          - button "Open Rose Ombre Shoulder-Length Hair" [ref=e2812] [cursor=pointer]:
+            - img "Rose Ombre Shoulder-Length Hair" [ref=e2813]
+          - generic [ref=e2814]:
+            - generic [ref=e2815]:
+              - heading "Rose Ombre Shoulder-Length Hair" [level=2] [ref=e2816]
+              - paragraph [ref=e2817]: Medium length - Straight Hair
+            - button "Save style" [ref=e2818] [cursor=pointer]: ♡
+        - article [ref=e2819]:
+          - button "Open Dark Brown Wavy Lob" [ref=e2820] [cursor=pointer]:
+            - img "Dark Brown Wavy Lob" [ref=e2821]
+          - generic [ref=e2822]:
+            - generic [ref=e2823]:
+              - heading "Dark Brown Wavy Lob" [level=2] [ref=e2824]
+              - paragraph [ref=e2825]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2826] [cursor=pointer]: ♡
+        - article [ref=e2827]:
+          - button "Open Korean-Style Bangs" [ref=e2828] [cursor=pointer]:
+            - img "Korean-Style Bangs" [ref=e2829]
+          - generic [ref=e2830]:
+            - generic [ref=e2831]:
+              - heading "Korean-Style Bangs" [level=2] [ref=e2832]
+              - paragraph [ref=e2833]: Medium length - Straight Hair
+            - button "Save style" [ref=e2834] [cursor=pointer]: ♡
+        - article [ref=e2835]:
+          - button "Open Fringe with Bobby Pin Accessories" [ref=e2836] [cursor=pointer]:
+            - img "Fringe with Bobby Pin Accessories" [ref=e2837]
+          - generic [ref=e2838]:
+            - generic [ref=e2839]:
+              - heading "Fringe with Bobby Pin Accessories" [level=2] [ref=e2840]
+              - paragraph [ref=e2841]: Short length - Wavy Hair
+            - button "Save style" [ref=e2842] [cursor=pointer]: ♡
+        - article [ref=e2843]:
+          - button "Open Boyfriend-Style Lob with Short Fringe" [ref=e2844] [cursor=pointer]:
+            - img "Boyfriend-Style Lob with Short Fringe" [ref=e2845]
+          - generic [ref=e2846]:
+            - generic [ref=e2847]:
+              - heading "Boyfriend-Style Lob with Short Fringe" [level=2] [ref=e2848]
+              - paragraph [ref=e2849]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2850] [cursor=pointer]: ♡
+        - article [ref=e2851]:
+          - button "Open Glossy Straight Shoulder-Length Hair" [ref=e2852] [cursor=pointer]:
+            - img "Glossy Straight Shoulder-Length Hair" [ref=e2853]
+          - generic [ref=e2854]:
+            - generic [ref=e2855]:
+              - heading "Glossy Straight Shoulder-Length Hair" [level=2] [ref=e2856]
+              - paragraph [ref=e2857]: Medium length - Straight Hair
+            - button "Save style" [ref=e2858] [cursor=pointer]: ♡
+        - article [ref=e2859]:
+          - button "Open Fine Straight Long Bob" [ref=e2860] [cursor=pointer]:
+            - img "Fine Straight Long Bob" [ref=e2861]
+          - generic [ref=e2862]:
+            - generic [ref=e2863]:
+              - heading "Fine Straight Long Bob" [level=2] [ref=e2864]
+              - paragraph [ref=e2865]: Short length - Straight Hair
+            - button "Save style" [ref=e2866] [cursor=pointer]: ♡
+        - article [ref=e2867]:
+          - button "Open Textured Short Long Bob" [ref=e2868] [cursor=pointer]:
+            - img "Textured Short Long Bob" [ref=e2869]
+          - generic [ref=e2870]:
+            - generic [ref=e2871]:
+              - heading "Textured Short Long Bob" [level=2] [ref=e2872]
+              - paragraph [ref=e2873]: Short length - Straight Hair
+            - button "Save style" [ref=e2874] [cursor=pointer]: ♡
+        - article [ref=e2875]:
+          - button "Open Straight Thick Hair" [ref=e2876] [cursor=pointer]:
+            - img "Straight Thick Hair" [ref=e2877]
+          - generic [ref=e2878]:
+            - generic [ref=e2879]:
+              - heading "Straight Thick Hair" [level=2] [ref=e2880]
+              - paragraph [ref=e2881]: Medium length - Straight Hair
+            - button "Save style" [ref=e2882] [cursor=pointer]: ♡
+        - article [ref=e2883]:
+          - button "Open Dark Brown Wavy Hair" [ref=e2884] [cursor=pointer]:
+            - img "Dark Brown Wavy Hair" [ref=e2885]
+          - generic [ref=e2886]:
+            - generic [ref=e2887]:
+              - heading "Dark Brown Wavy Hair" [level=2] [ref=e2888]
+              - paragraph [ref=e2889]: Medium length - Wavy Hair
+            - button "Save style" [ref=e2890] [cursor=pointer]: ♡
+        - article [ref=e2891]:
+          - button "Open Layered Runway Hair" [ref=e2892] [cursor=pointer]:
+            - img "Layered Runway Hair" [ref=e2893]
+          - generic [ref=e2894]:
+            - generic [ref=e2895]:
+              - heading "Layered Runway Hair" [level=2] [ref=e2896]
+              - paragraph [ref=e2897]: Long length - Straight Hair
+            - button "Save style" [ref=e2898] [cursor=pointer]: ♡
+        - article [ref=e2899]:
+          - button "Open Golden Caramel Curly Hair" [ref=e2900] [cursor=pointer]:
+            - img "Golden Caramel Curly Hair" [ref=e2901]
+          - generic [ref=e2902]:
+            - generic [ref=e2903]:
+              - heading "Golden Caramel Curly Hair" [level=2] [ref=e2904]
+              - paragraph [ref=e2905]: Medium length - Curly Hair
+            - button "Save style" [ref=e2906] [cursor=pointer]: ♡
+        - article [ref=e2907]:
+          - button "Open Thick Long Curly Hair" [ref=e2908] [cursor=pointer]:
+            - img "Thick Long Curly Hair" [ref=e2909]
+          - generic [ref=e2910]:
+            - generic [ref=e2911]:
+              - heading "Thick Long Curly Hair" [level=2] [ref=e2912]
+              - paragraph [ref=e2913]: Long length - Curly Hair
+            - button "Save style" [ref=e2914] [cursor=pointer]: ♡
+        - article [ref=e2915]:
+          - button "Open Straight Bob with Soft Layers" [ref=e2916] [cursor=pointer]:
+            - img "Straight Bob with Soft Layers" [ref=e2917]
+          - generic [ref=e2918]:
+            - generic [ref=e2919]:
+              - heading "Straight Bob with Soft Layers" [level=2] [ref=e2920]
+              - paragraph [ref=e2921]: Short length - Straight Hair
+            - button "Save style" [ref=e2922] [cursor=pointer]: ♡
+        - article [ref=e2923]:
+          - button "Open Short Hair with Side Bangs" [ref=e2924] [cursor=pointer]:
+            - img "Short Hair with Side Bangs" [ref=e2925]
+          - generic [ref=e2926]:
+            - generic [ref=e2927]:
+              - heading "Short Hair with Side Bangs" [level=2] [ref=e2928]
+              - paragraph [ref=e2929]: Medium length - Straight Hair
+            - button "Save style" [ref=e2930] [cursor=pointer]: ♡
+        - article [ref=e2931]:
+          - button "Open Bob and Bangs with Crimped Finish" [ref=e2932] [cursor=pointer]:
+            - img "Bob and Bangs with Crimped Finish" [ref=e2933]
+          - generic [ref=e2934]:
+            - generic [ref=e2935]:
+              - heading "Bob and Bangs with Crimped Finish" [level=2] [ref=e2936]
+              - paragraph [ref=e2937]: Short length - Straight Hair
+            - button "Save style" [ref=e2938] [cursor=pointer]: ♡
+        - article [ref=e2939]:
+          - button "Open Straight Long Bob" [ref=e2940] [cursor=pointer]:
+            - img "Straight Long Bob" [ref=e2941]
+          - generic [ref=e2942]:
+            - generic [ref=e2943]:
+              - heading "Straight Long Bob" [level=2] [ref=e2944]
+              - paragraph [ref=e2945]: Short length - Straight Hair
+            - button "Save style" [ref=e2946] [cursor=pointer]: ♡
+        - article [ref=e2947]:
+          - button "Open Dark Brown Wavy Long Bob" [ref=e2948] [cursor=pointer]:
+            - img "Dark Brown Wavy Long Bob" [ref=e2949]
+          - generic [ref=e2950]:
+            - generic [ref=e2951]:
+              - heading "Dark Brown Wavy Long Bob" [level=2] [ref=e2952]
+              - paragraph [ref=e2953]: Short length - Wavy Hair
+            - button "Save style" [ref=e2954] [cursor=pointer]: ♡
+        - article [ref=e2955]:
+          - button "Open Blonde Ombre Layered Haircut" [ref=e2956] [cursor=pointer]:
+            - img "Blonde Ombre Layered Haircut" [ref=e2957]
+          - generic [ref=e2958]:
+            - generic [ref=e2959]:
+              - heading "Blonde Ombre Layered Haircut" [level=2] [ref=e2960]
+              - paragraph [ref=e2961]: Long length - Straight Hair
+            - button "Save style" [ref=e2962] [cursor=pointer]: ♡
+        - article [ref=e2963]:
+          - button "Open Long Shag Haircut" [ref=e2964] [cursor=pointer]:
+            - img "Long Shag Haircut" [ref=e2965]
+          - generic [ref=e2966]:
+            - generic [ref=e2967]:
+              - heading "Long Shag Haircut" [level=2] [ref=e2968]
+              - paragraph [ref=e2969]: Long length - Wavy Hair
+            - button "Save style" [ref=e2970] [cursor=pointer]: ♡
+        - article [ref=e2971]:
+          - button "Open Wispy Bob Haircut" [ref=e2972] [cursor=pointer]:
+            - img "Wispy Bob Haircut" [ref=e2973]
+          - generic [ref=e2974]:
+            - generic [ref=e2975]:
+              - heading "Wispy Bob Haircut" [level=2] [ref=e2976]
+              - paragraph [ref=e2977]: Short length - Straight Hair
+            - button "Save style" [ref=e2978] [cursor=pointer]: ♡
+        - article [ref=e2979]:
+          - button "Open Straight Hair with Straight Bangs" [ref=e2980] [cursor=pointer]:
+            - img "Straight Hair with Straight Bangs" [ref=e2981]
+          - generic [ref=e2982]:
+            - generic [ref=e2983]:
+              - heading "Straight Hair with Straight Bangs" [level=2] [ref=e2984]
+              - paragraph [ref=e2985]: Medium length - Straight Hair
+            - button "Save style" [ref=e2986] [cursor=pointer]: ♡
+        - article [ref=e2987]:
+          - button "Open Wispy Bangs with Straight Medium Haircut" [ref=e2988] [cursor=pointer]:
+            - img "Wispy Bangs with Straight Medium Haircut" [ref=e2989]
+          - generic [ref=e2990]:
+            - generic [ref=e2991]:
+              - heading "Wispy Bangs with Straight Medium Haircut" [level=2] [ref=e2992]
+              - paragraph [ref=e2993]: Medium length - Straight Hair
+            - button "Save style" [ref=e2994] [cursor=pointer]: ♡
+        - article [ref=e2995]:
+          - button "Open Long Pixie" [ref=e2996] [cursor=pointer]:
+            - img "Long Pixie" [ref=e2997]
+          - generic [ref=e2998]:
+            - generic [ref=e2999]:
+              - heading "Long Pixie" [level=2] [ref=e3000]
+              - paragraph [ref=e3001]: Short length - Straight Hair
+            - button "Save style" [ref=e3002] [cursor=pointer]: ♡
+        - article [ref=e3003]:
+          - button "Open Crown Braid" [ref=e3004] [cursor=pointer]:
+            - img "Crown Braid" [ref=e3005]
+          - generic [ref=e3006]:
+            - generic [ref=e3007]:
+              - heading "Crown Braid" [level=2] [ref=e3008]
+              - paragraph [ref=e3009]: Medium length - Straight Hair
+            - button "Save style" [ref=e3010] [cursor=pointer]: ♡
+        - article [ref=e3011]:
+          - button "Open Milkmaid Braid" [ref=e3012] [cursor=pointer]:
+            - img "Milkmaid Braid" [ref=e3013]
+          - generic [ref=e3014]:
+            - generic [ref=e3015]:
+              - heading "Milkmaid Braid" [level=2] [ref=e3016]
+              - paragraph [ref=e3017]: Medium length - Straight Hair
+            - button "Save style" [ref=e3018] [cursor=pointer]: ♡
+        - article [ref=e3019]:
+          - button "Open Braided Pigtails" [ref=e3020] [cursor=pointer]:
+            - img "Braided Pigtails" [ref=e3021]
+          - generic [ref=e3022]:
+            - generic [ref=e3023]:
+              - heading "Braided Pigtails" [level=2] [ref=e3024]
+              - paragraph [ref=e3025]: Medium length - Straight Hair
+            - button "Save style" [ref=e3026] [cursor=pointer]: ♡
+        - article [ref=e3027]:
+          - button "Open Multi-Coloured Long Bob" [ref=e3028] [cursor=pointer]:
+            - img "Multi-Coloured Long Bob" [ref=e3029]
+          - generic [ref=e3030]:
+            - generic [ref=e3031]:
+              - heading "Multi-Coloured Long Bob" [level=2] [ref=e3032]
+              - paragraph [ref=e3033]: Short length - Straight Hair
+            - button "Save style" [ref=e3034] [cursor=pointer]: ♡
+        - article [ref=e3035]:
+          - button "Open Blonde Curly Long Bob" [ref=e3036] [cursor=pointer]:
+            - img "Blonde Curly Long Bob" [ref=e3037]
+          - generic [ref=e3038]:
+            - generic [ref=e3039]:
+              - heading "Blonde Curly Long Bob" [level=2] [ref=e3040]
+              - paragraph [ref=e3041]: Short length - Curly Hair
+            - button "Save style" [ref=e3042] [cursor=pointer]: ♡
+        - article [ref=e3043]:
+          - button "Open Pink Shoulder-Length Hair" [ref=e3044] [cursor=pointer]:
+            - img "Pink Shoulder-Length Hair" [ref=e3045]
+          - generic [ref=e3046]:
+            - generic [ref=e3047]:
+              - heading "Pink Shoulder-Length Hair" [level=2] [ref=e3048]
+              - paragraph [ref=e3049]: Medium length - Straight Hair
+            - button "Save style" [ref=e3050] [cursor=pointer]: ♡
+        - article [ref=e3051]:
+          - button "Open Brown Balayage Wavy Hair" [ref=e3052] [cursor=pointer]:
+            - img "Brown Balayage Wavy Hair" [ref=e3053]
+          - generic [ref=e3054]:
+            - generic [ref=e3055]:
+              - heading "Brown Balayage Wavy Hair" [level=2] [ref=e3056]
+              - paragraph [ref=e3057]: Medium length - Wavy Hair
+            - button "Save style" [ref=e3058] [cursor=pointer]: ♡
+        - article [ref=e3059]:
+          - button "Open Donut Space Buns" [ref=e3060] [cursor=pointer]:
+            - img "Donut Space Buns" [ref=e3061]
+          - generic [ref=e3062]:
+            - generic [ref=e3063]:
+              - heading "Donut Space Buns" [level=2] [ref=e3064]
+              - paragraph [ref=e3065]: Medium length - Straight Hair
+            - button "Save style" [ref=e3066] [cursor=pointer]: ♡
+        - article [ref=e3067]:
+          - button "Open Beehive Updo" [ref=e3068] [cursor=pointer]:
+            - img "Beehive Updo" [ref=e3069]
+          - generic [ref=e3070]:
+            - generic [ref=e3071]:
+              - heading "Beehive Updo" [level=2] [ref=e3072]
+              - paragraph [ref=e3073]: Medium length - Straight Hair
+            - button "Save style" [ref=e3074] [cursor=pointer]: ♡
+        - article [ref=e3075]:
+          - button "Open Wavy Blowout" [ref=e3076] [cursor=pointer]:
+            - img "Wavy Blowout" [ref=e3077]
+          - generic [ref=e3078]:
+            - generic [ref=e3079]:
+              - heading "Wavy Blowout" [level=2] [ref=e3080]
+              - paragraph [ref=e3081]: Medium length - Wavy Hair
+            - button "Save style" [ref=e3082] [cursor=pointer]: ♡
+        - article [ref=e3083]:
+          - button "Open Layered Light Brown Pixie" [ref=e3084] [cursor=pointer]:
+            - img "Layered Light Brown Pixie" [ref=e3085]
+          - generic [ref=e3086]:
+            - generic [ref=e3087]:
+              - heading "Layered Light Brown Pixie" [level=2] [ref=e3088]
+              - paragraph [ref=e3089]: Short length - Straight Hair
+            - button "Save style" [ref=e3090] [cursor=pointer]: ♡
+        - article [ref=e3091]:
+          - button "Open Graduated Long Bob" [ref=e3092] [cursor=pointer]:
+            - img "Graduated Long Bob" [ref=e3093]
+          - generic [ref=e3094]:
+            - generic [ref=e3095]:
+              - heading "Graduated Long Bob" [level=2] [ref=e3096]
+              - paragraph [ref=e3097]: Short length - Straight Hair
+            - button "Save style" [ref=e3098] [cursor=pointer]: ♡
+        - article [ref=e3099]:
+          - button "Open Long Wavy Layered Hair" [ref=e3100] [cursor=pointer]:
+            - img "Long Wavy Layered Hair" [ref=e3101]
+          - generic [ref=e3102]:
+            - generic [ref=e3103]:
+              - heading "Long Wavy Layered Hair" [level=2] [ref=e3104]
+              - paragraph [ref=e3105]: Long length - Wavy Hair
+            - button "Save style" [ref=e3106] [cursor=pointer]: ♡
+        - article [ref=e3107]:
+          - button "Open Braided Ponytail" [ref=e3108] [cursor=pointer]:
+            - img "Braided Ponytail" [ref=e3109]
+          - generic [ref=e3110]:
+            - generic [ref=e3111]:
+              - heading "Braided Ponytail" [level=2] [ref=e3112]
+              - paragraph [ref=e3113]: Medium length - Straight Hair
+            - button "Save style" [ref=e3114] [cursor=pointer]: ♡
+        - article [ref=e3115]:
+          - button "Open Low Knotted Bun" [ref=e3116] [cursor=pointer]:
+            - img "Low Knotted Bun" [ref=e3117]
+          - generic [ref=e3118]:
+            - generic [ref=e3119]:
+              - heading "Low Knotted Bun" [level=2] [ref=e3120]
+              - paragraph [ref=e3121]: Medium length - Straight Hair
+            - button "Save style" [ref=e3122] [cursor=pointer]: ♡
+        - article [ref=e3123]:
+          - button "Open Side-Swept Shoulder-Length Hair" [ref=e3124] [cursor=pointer]:
+            - img "Side-Swept Shoulder-Length Hair" [ref=e3125]
+          - generic [ref=e3126]:
+            - generic [ref=e3127]:
+              - heading "Side-Swept Shoulder-Length Hair" [level=2] [ref=e3128]
+              - paragraph [ref=e3129]: Medium length - Straight Hair
+            - button "Save style" [ref=e3130] [cursor=pointer]: ♡

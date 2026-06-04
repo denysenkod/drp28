@@ -8,81 +8,22 @@ const DEFAULT_MODEL = 'gpt-5-mini-2025-08-07';
 const OPENAI_RESPONSES_URL = 'https://api.openai.com/v1/responses';
 const REPO_ROOT = fileURLToPath(new URL('..', import.meta.url));
 
-const ANALYSIS_SCHEMA = {
+const HAIR_ATTRIBUTES_SCHEMA = {
   type: 'object',
   additionalProperties: false,
   properties: {
-    hair_type: {
+    hair_thickness: {
       type: 'string',
-      description: 'Broad visible curl pattern category for the hairstyle.',
-      enum: ['straight', 'wavy', 'curly', 'coily']
-    },
-    hair_subtype: {
-      type: 'string',
-      description: 'Detailed Andre Walker hair typing subtype: 1A-1C straight, 2A-2C wavy, 3A-3C curly, 4A-4C coily.',
-      enum: ['1A', '1B', '1C', '2A', '2B', '2C', '3A', '3B', '3C', '4A', '4B', '4C']
-    },
-    length: {
-      type: 'string',
-      description: 'Visible hair length category based on where the hair falls on the head, neck, shoulders, or below.',
-      enum: ['very short', 'short', 'medium', 'long', 'very long']
-    },
-    face_shape: {
-      type: 'string',
-      description: 'Best estimate of the visible face shape in the image.',
-      enum: ['oval', 'round', 'square', 'heart', 'diamond', 'rectangle', 'triangle']
-    },
-    gender: {
-      type: 'string',
-      description: 'Presentation category for the hairstyle in the image.',
-      enum: ['male', 'female']
-    },
-    ethnicity: {
-      type: 'string',
-      description: 'Best estimate of the visible person ethnicity category for hairstyle inspiration matching.',
-      enum: ['black', 'south east asian', 'asian', 'south-asian', 'latino', 'middle-eastern', 'white']
-    },
-    celebrity: {
-      type: 'string',
-      description: 'public figure/celebrity name only if can be recognized from the image; if this is not a famous celebrity but just a random person put exactly "none".'
-    },
-    upkeep: {
-      type: 'string',
-      description: 'Estimated maintenance difficulty for keeping this haircut styled day to day.',
-      enum: ['low', 'medium', 'high']
-    },
-    haircut_name: {
-      type: 'string',
-      description: 'Short salon-friendly name for the haircut or hairstyle.'
+      description: 'Visible hair strand/density thickness category for the person in the image.',
+      enum: ['especially thin', 'thin', 'thick', 'especially thick']
     },
     hair_colour: {
       type: 'string',
-      description: 'Concise visible hair color, including notable tones such as blonde, brunette, black, red, silver, balayage, highlighted, or dyed.'
-    },
-    vibe: {
-      type: 'string',
-      description: 'Overall style impression conveyed by the haircut.',
-      enum: ['casual', 'professional', 'classic', 'bold', 'soft', 'natural', 'playful']
-    },
-    maintenance: {
-      type: 'string',
-      description: 'Exactly two practical sentences explaining how to maintain this haircut or hairstyle.'
+      description: 'Dominant visible hair colour category.',
+      enum: ['black', 'brown', 'blonde', 'red', 'grey', 'other']
     }
   },
-  required: [
-    'hair_type',
-    'hair_subtype',
-    'length',
-    'face_shape',
-    'gender',
-    'ethnicity',
-    'celebrity',
-    'upkeep',
-    'haircut_name',
-    'hair_colour',
-    'vibe',
-    'maintenance'
-  ]
+  required: ['hair_thickness', 'hair_colour']
 };
 
 function parseArgs(argv) {
@@ -164,15 +105,15 @@ function readNonNegativeInteger(value, name) {
 }
 
 function printHelp() {
-  console.log(`Analyze gallery image URLs with OpenAI and write attributes back to D1.
+  console.log(`Analyze gallery image URLs and backfill hair thickness and hair colour.
 
 Usage:
-  OPENAI_API_KEY=... node scripts/analyze-gallery-images.mjs [--local|--remote] [options]
+  OPENAI_API_KEY=... node scripts/analyze-gallery-hair-attributes.mjs [--local|--remote] [options]
 
 Options:
   --local              Read/write the local Wrangler D1 database. Default.
   --remote             Read/write the remote Cloudflare D1 database.
-  --force              Re-analyze rows that already have classified_at.
+  --force              Re-analyze rows that already have hair_thickness and hair_colour.
   --dry-run            Analyze and print output without updating D1.
   --limit <n>          Analyze at most n rows.
   --delay-ms <n>       Delay between OpenAI requests. Default: 300.
@@ -285,15 +226,14 @@ async function fetchRows(options) {
 
   if (!options.force) {
     where.push(`(
-      classified_at IS NULL OR classified_at = '' OR
-      ethnicity IS NULL OR ethnicity = '' OR
-      celebrity IS NULL OR celebrity = ''
+      hair_thickness IS NULL OR hair_thickness = '' OR
+      hair_colour IS NULL OR hair_colour = ''
     )`);
   }
 
   const limitSql = options.limit ? ` LIMIT ${options.limit}` : '';
   const response = await runD1(
-    `SELECT id, title, image_url, labels_json, features_json, classified_at, ethnicity, celebrity
+    `SELECT id, title, description, image_url, labels_json, features_json, hair_thickness, hair_colour
      FROM gallery_images
      WHERE ${where.join(' AND ')}
      ORDER BY created_at ASC${limitSql};`,
@@ -317,29 +257,28 @@ function unwrapD1Results(response) {
 function buildPrompt(row) {
   return `Analyze this hairstyle image for HairMatch.
 
-Return only structured data matching the provided schema. Use the visible hairstyle as the source of truth.
+Return only structured data matching the provided schema. Use the visible hair in the image as the source of truth.
 
 Classify:
-- hair_type: straight, wavy, curly, or coily
-- hair_subtype: 1A, 1B, or 1C for straight hair; 2A, 2B, or 2C for wavy hair; 3A, 3B, or 3C for curly hair; 4A, 4B, or 4C for coily hair
-- length: very short, short, medium, long, or very long
-- face_shape: oval, round, square, heart, diamond, rectangle, or triangle
-- gender: male or female
-- ethnicity: black, south east asian, asian, south-asian, latino, middle-eastern, or white
-- celebrity: a public figure name only if can be recognized from the image; if this is not a famous celebrity but just a random person put exactly "none"
-- upkeep: low, medium, or high
-- haircut_name: concise salon-friendly haircut name
-- hair_colour: concise visible hair colour
-- vibe: casual, professional, classic, bold, soft, natural, or playful
-- maintenance: exactly two sentences explaining how to maintain it
+- hair_thickness: especially thin, thin, thick, or especially thick
+- hair_colour: black, brown, blonde, red, grey, or other
 
-Hair Subtype guidance:
-- 1A is very straight/fine, 1B is straight with medium body, 1C is straight/coarser with slight bend.
-- 2A is loose waves, 2B is defined S-waves, 2C is strong waves with some curl.
-- 3A is loose curls, 3B is springy ringlets, 3C is tight corkscrew curls.
-- 4A is tight S-shaped coils, 4B is dense zig-zag coils, 4C is the tightest densely packed coil pattern.
+Hair thickness guidance:
+- especially thin: visibly sparse, very fine, low-density, scalp-visible, or delicate strands.
+- thin: fine or lower-density hair, but not extremely sparse.
+- thick: dense or coarse-looking hair with clear body and coverage.
+- especially thick: very dense, voluminous, heavy, coarse, or abundant hair.
+
+Hair colour guidance:
+- Choose the dominant visible colour category.
+- Use brown for brunette.
+- Use grey for grey, gray, white, or silver hair.
+- Use other for fantasy/dyed colours that are not mainly black, brown, blonde, red, or grey.
 
 Existing gallery title: ${row.title || 'Untitled'}
+Existing gallery description: ${row.description || ''}
+Existing hair thickness: ${row.hair_thickness || ''}
+Existing hair colour: ${row.hair_colour || ''}
 Existing gallery image URL/source: ${row.image_url || ''}`;
 }
 
@@ -370,9 +309,9 @@ async function analyzeImage(row, apiKey, model) {
       text: {
         format: {
           type: 'json_schema',
-          name: 'haircut_image_analysis',
+          name: 'gallery_hair_attributes_analysis',
           strict: true,
-          schema: ANALYSIS_SCHEMA
+          schema: HAIR_ATTRIBUTES_SCHEMA
         }
       }
     })
@@ -419,34 +358,28 @@ function extractOutputText(value) {
 }
 
 function validateAnalysis(value) {
-  const keys = ANALYSIS_SCHEMA.required;
-  for (const key of keys) {
-    if (typeof value?.[key] !== 'string' || !value[key].trim()) {
-      throw new Error(`OpenAI output is missing "${key}".`);
-    }
+  const hairThickness = String(value?.hair_thickness || '').trim().toLowerCase();
+  const hairColour = String(value?.hair_colour || '').trim().toLowerCase();
+  const validThickness = HAIR_ATTRIBUTES_SCHEMA.properties.hair_thickness.enum;
+  const validColours = HAIR_ATTRIBUTES_SCHEMA.properties.hair_colour.enum;
+
+  if (!validThickness.includes(hairThickness)) {
+    throw new Error(`OpenAI output has invalid hair_thickness "${value?.hair_thickness}".`);
   }
 
-  const analysis = Object.fromEntries(keys.map((key) => [key, value[key].trim()]));
-  analysis.celebrity = normalizeCelebrity(analysis.celebrity);
-  return analysis;
-}
-
-function normalizeCelebrity(value) {
-  const trimmed = value.trim();
-  const normalized = trimmed.toLowerCase();
-  if (['none', 'no', 'unknown', 'n/a', 'na', 'not a celebrity', 'not celebrity'].includes(normalized)) {
-    return 'none';
+  if (!validColours.includes(hairColour)) {
+    throw new Error(`OpenAI output has invalid hair_colour "${value?.hair_colour}".`);
   }
-  return trimmed;
+
+  return {
+    hair_thickness: hairThickness,
+    hair_colour: hairColour
+  };
 }
 
 function sqlString(value) {
   if (value === null || value === undefined) return 'NULL';
   return `'${String(value).replaceAll("'", "''")}'`;
-}
-
-function normalizeUiGender(value) {
-  return value === 'male' ? 'Men' : 'Women';
 }
 
 function parseJsonList(value) {
@@ -464,17 +397,8 @@ function mergeLabels(row, analysis) {
   const labels = [
     ...parseJsonList(row.labels_json),
     ...parseJsonList(row.features_json),
-    analysis.hair_type,
-    analysis.hair_subtype,
-    analysis.length,
-    analysis.face_shape,
-    analysis.gender,
-    analysis.ethnicity,
-    analysis.celebrity === 'none' ? '' : analysis.celebrity,
-    analysis.upkeep,
-    analysis.haircut_name,
-    analysis.hair_colour,
-    analysis.vibe
+    analysis.hair_thickness,
+    analysis.hair_colour
   ];
   const seen = new Set();
 
@@ -491,21 +415,10 @@ async function updateRow(row, analysis, model, options) {
   const labels = mergeLabels(row, analysis);
   const sql = `UPDATE gallery_images
 SET
-  hair_type = ${sqlString(analysis.hair_type)},
-  hair_subtype = ${sqlString(analysis.hair_subtype)},
-  length = ${sqlString(analysis.length)},
-  face_shape = ${sqlString(analysis.face_shape)},
-  ethnicity = ${sqlString(analysis.ethnicity)},
-  celebrity = ${sqlString(analysis.celebrity)},
-  upkeep = ${sqlString(analysis.upkeep)},
-  haircut_name = ${sqlString(analysis.haircut_name)},
+  hair_thickness = ${sqlString(analysis.hair_thickness)},
   hair_colour = ${sqlString(analysis.hair_colour)},
-  vibe = ${sqlString(analysis.vibe)},
-  maintenance = ${sqlString(analysis.maintenance)},
-  analysis_model = ${sqlString(model)},
-  classified_at = CURRENT_TIMESTAMP,
-  gender = ${sqlString(normalizeUiGender(analysis.gender))},
-  labels_json = ${sqlString(JSON.stringify(labels))}
+  labels_json = ${sqlString(JSON.stringify(labels))},
+  analysis_model = ${sqlString(model)}
 WHERE id = ${sqlString(row.id)};`;
 
   if (options.dryRun) {
@@ -536,19 +449,21 @@ async function withRetries(label, attempts, task) {
 }
 
 async function processRow(row, index, total, apiKey, model, options) {
-  console.log(`[${index + 1}/${total}] Analyzing ${row.id}: ${row.title || row.image_url}`);
+  console.log(`[${index + 1}/${total}] Checking ${row.id}: ${row.title || row.image_url}`);
 
   const analysis = await withRetries(
-    `OpenAI analysis for ${row.id}`,
+    `OpenAI hair attributes analysis for ${row.id}`,
     options.retries,
     () => analyzeImage(row, apiKey, model)
   );
 
   await withRetries(
-    `D1 update for ${row.id}`,
+    `D1 hair attributes update for ${row.id}`,
     options.retries,
     () => updateRow(row, analysis, model, options)
   );
+
+  console.log(`[${index + 1}/${total}] ${row.id}: ${analysis.hair_thickness}, ${analysis.hair_colour}`);
 
   if (options.delayMs > 0) {
     await sleep(options.delayMs);
@@ -599,11 +514,11 @@ async function main() {
   const model = process.env.OPENAI_MODEL || DEFAULT_MODEL;
   const rows = await fetchRows(options);
 
-  console.log(`Found ${rows.length} gallery image row(s) to analyze in ${options.location} D1.`);
+  console.log(`Found ${rows.length} gallery image row(s) to analyze for hair attributes in ${options.location} D1.`);
   const failures = await processRows(rows, apiKey, model, options);
 
   if (failures.length) {
-    console.error(`Gallery image analysis finished with ${failures.length} failed row(s):`);
+    console.error(`Gallery hair attributes analysis finished with ${failures.length} failed row(s):`);
     for (const failure of failures) {
       console.error(`- ${failure.id}${failure.title ? ` (${failure.title})` : ''}: ${failure.error}`);
     }
@@ -611,7 +526,11 @@ async function main() {
     return;
   }
 
-  console.log(options.dryRun ? 'Dry run complete. No D1 rows were updated.' : 'Gallery image analysis complete.');
+  console.log(
+    options.dryRun
+      ? 'Dry run complete. No D1 rows were updated.'
+      : 'Gallery hair attributes analysis complete.'
+  );
 }
 
 main().catch((error) => {

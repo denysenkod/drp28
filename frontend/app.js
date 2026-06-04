@@ -464,10 +464,86 @@ const FACE_SHAPE_FILTER = {
   ]
 };
 
+const HAIR_COLOUR_FILTER = {
+  id: "hair_colour",
+  title: "Which hair colour should the reference photos show?",
+  sub: "Uses the hair-colour labels stored in the hairstyle database.",
+  layout: "text",
+  options: [
+    { value: "black", label: "Black" },
+    { value: "brown", label: "Brown" },
+    { value: "blonde", label: "Blonde" },
+    { value: "red", label: "Red" },
+    { value: "grey", label: "Grey" },
+    { value: "other", label: "Other" },
+    { value: "none", label: "No preference", exclusive: true }
+  ]
+};
+
+const HAIR_THICKNESS_FILTER = {
+  id: "hair_thickness",
+  title: "Which hair thickness should the reference photos show?",
+  sub: "Uses the hair-thickness labels stored in the hairstyle database.",
+  layout: "text",
+  options: [
+    { value: "especially thin", label: "Especially thin" },
+    { value: "thin", label: "Thin" },
+    { value: "thick", label: "Thick" },
+    { value: "especially thick", label: "Especially thick" },
+    { value: "none", label: "No preference", exclusive: true }
+  ]
+};
+
 const DISCOVERY_FILTER_QUESTIONS = [
   ...QUIZ.slice(0, 3),
   FACE_SHAPE_FILTER,
+  HAIR_COLOUR_FILTER,
+  HAIR_THICKNESS_FILTER,
   ...QUIZ.slice(3)
+];
+
+const REFINE_FILTERS = [
+  {
+    id: "face_shape",
+    label: "✧ Specify a face shape",
+    noun: "face shape",
+    question: "Which face shape are you?",
+    options: [
+      { value: "oval", label: "Oval" },
+      { value: "round", label: "Round" },
+      { value: "square", label: "Square" },
+      { value: "heart", label: "Heart" },
+      { value: "diamond", label: "Diamond" },
+      { value: "triangle", label: "Triangle" },
+      { value: "rectangle", label: "Rectangle" }
+    ]
+  },
+  {
+    id: "hair_colour",
+    label: "✧ Specify a hair colour",
+    noun: "hair colour",
+    question: "What is your hair colour?",
+    options: [
+      { value: "black", label: "Black" },
+      { value: "brown", label: "Brown" },
+      { value: "blonde", label: "Blonde" },
+      { value: "red", label: "Red" },
+      { value: "grey", label: "Grey" },
+      { value: "other", label: "Other" }
+    ]
+  },
+  {
+    id: "thickness",
+    label: "✧ Specify a hair thickness",
+    noun: "hair thickness",
+    question: "What is your hair thickness?",
+    options: [
+      { value: "especially thin", label: "Especially thin" },
+      { value: "thin", label: "Thin" },
+      { value: "thick", label: "Thick" },
+      { value: "especially thick", label: "Especially thick" }
+    ]
+  }
 ];
 
 function slugWords(value) {
@@ -681,8 +757,11 @@ function galleryItemToStyle(item, index) {
     labels,
     hairType,
     hairSubtype: String(item.hairSubtype || analysis.hairSubtype || "").trim(),
+    hairThickness: String(item.hairThickness || analysis.hairThickness || "").trim().toLowerCase(),
     length,
     gender,
+    ethnicity: String(item.ethnicity || analysis.ethnicity || "").trim().toLowerCase(),
+    celebrity: String(item.celebrity || analysis.celebrity || "none").trim(),
     maintenanceLevel,
     faceShape: normalizeFaceShape(item.faceShape || analysis.faceShape),
     vibe: String(item.vibe || analysis.vibe || "").trim().toLowerCase(),
@@ -690,6 +769,7 @@ function galleryItemToStyle(item, index) {
     haircutName: String(item.haircutName || analysis.haircutName || "").trim(),
     classifiedAt: String(item.classifiedAt || analysis.updatedAt || "").trim(),
     analysisModel: String(item.analysisModel || analysis.model || "").trim(),
+    createdAt: String(item.createdAt || "").trim(),
     features,
     ...detail,
     maintenance
@@ -712,7 +792,9 @@ const state = {
   uploadedPhotoName: null,
   filterPanelOpen: false,
   openFilterGroups: new Set(),
-  openPreferenceMenu: null
+  openPreferenceMenu: null,
+  openRefineFilter: null,
+  refineFilters: { face_shape: new Set(), hair_colour: new Set(), thickness: null }
 };
 
 const pendingFavouriteOps = new Map();
@@ -731,6 +813,9 @@ const els = {
   detailImage: $("#detail-image"),
   detailMeta: $("#detail-meta"),
   detailName: $("#detail-name"),
+  detailGender: $("#detail-gender"),
+  detailLength: $("#detail-length"),
+  detailTexture: $("#detail-texture"),
   detailLike: $("#detail-like"),
   detailMaintenance: $("#detail-maintenance"),
   detailProductsSection: $("#detail-products-section"),
@@ -863,6 +948,15 @@ function getOptionLabel(questionId, value) {
   const question = getQuestionById(questionId);
   const option = question?.options.find((item) => item.value === value);
   return option?.label || value;
+}
+
+function preferenceOptions(question) {
+  return (question?.options || []).filter((option) => !option.exclusive && !option.selectAll);
+}
+
+function selectedPreferenceValues(question) {
+  const allowed = new Set(preferenceOptions(question).map((option) => option.value));
+  return selectedFor(question).filter((value) => allowed.has(value));
 }
 
 function selectedFor(question) {
@@ -1001,20 +1095,16 @@ function getQuizOptionMedia(question, option) {
 function summarizeAnswers() {
   const chips = [];
   for (const question of DISCOVERY_FILTER_QUESTIONS) {
-    const selected = selectedFor(question);
+    const selected = selectedPreferenceValues(question);
     if (!selected.length) continue;
-    if (question.id === "style" && selected.includes("__all")) {
-      chips.push({ questionId: question.id, label: "Style", value: "Everything" });
-      continue;
-    }
-    const values = selected.filter((value) => value !== "__all").map((value) => getOptionLabel(question.id, value));
+    const values = selected.map((value) => getOptionLabel(question.id, value));
     if (values.length) chips.push({ questionId: question.id, label: shortQuestionLabel(question.id), value: values.join(", ") });
   }
   return chips;
 }
 
 function selectedAnswerCount() {
-  return DISCOVERY_FILTER_QUESTIONS.reduce((total, question) => total + selectedFor(question).filter((value) => value !== "__all").length, 0);
+  return DISCOVERY_FILTER_QUESTIONS.reduce((total, question) => total + selectedPreferenceValues(question).length, 0);
 }
 
 function shortQuestionLabel(id) {
@@ -1022,6 +1112,8 @@ function shortQuestionLabel(id) {
     style: "Style",
     texture: "Texture",
     ethnicity: "Ethnicity",
+    hair_colour: "Hair Colour",
+    hair_thickness: "Thickness",
     face: "Face",
     length: "Length",
     maintenance: "Maintenance",
@@ -1036,12 +1128,17 @@ function answerOptions(questionId) {
 }
 
 function styleHaystack(style) {
-  return [
+  const fields = [
+    style.id,
     style.name,
+    style.imageUrl,
     style.description,
     style.length,
     style.hairType,
     style.hairSubtype,
+    style.hairThickness,
+    style.ethnicity,
+    style.celebrity,
     style.gender,
     style.maintenanceLevel,
     style.faceShape,
@@ -1049,9 +1146,22 @@ function styleHaystack(style) {
     style.hairColour,
     style.haircutName,
     style.maintenance,
+    style.classifiedAt,
+    style.analysisModel,
+    style.createdAt,
     ...(style.labels || []),
     ...(style.features || [])
-  ].join(" ").toLowerCase();
+  ];
+
+  return normalizeSearchText(fields.join(" "));
+}
+
+function normalizeSearchText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[-_/]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function optionKeywordMatch(style, option) {
@@ -1065,6 +1175,29 @@ function optionVibeMatch(style, option) {
 
 function optionUpkeepMatch(style, option) {
   return Boolean(option.upkeep && style.maintenanceLevel === option.upkeep);
+}
+
+function optionEthnicityMatch(style, option) {
+  return Boolean(option.value && option.value !== "none" && style.ethnicity === option.value);
+}
+
+function hairColourKey(value) {
+  const text = normalizeSearchText(value);
+  if (!text) return "";
+  if (text.includes("black")) return "black";
+  if (text.includes("brown") || text.includes("brunette")) return "brown";
+  if (text.includes("blonde") || text.includes("blond")) return "blonde";
+  if (text.includes("red") || text.includes("auburn") || text.includes("ginger")) return "red";
+  if (text.includes("grey") || text.includes("gray") || text.includes("silver")) return "grey";
+  return "other";
+}
+
+function optionHairColourMatch(style, option) {
+  return Boolean(option.value && option.value !== "none" && hairColourKey(style.hairColour) === option.value);
+}
+
+function optionHairThicknessMatch(style, option) {
+  return Boolean(option.value && option.value !== "none" && style.hairThickness === option.value);
 }
 
 function optionLengthMatch(style, option) {
@@ -1102,7 +1235,15 @@ function scoreStyle(style) {
   }
 
   for (const option of answerOptions("ethnicity")) {
-    if (option.value !== "none" && optionKeywordMatch(style, option)) score += 2;
+    if (optionEthnicityMatch(style, option)) score += 5;
+  }
+
+  for (const option of answerOptions("hair_colour")) {
+    if (optionHairColourMatch(style, option)) score += 4;
+  }
+
+  for (const option of answerOptions("hair_thickness")) {
+    if (optionHairThicknessMatch(style, option)) score += 4;
   }
 
   for (const option of answerOptions("face")) {
@@ -1153,7 +1294,15 @@ function stylePassesAnswerFilters(style) {
     return false;
   }
 
-  if (!optionGroupPasses(style, "ethnicity", (option) => optionKeywordMatch(style, option))) {
+  if (!optionGroupPasses(style, "ethnicity", (option) => optionEthnicityMatch(style, option))) {
+    return false;
+  }
+
+  if (!optionGroupPasses(style, "hair_colour", (option) => optionHairColourMatch(style, option))) {
+    return false;
+  }
+
+  if (!optionGroupPasses(style, "hair_thickness", (option) => optionHairThicknessMatch(style, option))) {
     return false;
   }
 
@@ -1521,9 +1670,91 @@ function renderSearchGrid() {
   wireCards(grid);
 }
 
+function applyRefineFilters(styles) {
+  const faceShapes = state.refineFilters.face_shape;
+  if (faceShapes.size > 0) {
+    styles = styles.filter((style) => faceShapes.has(style.faceShape));
+  }
+
+  const hairColours = state.refineFilters.hair_colour;
+  if (hairColours.size > 0) {
+    styles = styles.filter((style) => hairColours.has(hairColourKey(style.hairColour)));
+  }
+
+  const thickness = state.refineFilters.thickness;
+  if (thickness) {
+    styles = styles.filter((style) => style.hairThickness === thickness);
+  }
+
+  return styles;
+}
+
+function refinePillLabel(filter) {
+  const val = state.refineFilters[filter.id];
+  if (filter.id === "thickness") {
+    return val ? titleCase(val) : filter.label;
+  }
+  if (val.size === 0) return filter.label;
+  if (val.size === 1) {
+    const v = [...val][0];
+    return filter.options.find((o) => o.value === v)?.label || titleCase(v);
+  }
+  return `${val.size} ${filter.noun}s`;
+}
+
+function refineHasSelection(filter) {
+  const val = state.refineFilters[filter.id];
+  return filter.id === "thickness" ? val !== null : val.size > 0;
+}
+
+function renderRefineRow() {
+  const open = state.openRefineFilter;
+  const openFilter = open ? REFINE_FILTERS.find((f) => f.id === open) : null;
+  return `
+    <div class="refine-filters">
+      <div class="refine-row">
+        ${REFINE_FILTERS.map((filter) => {
+          const hasSelection = refineHasSelection(filter);
+          const isOpen = open === filter.id;
+          return `
+            <button
+              class="refine-pill${hasSelection ? " is-active" : ""}${isOpen ? " is-open" : ""}"
+              type="button"
+              data-refine="${escapeAttr(filter.id)}"
+              aria-expanded="${isOpen}"
+            >${hasSelection ? escapeHtml(refinePillLabel(filter)) : `✧ Specify a <b>${escapeHtml(filter.noun)}</b>`}</button>
+          `;
+        }).join("")}
+      </div>
+      ${openFilter ? `
+        <div class="refine-panel">
+          <p class="refine-question">${escapeHtml(openFilter.question)}</p>
+          <div class="refine-options">
+            ${openFilter.options.map((option) => {
+              const val = state.refineFilters[openFilter.id];
+              const isOn = openFilter.id === "thickness"
+                ? val === option.value
+                : val.has(option.value);
+              return `
+                <button
+                  class="refine-option${isOn ? " is-on" : ""}"
+                  type="button"
+                  data-refine-select="${escapeAttr(openFilter.id)}"
+                  data-refine-value="${escapeAttr(option.value)}"
+                >${escapeHtml(option.label)}</button>
+              `;
+            }).join("")}
+          </div>
+        </div>
+      ` : ""}
+    </div>
+  `;
+}
+
 function renderResultsPage() {
   const filtered = selectedAnswerCount() ? answerFilteredStyles() : state.styles;
-  const results = scoredStyles(filtered);
+  const refined = applyRefineFilters(filtered);
+  const results = scoredStyles(refined);
   const chips = summarizeAnswers();
   const selectedCount = selectedAnswerCount();
 
@@ -1541,6 +1772,8 @@ function renderResultsPage() {
       ${chips.length ? renderSummaryChips(chips) : ""}
 
       ${state.filterPanelOpen ? renderAnswerFilterDrawer(selectedCount) : ""}
+
+      ${renderRefineRow()}
 
       <section class="results-grid" id="results-grid">
         ${results.length ? results.map((style) => buildStyleCardHtml(style)).join("") : `<p class="empty-state">No exact matches yet. Search all styles instead.</p>`}
@@ -1589,10 +1822,11 @@ function renderPreferenceChip(chip) {
 
 function renderPreferenceMenu(question) {
   const selected = selectedFor(question);
+  const options = preferenceOptions(question);
   return `
     <div class="preference-menu" role="menu" aria-label="${escapeAttr(shortQuestionLabel(question.id))} preferences">
       <p>${escapeHtml(question.title)}</p>
-      ${question.options.map((option) => renderPreferenceOption(question, option, isQuizOptionSelected(question, option, selected))).join("")}
+      ${options.map((option) => renderPreferenceOption(question, option, isQuizOptionSelected(question, option, selected))).join("")}
     </div>
   `;
 }
@@ -1638,8 +1872,6 @@ function wireDiscoveryControls() {
       renderCurrentDiscoveryView({ preserveFilterScroll: true });
     });
   }
-  const drawerStartOver = $("#drawer-start-over-btn");
-  if (drawerStartOver) drawerStartOver.addEventListener("click", startOver);
   document.querySelectorAll("[data-filter-group]").forEach((details) => {
     details.addEventListener("toggle", () => {
       if (details.open) state.openFilterGroups.add(details.dataset.filterGroup);
@@ -1677,11 +1909,36 @@ function wireDiscoveryControls() {
   document.querySelectorAll(".summary-chip-wrap").forEach((wrap) => {
     wrap.addEventListener("click", (event) => event.stopPropagation());
   });
+  document.querySelectorAll("[data-refine]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const filterId = button.dataset.refine;
+      state.openRefineFilter = state.openRefineFilter === filterId ? null : filterId;
+      state.openPreferenceMenu = null;
+      renderCurrentDiscoveryView();
+    });
+  });
+  document.querySelectorAll("[data-refine-select][data-refine-value]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const filterId = button.dataset.refineSelect;
+      const value = button.dataset.refineValue;
+      if (filterId === "thickness") {
+        state.refineFilters.thickness = state.refineFilters.thickness === value ? null : value;
+      } else {
+        const set = state.refineFilters[filterId];
+        if (set.has(value)) set.delete(value);
+        else set.add(value);
+      }
+      renderCurrentDiscoveryView();
+    });
+  });
   const discoveryScreen = $(".search-screen, .results-screen");
   if (discoveryScreen) {
     discoveryScreen.addEventListener("click", () => {
-      if (!state.openPreferenceMenu) return;
+      if (!state.openPreferenceMenu && !state.openRefineFilter) return;
       state.openPreferenceMenu = null;
+      state.openRefineFilter = null;
       renderCurrentDiscoveryView({ preserveFilterScroll: state.filterPanelOpen });
     });
   }
@@ -1711,7 +1968,6 @@ function renderAnswerFilterDrawer(selectedCount) {
       <p class="answer-filter-copy">Adjust the profile from one place. Results update as soon as you change an answer.</p>
       <div class="answer-filter-actions">
         <button class="secondary-btn" id="clear-filters-btn" type="button">Clear answers</button>
-        <button class="secondary-btn" id="drawer-start-over-btn" type="button">Start over</button>
       </div>
       <div class="answer-filter-count">${selectedCount || 0} selected</div>
       <div class="answer-filter-groups">
@@ -1723,6 +1979,7 @@ function renderAnswerFilterDrawer(selectedCount) {
 
 function renderFilterGroup(question) {
   const selected = selectedFor(question);
+  const options = preferenceOptions(question);
   return `
     <details class="answer-filter-group" data-filter-group="${question.id}" ${state.openFilterGroups.has(question.id) ? "open" : ""}>
       <summary>
@@ -1733,7 +1990,7 @@ function renderFilterGroup(question) {
         <span class="answer-filter-group-icon" aria-hidden="true"></span>
       </summary>
       <div class="answer-filter-options">
-        ${question.options.map((option) => renderFilterOption(question, option, selected.includes(option.value))).join("")}
+        ${options.map((option) => renderFilterOption(question, option, selected.includes(option.value))).join("")}
       </div>
     </details>
   `;
@@ -1758,19 +2015,10 @@ function renderFilterOption(question, option, isSelected) {
 }
 
 function filteredSearchStyles() {
-  const q = state.searchQuery.trim().toLowerCase();
+  const q = normalizeSearchText(state.searchQuery);
   const tokens = q.split(/[\s,]+/).filter(Boolean);
   const queryMatches = state.styles.filter((style) => {
-    const haystack = [
-      style.name,
-      style.description,
-      style.gender,
-      style.length,
-      style.hairType,
-      style.maintenanceLevel,
-      ...(style.labels || []),
-      ...(style.features || [])
-    ].join(" ").toLowerCase();
+    const haystack = styleHaystack(style);
     if (!q) return true;
     return tokens.every((token) => haystack.includes(token));
   });
@@ -1870,6 +2118,9 @@ function openDetail(id) {
   appendImage(els.detailImage, style);
   els.detailMeta.textContent = `${style.gender} - ${style.length} length`;
   els.detailName.textContent = style.name;
+  els.detailGender.textContent = style.gender;
+  els.detailLength.textContent = style.length;
+  els.detailTexture.textContent = style.hairType;
   const maintenanceText = `This is a ${style.maintenanceLevel.toLowerCase()} maintenance hairstyle. ${style.maintenance}`;
   els.detailMaintenance.innerHTML = linkifyProducts(escapeHtml(maintenanceText));
 

@@ -120,7 +120,11 @@ columns, and also backfills the existing UI filter columns.
 The broad `hair_type` remains `straight`, `wavy`, `curly`, or `coily`;
 `hair_subtype` stores the finer `1A` through `4C` pattern. The model used is
 stored in `analysis_model`, and the classification timestamp is stored in
-`classified_at`.
+`classified_at`. The classifier also stores `ethnicity` using the supported
+gallery categories and `celebrity`, which is set to a public figure name only
+when existing row text explicitly identifies one; otherwise it stores `none`.
+Rows missing `ethnicity` are treated as pending so older classified rows can be
+backfilled without `--force`.
 
 Set your OpenAI key locally in `.env`:
 
@@ -147,6 +151,31 @@ Run against the remote Cloudflare D1 database:
 ```bash
 npm run db:migrate:remote
 npm run analyze:gallery:remote
+```
+
+To fill only celebrity/public-figure names without re-running the full hairstyle
+classifier, use the celebrity-only analyzer. It reads only rows whose current
+`gallery_images.celebrity` value is `none`; rows that already have a celebrity
+name are not selected.
+
+```bash
+npm run analyze:celebrities:local -- --limit 10 --dry-run
+npm run analyze:celebrities:local
+npm run analyze:celebrities:remote -- --limit 10 --dry-run
+npm run analyze:celebrities:remote
+```
+
+To fill hair thickness and canonical hair colour metadata, run the hair
+attributes analyzer. `hair_colour` already exists from the full classifier;
+the `0014` migration adds `hair_thickness` and indexes both fields.
+
+```bash
+npm run db:migrate:local
+npm run analyze:hair-attributes:local -- --limit 10 --dry-run
+npm run analyze:hair-attributes:local
+npm run db:migrate:remote
+npm run analyze:hair-attributes:remote -- --limit 10 --dry-run
+npm run analyze:hair-attributes:remote
 ```
 
 Useful options:
