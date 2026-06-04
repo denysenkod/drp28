@@ -355,6 +355,48 @@ const DISCOVERY_FILTER_QUESTIONS = [
   ...QUIZ.slice(3)
 ];
 
+const REFINE_FILTERS = [
+  {
+    id: "face_shape",
+    label: "✧ Specify a face shape",
+    noun: "face shape",
+    question: "Which face shape are you?",
+    options: [
+      { value: "oval", label: "Oval" },
+      { value: "round", label: "Round" },
+      { value: "square", label: "Square" },
+      { value: "heart", label: "Heart" },
+      { value: "diamond", label: "Diamond" },
+      { value: "triangle", label: "Triangle" },
+      { value: "rectangle", label: "Rectangle" }
+    ]
+  },
+  {
+    id: "hair_colour",
+    label: "✧ Specify a hair colour",
+    noun: "hair colour",
+    question: "What is your hair colour?",
+    options: [
+      { value: "black", label: "Black" },
+      { value: "brown", label: "Brown" },
+      { value: "blonde", label: "Blonde" },
+      { value: "red", label: "Red" },
+      { value: "grey", label: "Grey" },
+      { value: "other", label: "Other" }
+    ]
+  },
+  {
+    id: "thickness",
+    label: "✧ Specify a hair thickness",
+    noun: "hair thickness",
+    question: "What is your hair thickness?",
+    options: [
+      { value: "thick", label: "Thick" },
+      { value: "thin", label: "Thin" }
+    ]
+  }
+];
+
 function slugWords(value) {
   return String(value || "")
     .toLowerCase()
@@ -555,7 +597,9 @@ const state = {
   uploadedPhotoName: null,
   filterPanelOpen: false,
   openFilterGroups: new Set(),
-  openPreferenceMenu: null
+  openPreferenceMenu: null,
+  openRefineFilter: null,
+  refineFilters: { face_shape: new Set(), hair_colour: new Set(), thickness: null }
 };
 
 const pendingFavouriteOps = new Map();
@@ -1358,9 +1402,80 @@ function renderSearchGrid() {
   wireCards(grid);
 }
 
+function applyRefineFilters(styles) {
+  const faceShapes = state.refineFilters.face_shape;
+  if (faceShapes.size > 0) {
+    styles = styles.filter((style) => faceShapes.has(style.faceShape));
+  }
+  return styles;
+}
+
+function refinePillLabel(filter) {
+  const val = state.refineFilters[filter.id];
+  if (filter.id === "thickness") {
+    return val ? titleCase(val) : filter.label;
+  }
+  if (val.size === 0) return filter.label;
+  if (val.size === 1) {
+    const v = [...val][0];
+    return filter.options.find((o) => o.value === v)?.label || titleCase(v);
+  }
+  return `${val.size} ${filter.noun}s`;
+}
+
+function refineHasSelection(filter) {
+  const val = state.refineFilters[filter.id];
+  return filter.id === "thickness" ? val !== null : val.size > 0;
+}
+
+function renderRefineRow() {
+  const open = state.openRefineFilter;
+  const openFilter = open ? REFINE_FILTERS.find((f) => f.id === open) : null;
+  return `
+    <div class="refine-filters">
+      <div class="refine-row">
+        ${REFINE_FILTERS.map((filter) => {
+          const hasSelection = refineHasSelection(filter);
+          const isOpen = open === filter.id;
+          return `
+            <button
+              class="refine-pill${hasSelection ? " is-active" : ""}${isOpen ? " is-open" : ""}"
+              type="button"
+              data-refine="${escapeAttr(filter.id)}"
+              aria-expanded="${isOpen}"
+            >${hasSelection ? escapeHtml(refinePillLabel(filter)) : `✧ Specify a <b>${escapeHtml(filter.noun)}</b>`}</button>
+          `;
+        }).join("")}
+      </div>
+      ${openFilter ? `
+        <div class="refine-panel">
+          <p class="refine-question">${escapeHtml(openFilter.question)}</p>
+          <div class="refine-options">
+            ${openFilter.options.map((option) => {
+              const val = state.refineFilters[openFilter.id];
+              const isOn = openFilter.id === "thickness"
+                ? val === option.value
+                : val.has(option.value);
+              return `
+                <button
+                  class="refine-option${isOn ? " is-on" : ""}"
+                  type="button"
+                  data-refine-select="${escapeAttr(openFilter.id)}"
+                  data-refine-value="${escapeAttr(option.value)}"
+                >${escapeHtml(option.label)}</button>
+              `;
+            }).join("")}
+          </div>
+        </div>
+      ` : ""}
+    </div>
+  `;
+}
+
 function renderResultsPage() {
   const filtered = selectedAnswerCount() ? answerFilteredStyles() : state.styles;
-  const results = scoredStyles(filtered);
+  const refined = applyRefineFilters(filtered);
+  const results = scoredStyles(refined);
   const chips = summarizeAnswers();
   const selectedCount = selectedAnswerCount();
 
@@ -1378,6 +1493,8 @@ function renderResultsPage() {
       ${chips.length ? renderSummaryChips(chips) : ""}
 
       ${state.filterPanelOpen ? renderAnswerFilterDrawer(selectedCount) : ""}
+
+      ${renderRefineRow()}
 
       <section class="results-grid" id="results-grid">
         ${results.length ? results.map((style) => buildStyleCardHtml(style)).join("") : `<p class="empty-state">No exact matches yet. Search all styles instead.</p>`}
@@ -1512,11 +1629,36 @@ function wireDiscoveryControls() {
   document.querySelectorAll(".summary-chip-wrap").forEach((wrap) => {
     wrap.addEventListener("click", (event) => event.stopPropagation());
   });
+  document.querySelectorAll("[data-refine]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const filterId = button.dataset.refine;
+      state.openRefineFilter = state.openRefineFilter === filterId ? null : filterId;
+      state.openPreferenceMenu = null;
+      renderCurrentDiscoveryView();
+    });
+  });
+  document.querySelectorAll("[data-refine-select][data-refine-value]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const filterId = button.dataset.refineSelect;
+      const value = button.dataset.refineValue;
+      if (filterId === "thickness") {
+        state.refineFilters.thickness = state.refineFilters.thickness === value ? null : value;
+      } else {
+        const set = state.refineFilters[filterId];
+        if (set.has(value)) set.delete(value);
+        else set.add(value);
+      }
+      renderCurrentDiscoveryView();
+    });
+  });
   const discoveryScreen = $(".search-screen, .results-screen");
   if (discoveryScreen) {
     discoveryScreen.addEventListener("click", () => {
-      if (!state.openPreferenceMenu) return;
+      if (!state.openPreferenceMenu && !state.openRefineFilter) return;
       state.openPreferenceMenu = null;
+      state.openRefineFilter = null;
       renderCurrentDiscoveryView({ preserveFilterScroll: state.filterPanelOpen });
     });
   }
