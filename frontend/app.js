@@ -1607,7 +1607,7 @@ function buildStyleCardHtml(style, compact = false) {
         <div class="style-card-footer">
           <div>
             <h2>${escapeHtml(style.name)}</h2>
-            <p>${style.length} - ${style.hairType}</p>
+            <p>${style.length} length - ${style.hairType}</p>
           </div>
           <button class="heart-btn ${liked ? "is-liked" : ""}" type="button" data-like-style="${style.id}" aria-label="${liked ? "Remove from saved" : "Save style"}">${liked ? "&hearts;" : "&#9825;"}</button>
         </div>
@@ -1683,7 +1683,7 @@ function openDetail(id) {
   currentDetailId = style.id;
 
   appendImage(els.detailImage, style);
-  els.detailMeta.textContent = `${style.gender} - ${style.length}`;
+  els.detailMeta.textContent = `${style.gender} - ${style.length} length`;
   els.detailName.textContent = style.name;
   els.detailMaintenance.textContent = `This is a ${style.maintenanceLevel.toLowerCase()} maintenance hairstyle. ${style.maintenance}`;
 
