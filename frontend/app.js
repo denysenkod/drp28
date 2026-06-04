@@ -441,8 +441,8 @@ const QUIZ = [
     layout: "slider",
     options: [
       { value: "low", label: "I'd rather not", upkeep: "Low" },
-      { value: "medium", label: "Some is fine", desc: "Curl creams, texture powders, sea salt spray, and more", upkeep: "Medium" },
-      { value: "high", label: "All of it", desc: "Hair straighteners, curlers, dyes, heat protection spray, and so on", upkeep: "High" }
+      { value: "medium", label: "Some is fine", products: ["sea-salt-spray", "texture-powder", "matte-paste"], upkeep: "Medium" },
+      { value: "high", label: "All of it", products: ["curl-cream", "gel", "heat-protectant", "pomade", "hair-oil"], upkeep: "High" }
     ]
   },
 ];
@@ -1518,19 +1518,20 @@ function wireScaleQuestion(question) {
   });
 }
 
-// Renders a slider option's description with any product mentions turned into
-// clickable links (same treatment as the hairstyle popup), so the products
-// named in the maintenance answers can be tapped to open their product page.
-function sliderDescHtml(desc) {
-  return desc ? linkifyProducts(escapeHtml(desc)) : "";
+// The product example images shown under a slider answer. An option lists the
+// products it wants to showcase by id (`products`); each resolves to its entry
+// in PRODUCTS. Order is preserved so the thumbnails read in the listed order.
+function sliderOptionProducts(option) {
+  return ((option && option.products) || [])
+    .map((id) => PRODUCTS[id])
+    .filter(Boolean);
 }
 
-// Product image thumbnails for the products named in a slider description, in the
-// same reading order. They sit under the maintenance answer and, like the text
-// links, open the matching product page when tapped. Shown only when the
-// description (and therefore some products) is present.
-function sliderProductsHtml(desc) {
-  return productsInText(desc || "").map((product) => {
+// Product image thumbnails for an option's example products. They sit under the
+// maintenance answer and open the matching product page when tapped. Shown only
+// when the option lists some products.
+function sliderProductsHtml(products) {
+  return (products || []).map((product) => {
     const src = (product.images && product.images[0]) || "";
     return `
       <a class="slider-product" href="?product=${product.id}" data-product="${product.id}">
@@ -1553,7 +1554,8 @@ function renderSliderQuestion(question, selected) {
   const hasSelection = selectedIndex !== -1;
   const sliderValue = hasSelection ? selectedIndex : Math.floor((regularOptions.length - 1) / 2);
   const displayLabel = hasSelection ? regularOptions[selectedIndex].label : "Slide to answer";
-  const displayDesc = hasSelection ? regularOptions[selectedIndex].desc : "";
+  const displayProducts = hasSelection ? sliderOptionProducts(regularOptions[selectedIndex]) : [];
+  const hasProducts = displayProducts.length > 0;
 
   return `
     <div class="slider-question-wrap">
@@ -1574,9 +1576,9 @@ function renderSliderQuestion(question, selected) {
         >
         <span class="slider-end-label">${escapeHtml(regularOptions[regularOptions.length - 1].label)}</span>
       </div>
-      <p class="slider-description" style="margin-top: 16px; font-size: 18px; color: #666; text-align: center;" ${displayDesc ? "" : "hidden"}>${sliderDescHtml(displayDesc)}</p>
-      <div class="slider-products" ${productsInText(displayDesc || "").length ? "" : "hidden"}>${sliderProductsHtml(displayDesc)}</div>
-      <p class="slider-product-hint" ${productsInText(displayDesc || "").length ? "" : "hidden"}>Tap a product to learn more about it</p>
+      <p class="slider-description" style="margin-top: 16px; font-size: 18px; color: #666; text-align: center;" ${hasProducts ? "" : "hidden"}>Here are some examples</p>
+      <div class="slider-products" ${hasProducts ? "" : "hidden"}>${sliderProductsHtml(displayProducts)}</div>
+      <p class="slider-product-hint" ${hasProducts ? "" : "hidden"}>Tap a product to learn more about it</p>
       ${exclusiveOption ? `
         <div class="scale-skip-row">
           <button
@@ -1601,8 +1603,7 @@ function wireSliderQuestion(question) {
   const hintDiv = document.querySelector(".slider-product-hint");
   const productsDiv = document.querySelector(".slider-products");
 
-  // Make any product mentions/thumbnails in the (possibly pre-selected) answer tappable.
-  if (descDiv) wireProductLinks(descDiv);
+  // Make the (possibly pre-selected) answer's product thumbnails tappable.
   if (productsDiv) wireProductLinks(productsDiv);
 
   if (slider) {
@@ -1611,14 +1612,14 @@ function wireSliderQuestion(question) {
       if (option && display) {
         display.textContent = option.label;
         display.classList.remove("is-placeholder");
-        const hasProducts = productsInText(option.desc || "").length > 0;
+        const products = sliderOptionProducts(option);
+        const hasProducts = products.length > 0;
         if (descDiv) {
-          descDiv.innerHTML = sliderDescHtml(option.desc);
-          descDiv.hidden = !option.desc;
-          wireProductLinks(descDiv);
+          descDiv.textContent = hasProducts ? "Here are some examples" : "";
+          descDiv.hidden = !hasProducts;
         }
         if (productsDiv) {
-          productsDiv.innerHTML = sliderProductsHtml(option.desc);
+          productsDiv.innerHTML = sliderProductsHtml(products);
           productsDiv.hidden = !hasProducts;
           wireProductLinks(productsDiv);
         }
