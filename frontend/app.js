@@ -295,7 +295,7 @@ const PRODUCTS = {
     id: "heat-protectant",
     name: "Heat Protectant Spray",
     description: "A lightweight shield that guards strands from heat damage before you reach for straighteners, curlers, or a blow-dryer.",
-    matchTerms: ["heat protectant", "hair straighteners", "straighteners", "curlers"],
+    matchTerms: ["heat protection spray", "heat protection", "heat protectant"],
     howToUse: [
       "Mist evenly over damp or dry hair before any heat styling.",
       "Comb through so every section is coated.",
@@ -442,7 +442,7 @@ const QUIZ = [
     options: [
       { value: "low", label: "I'd rather not", upkeep: "Low" },
       { value: "medium", label: "Some is fine", desc: "Curl creams, texture powders, sea salt spray, and more", upkeep: "Medium" },
-      { value: "high", label: "All the stops", desc: "Hair straighteners, curlers, dyes, treatments, and so on", upkeep: "High" }
+      { value: "high", label: "All of it", desc: "Hair straighteners, curlers, dyes, heat protection spray, and so on", upkeep: "High" }
     ]
   },
 ];
@@ -813,9 +813,6 @@ const els = {
   detailImage: $("#detail-image"),
   detailMeta: $("#detail-meta"),
   detailName: $("#detail-name"),
-  detailGender: $("#detail-gender"),
-  detailLength: $("#detail-length"),
-  detailTexture: $("#detail-texture"),
   detailLike: $("#detail-like"),
   detailMaintenance: $("#detail-maintenance"),
   detailProductsSection: $("#detail-products-section"),
@@ -1521,6 +1518,31 @@ function wireScaleQuestion(question) {
   });
 }
 
+// Renders a slider option's description with any product mentions turned into
+// clickable links (same treatment as the hairstyle popup), so the products
+// named in the maintenance answers can be tapped to open their product page.
+function sliderDescHtml(desc) {
+  return desc ? linkifyProducts(escapeHtml(desc)) : "";
+}
+
+// Product image thumbnails for the products named in a slider description, in the
+// same reading order. They sit under the maintenance answer and, like the text
+// links, open the matching product page when tapped. Shown only when the
+// description (and therefore some products) is present.
+function sliderProductsHtml(desc) {
+  return productsInText(desc || "").map((product) => {
+    const src = (product.images && product.images[0]) || "";
+    return `
+      <a class="slider-product" href="?product=${product.id}" data-product="${product.id}">
+        <span class="slider-product-thumb">
+          ${src ? `<img src="${escapeAttr(src)}" alt="${escapeAttr(product.name)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}
+        </span>
+        <span class="slider-product-name">${escapeHtml(product.name)}</span>
+      </a>
+    `;
+  }).join("");
+}
+
 function renderSliderQuestion(question, selected) {
   const regularOptions = question.options.filter((o) => !o.exclusive);
   const exclusiveOption = question.options.find((o) => o.exclusive);
@@ -1552,7 +1574,9 @@ function renderSliderQuestion(question, selected) {
         >
         <span class="slider-end-label">${escapeHtml(regularOptions[regularOptions.length - 1].label)}</span>
       </div>
-      ${displayDesc ? `<p class="slider-description" style="margin-top: 16px; font-size: 18px; color: #666; text-align: center;">${escapeHtml(displayDesc)}</p>` : ""}
+      <p class="slider-description" style="margin-top: 16px; font-size: 18px; color: #666; text-align: center;" ${displayDesc ? "" : "hidden"}>${sliderDescHtml(displayDesc)}</p>
+      <div class="slider-products" ${productsInText(displayDesc || "").length ? "" : "hidden"}>${sliderProductsHtml(displayDesc)}</div>
+      <p class="slider-product-hint" ${productsInText(displayDesc || "").length ? "" : "hidden"}>Tap a product to learn more about it</p>
       ${exclusiveOption ? `
         <div class="scale-skip-row">
           <button
@@ -1574,6 +1598,12 @@ function wireSliderQuestion(question) {
   const slider = document.getElementById("quiz-slider-input");
   const display = document.querySelector(".slider-value-display");
   const descDiv = document.querySelector(".slider-description");
+  const hintDiv = document.querySelector(".slider-product-hint");
+  const productsDiv = document.querySelector(".slider-products");
+
+  // Make any product mentions/thumbnails in the (possibly pre-selected) answer tappable.
+  if (descDiv) wireProductLinks(descDiv);
+  if (productsDiv) wireProductLinks(productsDiv);
 
   if (slider) {
     slider.addEventListener("input", () => {
@@ -1581,7 +1611,18 @@ function wireSliderQuestion(question) {
       if (option && display) {
         display.textContent = option.label;
         display.classList.remove("is-placeholder");
-        if (descDiv) descDiv.textContent = option.desc || "";
+        const hasProducts = productsInText(option.desc || "").length > 0;
+        if (descDiv) {
+          descDiv.innerHTML = sliderDescHtml(option.desc);
+          descDiv.hidden = !option.desc;
+          wireProductLinks(descDiv);
+        }
+        if (productsDiv) {
+          productsDiv.innerHTML = sliderProductsHtml(option.desc);
+          productsDiv.hidden = !hasProducts;
+          wireProductLinks(productsDiv);
+        }
+        if (hintDiv) hintDiv.hidden = !hasProducts;
       }
     });
     slider.addEventListener("change", () => {
@@ -2118,9 +2159,6 @@ function openDetail(id) {
   appendImage(els.detailImage, style);
   els.detailMeta.textContent = `${style.gender} - ${style.length} length`;
   els.detailName.textContent = style.name;
-  els.detailGender.textContent = style.gender;
-  els.detailLength.textContent = style.length;
-  els.detailTexture.textContent = style.hairType;
   const maintenanceText = `This is a ${style.maintenanceLevel.toLowerCase()} maintenance hairstyle. ${style.maintenance}`;
   els.detailMaintenance.innerHTML = linkifyProducts(escapeHtml(maintenanceText));
 
