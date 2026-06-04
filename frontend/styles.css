@@ -1964,6 +1964,11 @@ body[data-view="quiz"] .app-shell {
   color: var(--accent-2);
 }
 
+/* The detail popup sits above the favourites overlay it can be opened from. */
+#detail-overlay {
+  z-index: 110;
+}
+
 /* The product popup sits above the hairstyle popup it can be opened from. */
 #product-overlay {
   z-index: 120;
