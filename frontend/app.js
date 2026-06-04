@@ -316,6 +316,45 @@ const PRODUCTS = {
     ],
     images: ["https://img.freepik.com/premium-photo/transparent-glass-bottle-with-body-oil-unbranded-container-with-dispenser-shadow-background-moisturizing-repair-damaged-hair-cosmetology-beauty-concept-place-text-right-side_97916-1062.jpg"],
     after: "https://rehabyourhair.com/cdn/shop/files/BeforeAfters-HairOil1.jpg?v=1744718230&width=2480"
+  },
+  "diffuser": {
+    id: "diffuser",
+    name: "Diffuser",
+    description: "A bowl-shaped blow-dryer attachment that spreads the airflow gently across the hair. It dries curls and coils without blasting them into frizz, keeping the curl pattern intact.",
+    matchTerms: ["diffuser", "diffuse"],
+    howToUse: [
+      "Clip the diffuser onto your dryer and set it to low heat and low speed.",
+      "Cup sections of damp, product-coated hair into the bowl and push up toward the scalp.",
+      "Dry without raking through, then break the cast with your fingers once it's cool."
+    ],
+    images: ["https://uk.curlsmith.com/cdn/shop/files/4L7A2591-Edit-2-2000x2000_b3e5a559-d4d2-4f7a-9b56-0c01379c8ae9.jpg?v=1765374406&width=1600"],
+    after: "https://cdn.shopify.com/s/files/1/0550/9860/5649/files/11809_Diffon_DF_1000_1080x1080_before_after_1_uk_600x600.jpg?v=1661345075"
+  },
+  "straighteners": {
+    id: "straighteners",
+    name: "Hair Straighteners",
+    description: "Heated flat-iron plates that smooth and straighten the hair for a sleek, blunt, frizz-free finish. Best used on dry hair after a heat protectant.",
+    matchTerms: ["straighteners", "straightener", "flat iron", "straighten"],
+    howToUse: [
+      "Start on dry hair with a heat protectant already combed through.",
+      "Work in small sections, gliding the plates slowly from root to tip.",
+      "Finish with a drop of hair oil to smooth any flyaways."
+    ],
+    images: ["https://upload.wikimedia.org/wikipedia/commons/7/75/GHDhairiron1.JPG"],
+    after: "https://upload.wikimedia.org/wikipedia/commons/f/f2/Woman_Using_Hair_Straighteners_01.jpg"
+  },
+  "curling-iron": {
+    id: "curling-iron",
+    name: "Curling Iron",
+    description: "A heated barrel (or wand) that adds bends, waves, or defined curls to dry hair. Swap barrel sizes for tighter coils or loose, romantic waves.",
+    matchTerms: ["curling iron", "curling wand", "curling tongs", "curling tong", "curlers", "curler"],
+    howToUse: [
+      "Prep dry hair with a heat protectant first.",
+      "Wrap small sections around the barrel away from your face, holding for a few seconds.",
+      "Let each curl cool in your hand, then loosen with your fingers for a softer finish."
+    ],
+    images: ["https://www.littlebirdhairdesign.co.uk/wp-content/uploads/2020/08/445.jpg"],
+    after: "https://www.chrisandsons.co.uk/media/catalog/product/cache/e0358b30d0de2768ca35679123775195/6/1/61135_61135fz.jpg"
   }
 };
 
@@ -442,7 +481,7 @@ const QUIZ = [
     options: [
       { value: "low", label: "I'd rather not", upkeep: "Low" },
       { value: "medium", label: "Some is fine", products: ["sea-salt-spray", "texture-powder", "matte-paste"], upkeep: "Medium" },
-      { value: "high", label: "All of it", products: ["curl-cream", "sea-salt-spray", "texture-powder", "matte-paste", "pomade", "gel", "heat-protectant", "hair-oil"], upkeep: "High" }
+      { value: "high", label: "All of it", products: ["curl-cream", "sea-salt-spray", "texture-powder", "matte-paste", "pomade", "gel", "heat-protectant", "hair-oil", "diffuser", "straighteners", "curling-iron"], upkeep: "High" }
     ]
   },
 ];
@@ -680,31 +719,39 @@ function inferLabels(title, features = []) {
   return [...new Set(labels)].slice(0, 8);
 }
 
-// Cut-specific maintenance advice. The first matching pattern wins, so colour
-// treatments and distinctive cuts are checked before generic ones. When nothing
-// matches, the routine falls back to the hair type and length. Product names in
-// the copy are linkified into the product popups when the text is rendered.
+// Cut-specific maintenance advice. The first matching pattern wins, so protective
+// styles (locs, braids, twists) and colour treatments are checked before the
+// generic cuts - otherwise they'd fall through to curl-cream-and-diffuse advice
+// that doesn't apply to them. When nothing matches, the routine falls back to the
+// hair type and length. Product names in the copy are linkified into the product
+// popups when the text is rendered.
 const CUT_MAINTENANCE = [
+  [/(dreadlock|dread|\blocs?\b)/,
+    "Locs thrive on a clean, dry scalp and tidy roots. Wash with a residue-free shampoo so nothing builds up inside the locs, then dry them all the way through to avoid mildew. Palm-roll or retwist the new growth at the roots as it loosens, and work a drop of hair oil into the scalp to keep the skin from drying out - steer clear of heavy waxes and creams, which only leave buildup."],
+  [/(braid|cornrow)/,
+    "Braided styles are really about caring for the scalp underneath. Cleanse it with a diluted shampoo and your fingertips, then run a little hair oil along the partings so the skin doesn't dry out and flake. Sleep in a satin scarf or on a satin pillowcase to keep them neat, and take the braids down after six to eight weeks so the tension doesn't strain your hairline."],
+  [/(twist)/,
+    "Twists are set on damp hair: smooth a little hair oil through each section and two-strand twist, then let them dry fully - wear them as they are or unravel for a twist-out. Refresh with a spritz of water and a touch of oil between days, and re-twist at night under a satin scarf to hold the pattern."],
   [/(frosted|dyed|bleach|bleached|highlight|platinum|colou?r)/,
     "Coloured hair needs babying: always use a heat protectant before styling and a colour-safe shampoo to slow fading. Top up the tone whenever you notice regrowth at the roots or the colour starting to fade, and keep the ends soft with a little hair oil."],
   [/(mullet|shag|rockstar|rat tail)/,
-    "The short-top, long-back contrast is the whole look, so book a trim once the contrast starts to blur to keep it sharp. Scrunch sea salt spray through damp hair and let it air-dry for that lived-in texture, or tap in a little texture powder at the roots for extra grit."],
+    "The short-top, long-back contrast is the whole look. Scrunch sea salt spray through damp hair and let it air-dry for that lived-in texture, or tap in a little texture powder at the roots for extra grit."],
   [/(curtain|fringe)/,
-    "Trim the fringe once it grows long enough to fall into your eyes so it keeps framing your face. Rough-dry it forwards, work in a little sea salt spray for separation, then split the parting with your fingers."],
+    "Rough-dry it forwards, work in a little sea salt spray for separation, then split the parting with your fingers."],
   [/(edgar|caesar|french crop|\bcrop\b)/,
-    "Keep the fringe blunt and the sides tight - book a trim as soon as the outline starts to soften. Push a pea-sized scoop of matte paste through dry hair and forward at the fringe for that flat finish, or tap in some texture powder at the roots if it falls flat."],
+    "Keep the fringe blunt and the sides tight. Push a pea-sized scoop of matte paste through dry hair and forward at the fringe for that flat finish, or tap in some texture powder at the roots if it falls flat."],
   [/(buzz|induction|\bcrew\b)/,
-    "Barely any upkeep: run the clippers over it whenever the edges lose their crispness. Massage a drop of hair oil into the scalp so the skin doesn't look dry, and that's about it."],
+    "Massage a drop of hair oil into the scalp so the skin doesn't look dry, and that's about it."],
   [/(quiff|pompadour|pomp|slick|undercut)/,
-    "Build height at the front with a blow-dry, then lock it in - gel or pomade for a high-shine hold, or matte paste for a drier finish. For fine hair, tap texture powder into the roots first for lift. Tidy the sides whenever the contrast between top and sides softens."],
+    "Build height at the front with a blow-dry, then lock it in - gel or pomade for a high-shine hold, or matte paste for a drier finish. For fine hair, tap texture powder into the roots first for lift."],
   [/(side part|side parting|centre part|center part|classic|wall street|art dealer)/,
-    "A clean parting is everything here, so book a trim once the shape starts to grow out. Comb gel or pomade through damp hair, set the part with the comb, and blow-dry to one side for a polished finish."],
+    "A clean parting is everything here. Comb gel or pomade through damp hair, set the part with the comb, and blow-dry to one side for a polished finish."],
   [/(grow out|grown out|grow-out|\bmod\b|mod-ish|sweep|\bflow\b)/,
-    "This one is about length, so go easy on the scissors - just dust the ends when they start to look straggly. Work sea salt spray through damp hair for body, then sweep it back with your fingers."],
+    "This one is about length. Work sea salt spray through damp hair for body, then sweep it back with your fingers."],
   [/(pixie)/,
-    "A pixie grows out fast, so book a shape-up as soon as it starts to lose its outline. Warm a little matte paste between your fingers and piece out the top, or tap in some texture powder at the roots for lift and movement."],
+    "Warm a little matte paste between your fingers and piece out the top, or tap in some texture powder at the roots for lift and movement."],
   [/(\bbob\b|\blob\b)/,
-    "Keep the line blunt with a trim once the ends start to lose their shape. Blow-dry with a round brush for body, add texture powder at the roots if it falls flat, smooth flyaways with a touch of hair oil, and reach for a heat protectant whenever you use irons."]
+    "Blow-dry with a round brush for body, add texture powder at the roots if it falls flat, smooth flyaways with a touch of hair oil, and reach for a heat protectant whenever you use straighteners."]
 ];
 
 function maintenanceForStyle(title, length, hairType, features = []) {
@@ -715,18 +762,18 @@ function maintenanceForStyle(title, length, hairType, features = []) {
 
   // Fall back to the hair type, then the overall length.
   if (hairType === "Coily Hair") {
-    return "Coils love moisture: work curl cream through soaking-wet hair, scrunch upwards, then air-dry or diffuse on low. Refresh with water and a little hair oil between wash days, and shape up whenever the curls start to lose their definition.";
+    return "Coils love moisture: work curl cream through soaking-wet hair, scrunch upwards, then air-dry or diffuse on low. Refresh with water and a little hair oil between wash days.";
   }
   if (hairType === "Curly Hair") {
     return "Define the curls with curl cream on soaking-wet hair, scrunching upward, then diffuse or air-dry without touching it while it sets. A little hair oil on day two tames frizz.";
   }
   if (hairType === "Wavy Hair") {
-    return "Encourage the wave with sea salt spray on damp hair, scrunching as it dries. Trim the ends when they start to look ragged and finish with a drop of hair oil.";
+    return "Encourage the wave with sea salt spray on damp hair, scrunching as it dries, or add looser bends with a curling iron over a heat protectant. Finish with a drop of hair oil.";
   }
   if (length === "Short" || length === "Very Short") {
-    return "Keep the outline clean with a trim whenever the edges start to grow out. A small amount of matte paste through dry hair controls the shape without making it stiff.";
+    return "A small amount of matte paste through dry hair controls the shape without making it stiff.";
   }
-  return "Refresh the shape whenever it starts to lose its form. Blow-dry with a brush for movement, then smooth the ends with a little hair oil only where you need it.";
+  return "Blow-dry with a brush for movement, then smooth the ends with a little hair oil only where you need it.";
 }
 
 function detailsForStyle(title, length, hairType, features = []) {
@@ -2201,7 +2248,7 @@ function openDetail(id) {
   appendImage(els.detailImage, style);
   els.detailMeta.textContent = `${style.gender} - ${style.length} length`;
   els.detailName.textContent = style.name;
-  const maintenanceText = `This is a ${style.maintenanceLevel.toLowerCase()} maintenance hairstyle. ${style.maintenance}`;
+  const maintenanceText = style.maintenance;
   els.detailMaintenance.innerHTML = linkifyProducts(escapeHtml(maintenanceText));
 
   // The chips mirror exactly the products highlighted in the text above, in the
