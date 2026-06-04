@@ -713,6 +713,17 @@ body[data-view="quiz"] .app-shell {
   display: none;
 }
 
+.slider-info-text {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 18px;
+  color: #666;
+}
+
+.slider-info-text[hidden] {
+  display: none;
+}
+
 .slider-products {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 160px));

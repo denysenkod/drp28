@@ -1639,9 +1639,11 @@ function renderSliderQuestion(question, selected) {
     ? regularOptions.findIndex((o) => o.value === selected[0])
     : -1;
   const hasSelection = selectedIndex !== -1;
+  const selectedOption = hasSelection ? regularOptions[selectedIndex] : null;
+  const isLowMaintenance = selectedOption && selectedOption.value === "low";
   const sliderValue = hasSelection ? selectedIndex : Math.floor((regularOptions.length - 1) / 2);
   const displayLabel = hasSelection ? regularOptions[selectedIndex].label : "Slide to answer";
-  const displayProducts = hasSelection ? sliderOptionProducts(regularOptions[selectedIndex]) : [];
+  const displayProducts = hasSelection && !isLowMaintenance ? sliderOptionProducts(regularOptions[selectedIndex]) : [];
   const hasProducts = displayProducts.length > 0;
 
   return `
@@ -1663,7 +1665,9 @@ function renderSliderQuestion(question, selected) {
         >
         <span class="slider-end-label">${escapeHtml(regularOptions[regularOptions.length - 1].label)}</span>
       </div>
-      <p class="slider-description" style="margin-top: 16px; font-size: 18px; color: #666; text-align: center;" ${hasProducts ? "" : "hidden"}>Maitanence-level equivalent hair products: </p>
+      <p class="slider-info-text slider-guidance" ${!hasSelection ? "" : "hidden"}>Check maintenance options to see appropriate products</p>
+      <p class="slider-info-text slider-guidance-alt" ${isLowMaintenance ? "" : "hidden"}>Check other options to see hair products</p>
+      <p class="slider-info-text slider-description" ${hasProducts ? "" : "hidden"}>Maitanence-level equivalent hair products: </p>
       <div class="slider-products ${sliderProductsColsClass(displayProducts)}" ${hasProducts ? "" : "hidden"}>${sliderProductsHtml(displayProducts)}</div>
       <p class="slider-product-hint" ${hasProducts ? "" : "hidden"}>Tap a product to learn more about it</p>
       ${exclusiveOption ? `
@@ -1686,6 +1690,8 @@ function wireSliderQuestion(question) {
   const regularOptions = question.options.filter((o) => !o.exclusive);
   const slider = document.getElementById("quiz-slider-input");
   const display = document.querySelector(".slider-value-display");
+  const guidanceDiv = document.querySelector(".slider-guidance");
+  const guidanceAltDiv = document.querySelector(".slider-guidance-alt");
   const descDiv = document.querySelector(".slider-description");
   const hintDiv = document.querySelector(".slider-product-hint");
   const productsDiv = document.querySelector(".slider-products");
@@ -1699,8 +1705,11 @@ function wireSliderQuestion(question) {
       if (option && display) {
         display.textContent = option.label;
         display.classList.remove("is-placeholder");
-        const products = sliderOptionProducts(option);
+        const isLowMaintenance = option.value === "low";
+        const products = !isLowMaintenance ? sliderOptionProducts(option) : [];
         const hasProducts = products.length > 0;
+        if (guidanceDiv) guidanceDiv.hidden = true;
+        if (guidanceAltDiv) guidanceAltDiv.hidden = !isLowMaintenance;
         if (descDiv) {
           descDiv.textContent = hasProducts ? "Maitanence-level equivalent hair products: " : "";
           descDiv.hidden = !hasProducts;
