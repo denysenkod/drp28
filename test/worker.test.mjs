@@ -545,6 +545,9 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(app.includes('normalizeGender(item.gender)'));
   assert.ok(app.includes('inferGender'));
   assert.ok(app.includes('faceShape: normalizeFaceShape'));
+  assert.ok(app.includes('function preferenceOptions(question)'));
+  assert.ok(app.includes('function selectedPreferenceValues(question)'));
+  assert.ok(app.includes('!option.exclusive && !option.selectAll'));
   assert.ok(app.includes('function answerFilteredStyles()'));
   assert.ok(app.includes('function styleHaystack(style)'));
   assert.ok(app.includes('function normalizeSearchText(value)'));

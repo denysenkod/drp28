@@ -780,6 +780,15 @@ function getOptionLabel(questionId, value) {
   return option?.label || value;
 }
 
+function preferenceOptions(question) {
+  return (question?.options || []).filter((option) => !option.exclusive && !option.selectAll);
+}
+
+function selectedPreferenceValues(question) {
+  const allowed = new Set(preferenceOptions(question).map((option) => option.value));
+  return selectedFor(question).filter((value) => allowed.has(value));
+}
+
 function selectedFor(question) {
   return Array.isArray(state.answers[question.id]) ? state.answers[question.id] : [];
 }
@@ -916,20 +925,16 @@ function getQuizOptionMedia(question, option) {
 function summarizeAnswers() {
   const chips = [];
   for (const question of DISCOVERY_FILTER_QUESTIONS) {
-    const selected = selectedFor(question);
+    const selected = selectedPreferenceValues(question);
     if (!selected.length) continue;
-    if (question.id === "style" && selected.includes("__all")) {
-      chips.push({ questionId: question.id, label: "Style", value: "Everything" });
-      continue;
-    }
-    const values = selected.filter((value) => value !== "__all").map((value) => getOptionLabel(question.id, value));
+    const values = selected.map((value) => getOptionLabel(question.id, value));
     if (values.length) chips.push({ questionId: question.id, label: shortQuestionLabel(question.id), value: values.join(", ") });
   }
   return chips;
 }
 
 function selectedAnswerCount() {
-  return DISCOVERY_FILTER_QUESTIONS.reduce((total, question) => total + selectedFor(question).filter((value) => value !== "__all").length, 0);
+  return DISCOVERY_FILTER_QUESTIONS.reduce((total, question) => total + selectedPreferenceValues(question).length, 0);
 }
 
 function shortQuestionLabel(id) {
@@ -1647,10 +1652,11 @@ function renderPreferenceChip(chip) {
 
 function renderPreferenceMenu(question) {
   const selected = selectedFor(question);
+  const options = preferenceOptions(question);
   return `
     <div class="preference-menu" role="menu" aria-label="${escapeAttr(shortQuestionLabel(question.id))} preferences">
       <p>${escapeHtml(question.title)}</p>
-      ${question.options.map((option) => renderPreferenceOption(question, option, isQuizOptionSelected(question, option, selected))).join("")}
+      ${options.map((option) => renderPreferenceOption(question, option, isQuizOptionSelected(question, option, selected))).join("")}
     </div>
   `;
 }
@@ -1803,6 +1809,7 @@ function renderAnswerFilterDrawer(selectedCount) {
 
 function renderFilterGroup(question) {
   const selected = selectedFor(question);
+  const options = preferenceOptions(question);
   return `
     <details class="answer-filter-group" data-filter-group="${question.id}" ${state.openFilterGroups.has(question.id) ? "open" : ""}>
       <summary>
@@ -1813,7 +1820,7 @@ function renderFilterGroup(question) {
         <span class="answer-filter-group-icon" aria-hidden="true"></span>
       </summary>
       <div class="answer-filter-options">
-        ${question.options.map((option) => renderFilterOption(question, option, selected.includes(option.value))).join("")}
+        ${options.map((option) => renderFilterOption(question, option, selected.includes(option.value))).join("")}
       </div>
     </details>
   `;
