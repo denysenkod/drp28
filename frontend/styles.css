@@ -736,7 +736,7 @@ body[data-view="quiz"] .app-shell {
   grid-template-columns: repeat(4, minmax(0, 160px));
   justify-content: center;
   gap: 16px;
-  margin-top: 16px;
+  margin-top: 0;
 }
 
 .slider-products--cols-1 {

@@ -302,7 +302,7 @@ const PRODUCTS = {
   },
   "heat-protectant": {
     id: "heat-protectant",
-    name: "Heat Protectant Spray",
+    name: "Heat Protectant",
     description: "A lightweight shield that guards strands from heat damage before you reach for straighteners, curlers, or a blow-dryer.",
     matchTerms: ["heat protection spray", "heat protection", "heat protectant"],
     howToUse: [
@@ -1750,8 +1750,11 @@ function renderSliderQuestion(question, selected) {
   const selectedOption = hasSelection ? regularOptions[selectedIndex] : null;
   const sliderValue = hasSelection ? selectedIndex : Math.floor((regularOptions.length - 1) / 2);
   const displayLabel = hasSelection ? regularOptions[selectedIndex].label : "Slide to answer";
-  // All products from the highest level (superset of all lower levels)
-  const allProducts = sliderOptionProducts(regularOptions[regularOptions.length - 1]);
+  // All products from the highest level (superset of all lower levels),
+  // sorted by name length so the shortest names lead the wall.
+  const allProducts = sliderOptionProducts(regularOptions[regularOptions.length - 1])
+    .slice()
+    .sort((a, b) => a.name.length - b.name.length);
   const activeIds = hasSelection && selectedOption.value !== "low"
     ? new Set(selectedOption.products || [])
     : new Set();
@@ -1775,8 +1778,8 @@ function renderSliderQuestion(question, selected) {
         >
         <span class="slider-end-label">${escapeHtml(regularOptions[regularOptions.length - 1].label)}</span>
       </div>
-      <div class="slider-products ${sliderProductsColsClass(allProducts)}">${sliderProductsHtml(allProducts, activeIds)}</div>
       <p class="slider-product-hint">Tap a product to learn more about it</p>
+      <div class="slider-products ${sliderProductsColsClass(allProducts)}">${sliderProductsHtml(allProducts, activeIds)}</div>
       ${exclusiveOption ? `
         <div class="scale-skip-row">
           <button
