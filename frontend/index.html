@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/styles.css?v=2026-06-08-greyed-products" />
+  <link rel="stylesheet" href="/styles.css?v=2026-06-08-brief-mobile" />
 </head>
 <body>
   <header class="topbar">
@@ -24,6 +24,11 @@
       <input type="search" id="topbar-search-input" placeholder="Search by length, texture, vibe, or style name" autocomplete="off">
     </label>
     <nav class="top-actions" aria-label="Primary">
+      <button class="favourites-btn brief-btn" id="brief-btn" type="button">
+        <span aria-hidden="true">&#10022;</span>
+        <span>My style brief</span>
+        <span class="fav-count brief-count" id="brief-count">0</span>
+      </button>
       <button class="favourites-btn" id="favourites-btn" type="button">
         <span aria-hidden="true">&hearts;</span>
         <span>Saved</span>
@@ -109,6 +114,6 @@
   </div>
 
 
-  <script src="/app.js?v=2026-06-08-greyed-products"></script>
+  <script src="/app.js?v=2026-06-08-brief-mobile"></script>
 </body>
 </html>

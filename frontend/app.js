@@ -10,6 +10,7 @@ const VIEW_KEY = "drp28.frontend.view";
 const ANSWERS_KEY = "drp28.frontend.answers";
 const STEP_KEY = "drp28.frontend.quizStep";
 const PREV_VIEW_KEY = "drp28.frontend.prevView";
+const BRIEF_KEY = "drp28.frontend.brief";
 
 function readStored(key, fallback) {
   try {
@@ -71,6 +72,14 @@ function iconArrow() {
 
 function iconCheck() {
   return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7" ${iconAttrs}/></svg>`;
+}
+
+function iconPlus() {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" ${iconAttrs}/></svg>`;
+}
+
+function iconStar() {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.6l2.6 5.27 5.82.85-4.21 4.1.99 5.79L12 16.86l-5.2 2.75.99-5.79-4.21-4.1 5.82-.85z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
 }
 
 function textureIcon(kind) {
@@ -866,6 +875,8 @@ const state = {
   answers: readStored(ANSWERS_KEY, {}),
   searchQuery: "",
   favourites: new Set(),
+  brief: readStored(BRIEF_KEY, []),
+  briefPickerOpen: false,
   uploadedPhotoName: null,
   filterPanelOpen: false,
   openFilterGroups: new Set(),
@@ -886,6 +897,8 @@ const els = {
   topbarSearchInput: $("#topbar-search-input"),
   favouritesBtn: $("#favourites-btn"),
   favCount: $("#fav-count"),
+  briefBtn: $("#brief-btn"),
+  briefCount: $("#brief-count"),
   detailOverlay: $("#detail-overlay"),
   detailImage: $("#detail-image"),
   detailMeta: $("#detail-meta"),
@@ -926,6 +939,9 @@ function setView(view) {
   }
   if (view === "results") {
     window.history.pushState({ view: "results", previousView: state.previousView }, "", "?results");
+  }
+  if (view === "brief") {
+    window.history.pushState({ view: "brief", previousView: state.previousView }, "", "?brief");
   }
   if (view === "welcome") {
     window.history.pushState({ view: "welcome", previousView: state.previousView }, "", "/");
@@ -1444,10 +1460,12 @@ function render() {
     els.topbarSearchInput.value = state.searchQuery;
   }
   updateFavouriteCount();
+  updateBriefCount();
 
   if (state.view === "quiz") renderQuiz();
   else if (state.view === "search") renderSearch();
   else if (state.view === "results") renderResultsPage();
+  else if (state.view === "brief") renderBrief();
   else renderWelcome();
 }
 
@@ -1473,6 +1491,12 @@ function renderWelcome() {
           <span class="choice-copy">Jump into the gallery and search freely. Like the photos that speak to you to build your profile.</span>
           <span class="choice-action">Browse the gallery ${iconArrow()}</span>
         </button>
+        <button class="choice-card" id="build-brief-btn" type="button">
+          <span class="choice-icon">${iconStar()}</span>
+          <span class="choice-title">Build a style brief</span>
+          <span class="choice-copy">Collect photos of your own hair and references you love, rate them, and bring the brief to your stylist.</span>
+          <span class="choice-action">Start your brief ${iconArrow()}</span>
+        </button>
       </div>
     </section>
   `;
@@ -1483,6 +1507,7 @@ function renderWelcome() {
     setView("quiz");
   });
   $("#have-mind-btn").addEventListener("click", () => setView("search"));
+  $("#build-brief-btn").addEventListener("click", () => setView("brief"));
 }
 
 function renderQuiz() {
@@ -2310,6 +2335,314 @@ function renderFavourites() {
   wireCards(els.favouritesGrid);
 }
 
+// ---------- My style brief ----------
+// A working mood board the user assembles for their stylist, split into two
+// partitions so they can separate themselves from their inspiration:
+//   - "me"          photos of the user's own hair
+//   - "references"  styles on other people (uploads or saved gallery favourites)
+// Every item is classified with the same rubric (a 5-star rating and free-text
+// notes). Photos are added straight into a partition via that partition's own
+// add tile, so the source of the upload decides where it lands.
+// The brief lives in localStorage so it survives reloads without a backend.
+function setBrief(next) {
+  state.brief = next;
+  writeStored(BRIEF_KEY, next);
+  updateBriefCount();
+}
+
+function updateBriefCount() {
+  if (els.briefCount) els.briefCount.textContent = state.brief.length;
+}
+
+function briefItemId() {
+  return window.crypto?.randomUUID
+    ? window.crypto.randomUUID()
+    : `brief-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+// Items saved before partitions existed (and any future stragglers) are treated
+// as references unless explicitly marked as the user.
+function itemPartition(item) {
+  return item.partition === "me" ? "me" : "references";
+}
+
+function briefItemsFor(partition) {
+  return state.brief.filter((item) => itemPartition(item) === partition);
+}
+
+function renderBrief() {
+  const savedStyles = state.styles.filter((style) => state.favourites.has(style.id));
+  const pickerOpen = state.briefPickerOpen;
+  const meItems = briefItemsFor("me");
+  const refItems = briefItemsFor("references");
+
+  els.app.innerHTML = `
+    <section class="brief-screen">
+      <div class="screen-heading">
+        <div>
+          <p class="eyebrow">Design</p>
+          <h1>My style brief</h1>
+          <p>Gather photos of your own hair and references on other people, pull in styles you've saved, then rate and annotate each one. Bring the whole brief to your stylist.</p>
+        </div>
+      </div>
+
+      ${pickerOpen ? renderBriefPicker(savedStyles) : ""}
+
+      <div class="brief-partitions">
+        <section class="brief-partition brief-partition--me">
+          <div class="brief-partition-head">
+            <h2>Your hair</h2>
+          </div>
+          <div class="brief-grid">
+            ${meItems.map(renderBriefItem).join("")}
+            ${renderBriefAddSelf()}
+          </div>
+        </section>
+
+        <section class="brief-partition brief-partition--references">
+          <div class="brief-partition-head">
+            <p class="eyebrow">Inspiration</p>
+            <h2>References</h2>
+            <p class="brief-partition-copy">Looks on other people you'd like to take cues from.</p>
+          </div>
+          <div class="brief-grid">
+            ${refItems.map(renderBriefItem).join("")}
+            ${renderBriefAddRef()}
+          </div>
+        </section>
+      </div>
+    </section>
+  `;
+
+  wireBrief();
+}
+
+// A placeholder tile that keeps the "Me" partition occupying at least one grid
+// space when empty and lets the user add more photos of themselves. Uploads from
+// here go straight into the Me partition.
+function renderBriefAddSelf() {
+  return `
+    <label class="brief-add-self" title="Add a photo of yourself">
+      <span class="brief-add-self-icon" aria-hidden="true">${iconPlus()}</span>
+      <span class="brief-add-self-text">Add a photo of you</span>
+      <input type="file" id="brief-self-input" accept="image/*" multiple hidden>
+    </label>
+  `;
+}
+
+// The matching tile for the References partition. Hovering (or focusing) it
+// reveals two ways to add a reference: upload from the device, or pull one in
+// from the user's saved styles.
+function renderBriefAddRef() {
+  return `
+    <div class="brief-add-self brief-add-ref" tabindex="0" title="Add a reference">
+      <span class="brief-add-self-icon" aria-hidden="true">${iconPlus()}</span>
+      <span class="brief-add-self-text">Add a reference</span>
+      <div class="brief-add-ref-menu">
+        <label class="brief-add-ref-btn">
+          Upload from device
+          <input type="file" id="brief-ref-input" accept="image/*" multiple hidden>
+        </label>
+        <button class="brief-add-ref-btn" type="button" id="brief-ref-saved">Add from saved</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderBriefPicker(savedStyles) {
+  const inBrief = new Set(state.brief.map((item) => item.styleId).filter(Boolean));
+  return `
+    <div class="brief-picker">
+      <div class="brief-picker-head">
+        <p>Add from your saved styles</p>
+        <button class="text-btn" id="brief-picker-close" type="button">Done</button>
+      </div>
+      ${savedStyles.length ? `
+        <div class="brief-picker-grid">
+          ${savedStyles.map((style) => {
+            const added = inBrief.has(style.id);
+            return `
+              <button
+                class="brief-picker-item ${added ? "is-added" : ""}"
+                type="button"
+                data-brief-add-saved="${escapeAttr(style.id)}"
+                ${added ? "disabled" : ""}
+                aria-label="${added ? "Already in brief" : "Add to brief"}: ${escapeAttr(style.name)}"
+              >
+                <span class="brief-picker-thumb">
+                  ${style.imageUrl ? `<img src="${escapeAttr(style.imageUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ""}
+                </span>
+                <span class="brief-picker-name">${escapeHtml(style.name)}</span>
+                <span class="brief-picker-flag">${added ? "Added" : "Add"}</span>
+              </button>
+            `;
+          }).join("")}
+        </div>
+      ` : `<p class="brief-picker-empty">No saved styles yet. Save styles from search or results and they'll show up here.</p>`}
+    </div>
+  `;
+}
+
+function renderBriefStars(item) {
+  const rating = Number(item.rating) || 0;
+  return `
+    <div class="brief-stars" role="group" aria-label="Rate this look out of 5">
+      ${[1, 2, 3, 4, 5].map((n) => `
+        <button
+          class="brief-star ${n <= rating ? "is-on" : ""}"
+          type="button"
+          data-brief-star="${escapeAttr(item.id)}"
+          data-star-value="${n}"
+          aria-label="${n} star${n > 1 ? "s" : ""}"
+          aria-pressed="${n <= rating}"
+        >${iconStar()}</button>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderBriefItem(item) {
+  const notePlaceholder = itemPartition(item) === "references"
+    ? "What did you like about this?"
+    : "Is this your hair currently? A past style you liked?";
+  return `
+    <article class="brief-card" data-brief-id="${escapeAttr(item.id)}">
+      <div class="brief-card-image">
+        ${item.imageUrl
+          ? `<img src="${escapeAttr(item.imageUrl)}" alt="${escapeAttr(item.name || "Reference image")}" loading="lazy" referrerpolicy="no-referrer">`
+          : `<span>${escapeHtml(item.name || "Reference")}</span>`}
+        <button class="brief-remove-btn" type="button" data-brief-remove="${escapeAttr(item.id)}" aria-label="Remove from brief">&times;</button>
+      </div>
+      <div class="brief-card-body">
+        ${renderBriefStars(item)}
+        <label class="brief-annotation-label">
+          <span>Notes</span>
+          <textarea
+            class="brief-annotation"
+            data-brief-note="${escapeAttr(item.id)}"
+            rows="2"
+            placeholder="${escapeAttr(notePlaceholder)}"
+          >${escapeHtml(item.annotation || "")}</textarea>
+        </label>
+      </div>
+    </article>
+  `;
+}
+
+function wireBrief() {
+  // Uploads from the "Me" tile go straight into the Me partition.
+  const selfInput = $("#brief-self-input");
+  if (selfInput) {
+    selfInput.addEventListener("change", (event) => {
+      handleBriefUpload(event.target.files, "me");
+      event.target.value = "";
+    });
+  }
+  // The References tile's "Upload from device" option files into References.
+  const refInput = $("#brief-ref-input");
+  if (refInput) {
+    refInput.addEventListener("change", (event) => {
+      handleBriefUpload(event.target.files, "references");
+      event.target.value = "";
+    });
+  }
+  const refSaved = $("#brief-ref-saved");
+  if (refSaved) {
+    refSaved.addEventListener("click", () => {
+      state.briefPickerOpen = true;
+      renderBrief();
+    });
+  }
+  const pickerClose = $("#brief-picker-close");
+  if (pickerClose) {
+    pickerClose.addEventListener("click", () => {
+      state.briefPickerOpen = false;
+      renderBrief();
+    });
+  }
+  document.querySelectorAll("[data-brief-add-saved]").forEach((button) => {
+    button.addEventListener("click", () => addSavedToBrief(button.dataset.briefAddSaved));
+  });
+  document.querySelectorAll("[data-brief-remove]").forEach((button) => {
+    button.addEventListener("click", () => removeBriefItem(button.dataset.briefRemove));
+  });
+  document.querySelectorAll("[data-brief-star]").forEach((button) => {
+    button.addEventListener("click", () => {
+      setBriefRating(button.dataset.briefStar, parseInt(button.dataset.starValue, 10));
+    });
+  });
+  // Notes update state silently (no re-render) so the textarea keeps focus and
+  // the caret position while the user types.
+  document.querySelectorAll("[data-brief-note]").forEach((area) => {
+    area.addEventListener("input", () => updateBriefNote(area.dataset.briefNote, area.value));
+  });
+}
+
+function addSavedToBrief(styleId) {
+  const style = state.styles.find((item) => item.id === String(styleId));
+  if (!style) return;
+  if (state.brief.some((item) => item.styleId === style.id)) return;
+  const item = {
+    id: briefItemId(),
+    source: "saved",
+    styleId: style.id,
+    imageUrl: style.imageUrl,
+    name: style.name,
+    partition: "references",
+    rating: 0,
+    annotation: ""
+  };
+  setBrief([item, ...state.brief]);
+  renderBrief();
+}
+
+function addBriefImage(imageUrl, name, partition) {
+  const item = {
+    id: briefItemId(),
+    source: "upload",
+    imageUrl,
+    name,
+    partition,
+    rating: 0,
+    annotation: ""
+  };
+  setBrief([item, ...state.brief]);
+  if (state.view === "brief") renderBrief();
+}
+
+// Reads the uploaded files and files each one into the given partition ("me" or
+// "references"), which is decided by the tile the upload came from.
+async function handleBriefUpload(fileList, partition) {
+  const files = Array.from(fileList || []).filter((file) => file.type.startsWith("image/"));
+  for (const file of files) {
+    try {
+      const imageData = await imageFileToDataUrl(file);
+      addBriefImage(imageData, file.name, partition);
+    } catch {
+      // Skip files that can't be read as an image.
+    }
+  }
+}
+
+function removeBriefItem(id) {
+  setBrief(state.brief.filter((item) => item.id !== id));
+  renderBrief();
+}
+
+// The 5-star rating is optional: clicking the star that already marks the
+// current rating clears it back to unrated.
+function setBriefRating(id, value) {
+  setBrief(state.brief.map((item) => {
+    if (item.id !== id) return item;
+    return { ...item, rating: item.rating === value ? 0 : value };
+  }));
+  renderBrief();
+}
+
+function updateBriefNote(id, value) {
+  setBrief(state.brief.map((item) => (item.id === id ? { ...item, annotation: value } : item)));
+}
+
 // ---------- Detail overlay ----------
 function appendImage(frame, style) {
   frame.innerHTML = style.imageUrl
@@ -2565,6 +2898,7 @@ function init() {
     els.favouritesOverlay.hidden = false;
     document.body.style.overflow = "hidden";
   });
+  els.briefBtn.addEventListener("click", () => setView("brief"));
 
   els.closeDetail.addEventListener("click", closeDetail);
   els.detailOverlay.addEventListener("click", (event) => {
@@ -2621,6 +2955,11 @@ function init() {
       state.previousView = event.state.previousView ?? "welcome";
       writeStored(PREV_VIEW_KEY, state.previousView);
       render();
+    } else if (event.state?.view === "brief") {
+      state.view = "brief";
+      state.previousView = event.state.previousView ?? "welcome";
+      writeStored(PREV_VIEW_KEY, state.previousView);
+      render();
     } else if (event.state?.view === "welcome") {
       state.view = "welcome";
       state.previousView = event.state.previousView ?? "welcome";
@@ -2649,6 +2988,9 @@ function init() {
   } else if (urlParams.has("results")) {
     state.view = "results";
     writeStored(VIEW_KEY, "results");
+  } else if (urlParams.has("brief")) {
+    state.view = "brief";
+    writeStored(VIEW_KEY, "brief");
   } else {
     state.view = "welcome";
     writeStored(VIEW_KEY, "welcome");
