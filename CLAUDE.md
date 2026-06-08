@@ -156,6 +156,32 @@ Frontend passes query params to `/api/gallery`:
 
 Backend returns filtered/paginated results. Filtering is done with WHERE clauses; no full-text search.
 
+## Frontend – Responsive & Mobile
+
+### Cache busting
+`index.html` references `styles.css` and `app.js` with a `?v=` query string. **Update the version string whenever you change either file** so browsers pick up the new version immediately. The current pattern is `YYYY-MM-DD-slug`.
+
+### Breakpoints
+- `≥821px` — desktop/laptop layout
+- `≤820px` — tablet/phone layout (carousel, logo changes)
+- `≤600px` — small phone (tighter font/spacing)
+- `≤440px` — very small phone
+
+There is also a `min-width: 821px and max-height: 760px` block for short laptop screens (e.g. 1366×768) — **this overrides aspect ratios for the quiz option cards on most laptops**, so any changes to `.option-media` aspect-ratio must be checked there too.
+
+### Quiz option cards
+- Desktop: CSS grid, `repeat(auto-fit, minmax(190px, 1fr))`
+- Mobile (≤820px): horizontal **scroll-snap carousel** (`flex`, `overflow-x: scroll`, `scroll-snap-type: x mandatory`). Each card is `72vw` wide so the next card peeks, signalling swipeability.
+- Text-layout questions (ethnicity, face shape, etc.) are excluded from the carousel and stay as a stacked single column.
+- Dot indicators are injected by `wireCarouselDots()` in `app.js` after render. They update on scroll.
+- `isMobileViewport()` in `app.js` checks `window.matchMedia("(max-width: 820px)")` to conditionally wire the carousel.
+
+### Image aspect ratio
+Quiz option media (`.option-media`) uses `aspect-ratio: 2 / 3` (portrait) so the full hairstyle is visible top-to-bottom. `object-fit: cover` fills the card without side gaps.
+
+### Welcome screen
+The `.welcome-logo-row` (HairMatch wordmark) is hidden on mobile (`≤820px`) via CSS — the topbar is already hidden on the welcome/quiz views, so the logo would just take up space.
+
 ## Notes
 
 - Frontend is vanilla JS; no build step, no framework. Changes to app.js are live without recompilation.

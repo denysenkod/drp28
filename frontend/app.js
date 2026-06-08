@@ -364,13 +364,20 @@ const PRODUCT_LIST = Object.values(PRODUCTS);
 // single gender these are shown as-is; when it targets both genders each one is
 // expanded into a male and a female variant (see buildLengthOptions).
 const LENGTH_OPTIONS_BASE = [
-  { value: "buzz", label: "Very short", icon: lengthIcon(0), length: "Very Short", image: "/Images/LongHair.webp", images: { masculine: "https://www.kaya.in/media/.renditions/wysiwyg/crew-cut-with-fade-men-short-hairstyle.png", feminine: "https://www.copenhagenfashionsummit.com/wp-content/uploads/2025/12/Undercut-Pixie.png"} },
-  { value: "short", label: "Short", icon: lengthIcon(1), length: "Short", image: "/Images/LongHair.webp", images: { masculine: "https://9f8e62d4.delivery.rocketcdn.me/wp-content/uploads/2023/10/Messy-Textured-Crop-2.jpg", feminine: "https://www.southernliving.com/thmb/Deu04ZuiLAL-3r_BkHo8AgRqrnI=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/Screenshot2024-02-02at1.35.11PM-5e651e05e7e34546ab7c6e554e959acf.png"} },
-  { value: "medium", label: "Medium", icon: lengthIcon(2), length: "Medium", image: "/Images/LongHair.webp", images: { masculine: "https://cdn.prod.website-files.com/6691f4c15ef1cd5c89763f60/68ea41b5fa7494900d4cc32c_Medium%20Length%20Hairstyles%20for%20Men.webp", feminine: "https://hips.hearstapps.com/hmg-prod/images/hbz-medium-length-hair-gettyimages-1203448672.jpg"} },
-  { value: "long", label: "Long", icon: lengthIcon(4), length: "Long", image: "/Images/LongHair.webp", images: { masculine: "https://manforhimself.com/wp-content/uploads/2020/06/mens-hairstyle-haircut-long-grown-out-MFH7-man-for-himself.jpg", feminine: "https://www.fabmood.com/inspiration/wp-content/uploads/2025/02/97425740572471240.jpg"} }
+  { value: "buzz", label: "Very short", icon: lengthIcon(0), length: "Very Short", image: "/Images/LongHair.webp", images: { 
+    masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/Crew-Cut-Fade.webp?v=1755505078", 
+    feminine: "https://i.pinimg.com/564x/3c/e9/4c/3ce94c4ba823664590feb0da06801db5.jpg"} },
+  { value: "short", label: "Short", icon: lengthIcon(1), length: "Short", image: "/Images/LongHair.webp", images: { 
+    masculine: "https://static.wixstatic.com/media/63282f_94724ec44c744bdc8bba3da51359d31c~mv2.png/v1/fill/w_980,h_1179,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/63282f_94724ec44c744bdc8bba3da51359d31c~mv2.png", 
+    feminine: "https://i.pinimg.com/736x/79/5c/2d/795c2de7cc8a3da5f77be5a03b02d026.jpg"} },
+  { value: "medium", label: "Medium", icon: lengthIcon(2), length: "Medium", image: "/Images/LongHair.webp", images: { 
+    masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/medium-length-fluffy-haircut-men_600x600.webp?v=1774622719", 
+    feminine: "https://www.southernliving.com/thmb/3xQCbUDxtOwSx9Zr_dv7_yIYoX8=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/classic-mid-length-7447d02832af48a4982f72671dce722b.jpg"} },
+  { value: "long", label: "Long", icon: lengthIcon(4), length: "Long", image: "/Images/LongHair.webp", images: { 
+    masculine: "https://www.deauvilleaumasculin.com/cdn/shop/articles/thumbnail_d1aef075-6693-446d-9449-56536037a9cb_1100x.jpg?v=1745886543", 
+    feminine: "https://www.fabmood.com/inspiration/wp-content/uploads/2025/02/97425740572471240.jpg"} }
 ];
 
-const LENGTH_OPEN_OPTION = { value: "open", label: "No preference", icon: lengthIcon(6), exclusive: true };
 
 // The genders a "both" survey can pick a length for. The value prefix keeps the
 // gendered options distinct in stored answers (e.g. "men:short", "women:long").
@@ -397,34 +404,41 @@ function buildLengthOptions() {
         });
       }
     }
-    return [...gendered, LENGTH_OPEN_OPTION];
+    return [...gendered];
   }
-  return [...LENGTH_OPTIONS_BASE, LENGTH_OPEN_OPTION];
+  return [...LENGTH_OPTIONS_BASE];
 }
 
 const QUIZ = [
   {
     id: "style",
-    title: "What style are you looking for?",
+    title: "What styles are you looking for?",
     sub: "",
     layout: "image",
     options: [
-      { value: "masculine", label: "Masculine styles", gender: "Men", image: "/Images/MasculineStyles.webp" },
-      { value: "feminine", label: "Feminine styles", gender: "Women", image: "/Images/FeminineStyles.jpg" },
+      { value: "masculine", label: "Masculine styles", gender: "Men", image: "https://cdn.shopify.com/s/files/1/2384/0833/files/Textured_Crop.png?v=1771863492" },
+      { value: "feminine", label: "Feminine styles", gender: "Women", image: "https://www.copenhagenfashionsummit.com/wp-content/uploads/2025/12/layered-long-bob.png" },
       { value: "__all", label: "Show me everything", selectAll: true }
     ]
   },
   {
     id: "texture",
-    title: "What is your desired hair texture?",
+    title: "What are your desired hair textures?",
     sub: "Your actual texture will be factored in during our hair maintanence plans.",
     layout: "icon",
     options: [
-      { value: "straight", label: "Straight", icon: textureIcon("straight"), hairType: "Straight Hair", image: "/Images/LongHair.webp", images: { masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/textured-fringe-straight-hair-men.webp?v=1768222652", feminine: "https://i0.wp.com/therighthairstyles.com/wp-content/uploads/2014/12/1-short-classy-style-with-curtain-bangs.jpg?resize=500%2C556&ssl=1" }},
-      { value: "wavy", label: "Wavy", icon: textureIcon("wavy"), hairType: "Wavy Hair", image: "/Images/LongHair.webp", images: { masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/medium-length-wavy-hairstyle-men.webp?v=1767878793", feminine: "https://scottj.com/wp-content/uploads/2026/03/3-897x1024.webp"} },
-      { value: "curly", label: "Curly", icon: textureIcon("curly"), hairType: "Curly Hair", image: "/Images/LongHair.webp", images: { masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/taper-fade-curly-hair-men.webp?v=1767776997", feminine: "https://ucarecdn.com/2c12cace-f519-415a-adeb-fe89f9d123e7/-/format/auto/-/preview/3000x3000/-/quality/lighter/3422432_qdw2.jpg"} },
-      { value: "coily", label: "Coily", icon: textureIcon("coily"), hairType: "Coily Hair", image: "/Images/LongHair.webp", images: { masculine: "https://theorganibrands.com/cdn/shop/articles/IMG_1611-5085105.jpg?v=1774982816", feminine: "https://mooandyoo.com/cdn/shop/articles/4A_landscape_3.jpg?v=1729522577"} },
-      { value: "unsure", label: "Not sure", icon: textureIcon("unsure"), exclusive: true }
+      { value: "straight", label: "Straight", icon: textureIcon("straight"), hairType: "Straight Hair", image: "/Images/LongHair.webp", images: { 
+        masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/textured-fringe-straight-hair-men.webp?v=1768222652", 
+        feminine: "https://i0.wp.com/therighthairstyles.com/wp-content/uploads/2024/01/12-straight-hair-with-curled-locks.jpg?resize=1440%2C1698&ssl=1" }},
+      { value: "wavy", label: "Wavy", icon: textureIcon("wavy"), hairType: "Wavy Hair", image: "/Images/LongHair.webp", images: { 
+        masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/medium-length-wavy-hairstyle-men.webp?v=1767878793", 
+        feminine: "https://content.latest-hairstyles.com/wp-content/uploads/curled-waves-on-mid-length-hair.jpg"} },
+      { value: "curly", label: "Curly", icon: textureIcon("curly"), hairType: "Curly Hair", image: "/Images/LongHair.webp", images: { 
+        masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/taper-fade-curly-hair-men.webp?v=1767776997", 
+        feminine: "https://ucarecdn.com/2c12cace-f519-415a-adeb-fe89f9d123e7/-/format/auto/-/preview/3000x3000/-/quality/lighter/3422432_qdw2.jpg"} },
+      { value: "coily", label: "Coily", icon: textureIcon("coily"), hairType: "Coily Hair", image: "/Images/LongHair.webp", images: { 
+        masculine: "https://theorganibrands.com/cdn/shop/articles/IMG_1611-5085105.jpg?v=1774982816", 
+        feminine: "https://onlycurls.com/cdn/shop/files/wcc-coily2.jpg?v=1759275541&width=1400"} }
     ]
   },
   {
@@ -435,8 +449,8 @@ const QUIZ = [
     // both, so they are computed on access rather than fixed up front.
     get sub() {
       return selectedSurveyGender() === "both"
-        ? "Pick a male and/or female length - you can mix and match across genders."
-        : "Pick the option which best resembles your desired length.";
+        ? "Pick a male and/or female lengths - you can mix and match across genders."
+        : "Pick the options which best resembles your desired length.";
     },
     get options() {
       return buildLengthOptions();
@@ -444,18 +458,34 @@ const QUIZ = [
   },
   {
     id: "vibe",
-    title: "Which words best describe the vibe you are going for?",
+    title: "Which words best describe the look you are going for?",
     layout: "icon",
     sub: "Feel free to pick multiple options. This will help inform your recommendations.",
     options: [
-      { value: "classic", label: "Classic & timeless", vibe: "classic", keywords: ["classic", "side part", "centre part"], images: {masculine: "https://cdn.thecoolist.com/wp-content/uploads/2017/05/Slicked-Back-classic-mens-hairstyle-762x999.jpg", feminine: "https://www.southernliving.com/thmb/LlL4kY3i6nVCQae0jn-sfug9mqg=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/layers-abe96a8b1e114f65bc44bf97b74ebb3b.jpg"} },
-      { value: "trendy", label: "Trendy & modern", keywords: ["modern", "mod", "crop", "trendy"], images: {masculine: "https://lowtaperfades.com/wp-content/uploads/2026/02/Untitled-design-2026-02-28T063037.589.webp", feminine: "https://media.glamour.com/photos/5f0e32bc9f970c720ce36ec6/master/w_1024%2Cc_limit/Screen%2520Shot%25202020-07-14%2520at%25206.33.11%2520PM.png"}  },
-      { value: "bold", label: "Bold & edgy", vibe: "bold", keywords: ["bold", "edgy", "mullet", "dyed", "frosted"], images: {masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/liberty-spikes-hairstyle-men.webp?v=1758794959", feminine: "https://content.latest-hairstyles.com/wp-content/uploads/edgy-haircuts-for-women-1200x900.jpg"}  },
-      { value: "soft", label: "Soft & romantic", vibe: "soft", keywords: ["soft", "curtain", "fringe", "long"], images: {masculine: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSs5qo7QQxOuinGP4_1XF1hRbFV8lGF_VOf6A&s", feminine: "https://hairstyles.thehairstyler.com/hairstyle_views/front_view_images/14314/original/long-hairstyle-with-curls.jpg"}  },
-      { value: "low-maintanence", label: "Natural & Effortless", vibe: "low-maintanence", keywords: ["natural", "effortless", "grow out", "wavy", "low-maintanence"], images: {masculine: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNjrYo63_OuWFHS-uO8mlpl07AXuGmtHY7sg&s", feminine: "https://www.byrdie.com/thmb/RfIQsk03xD-ZRGZuObOci6z7-No=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/natural-hair-hairstyle-cd6cfd0c08794b33b485c40c9e324be2.png"}  },
-      { value: "professional", label: "Professional & polished", vibe: "professional", keywords: ["professional", "classic", "crew", "side"], images: {masculine: "https://i0.wp.com/therighthairstyles.com/wp-content/uploads/2024/11/20-professional-mens-brushed-back-long-hairstyle.jpg?resize=863%2C913&ssl=1", feminine: "https://i.pinimg.com/736x/35/66/a0/3566a02c87a625fec8af5765fc637247.jpg"}  },
-      { value: "playful", label: "Playful & fun", vibe: "playful", keywords: ["playful", "frosted", "dyed", "shag"], images: {masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/curly-mullet-hairstyle-men.webp?v=1767776997", feminine: "https://content.latest-hairstyles.com/wp-content/uploads/galleries/10/07/playful-y2k-double-bun-hairstyle-with-curly-bangs.jpg"}  },
-      { value: "sporty", label: "Sporty", vibe: "sporty", keywords: ["sporty", "athletic", "active", "gym", "practical", "short"], images: {masculine: "https://www.kaya.in/media/.renditions/wysiwyg/crew-cut-with-fade-men-short-hairstyle.png", feminine: "https://www.copenhagenfashionsummit.com/wp-content/uploads/2025/12/Undercut-Pixie.png"}  }
+      { value: "classic", label: "Classic & timeless", vibe: "classic", keywords: ["classic", "side part", "centre part"], images: {
+        masculine: "https://cdn.thecoolist.com/wp-content/uploads/2017/05/Slicked-Back-classic-mens-hairstyle-762x999.jpg", 
+        feminine: "https://www.instyle.com/thmb/KdwsVUom4JWPeqkoDsiOV7_j0wI=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/GettyImages-1477697852-dc20ae570d684c6d8772bf1051736ff4.jpg"} },
+      { value: "trendy", label: "Trendy & modern", keywords: ["modern", "mod", "crop", "trendy"], images: {
+        masculine: "https://www.the5thelement.uk/wp-content/uploads/2025/06/men-perm-in-reading.jpg", 
+        feminine: "https://media.glamour.com/photos/5f0e32bc9f970c720ce36ec6/master/w_1024%2Cc_limit/Screen%2520Shot%25202020-07-14%2520at%25206.33.11%2520PM.png"}  },
+      { value: "bold", label: "Bold & edgy", vibe: "bold", keywords: ["bold", "edgy", "mullet", "dyed", "frosted"], images: {
+        masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/liberty-spikes-hairstyle-men.webp?v=1758794959", 
+        feminine: "https://content.latest-hairstyles.com/wp-content/uploads/edgy-haircuts-for-women-1200x900.jpg"}  },
+      { value: "soft", label: "Soft & romantic", vibe: "soft", keywords: ["soft", "curtain", "fringe", "long"], images: {
+        masculine: "https://i.pinimg.com/736x/80/f6/c2/80f6c2c04c873b8a2466484c6f50539c.jpg", 
+        feminine: "https://hairstyles.thehairstyler.com/hairstyle_views/front_view_images/14314/original/long-hairstyle-with-curls.jpg"}  },
+      { value: "low-maintanence", label: "Natural & Effortless", vibe: "low-maintanence", keywords: ["natural", "effortless", "grow out", "wavy", "low-maintanence"], images: {
+        masculine: "https://www.byrdie.com/thmb/u4lP1HcP1E12OnhYVHq4H56lowM=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc():format(webp)/Ryan-Gosling-Lead-c41f2cebb31d405ebd197955987481d9-a0f47d9bbc3f4dd88fe4cdffbbb24f36.jpeg", 
+        feminine: "https://toallmyblackgirls.com/cdn/shop/articles/446355566_988788219324898_6116544399704763552_n_b223fb90-210e-4257-b74d-54db7183e1f0.jpg?v=1756882061"}  },
+      { value: "professional", label: "Professional & polished", vibe: "professional", keywords: ["professional", "classic", "crew", "side"], images: {
+        masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/brushed-back-hairstyle-for-men.webp?v=1765268282", 
+        feminine: "https://i.pinimg.com/736x/35/66/a0/3566a02c87a625fec8af5765fc637247.jpg"}  },
+      { value: "playful", label: "Playful & fun", vibe: "playful", keywords: ["playful", "frosted", "dyed", "shag"], images: {
+        masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/curly-mullet-hairstyle-men.webp?v=1767776997", 
+        feminine: "https://content.latest-hairstyles.com/wp-content/uploads/galleries/10/07/playful-y2k-double-bun-hairstyle-with-curly-bangs.jpg"}  },
+      { value: "sporty", label: "Sporty", vibe: "sporty", keywords: ["sporty", "athletic", "active", "gym", "practical", "short"], images: {
+        masculine: "https://www.kaya.in/media/.renditions/wysiwyg/crew-cut-with-fade-men-short-hairstyle.png", 
+        feminine: "https://www.byrdie.com/thmb/vUYwHo0_s3BtdiDaO_Uycv3mV-s=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/GettyImages-2148179033-da1fb4768c944392b21f7be1f91b5488.jpg"}  }
     ]
   },
   {
@@ -1067,7 +1097,23 @@ function reconcileLengthAnswers() {
 
 function toggleQuizOption(question, option) {
   selectQuizOption(question, option);
-  render();
+  // Always update card states in-place — never a full re-render here.
+  // A full re-render resets scroll position to 0 which causes visible jumping.
+  // Length options for later steps are computed fresh when those steps render,
+  // so there's no need to re-render the current step when style changes.
+  const selected = selectedFor(question);
+  document.querySelectorAll("[data-option-value]").forEach((btn) => {
+    const on = selected.includes(btn.dataset.optionValue);
+    btn.classList.toggle("is-on", on);
+    btn.setAttribute("aria-pressed", String(on));
+    const checkEl = btn.querySelector(".option-check");
+    if (checkEl) checkEl.innerHTML = on ? iconCheck() : "";
+  });
+  const footerSpan = document.querySelector(".quiz-footer > span");
+  if (footerSpan) {
+    const count = selected.filter((v) => v !== "__all").length || selected.length;
+    footerSpan.innerHTML = selected.length ? `<b>${count}</b> selected` : "";
+  }
 }
 
 // Returns the survey gender picked in the style question:
@@ -1463,9 +1509,12 @@ function renderQuiz() {
       </div>
 
       <div class="quiz-question">
-        <p class="eyebrow">${String(state.quizStep + 1).padStart(2, "0")} / ${String(QUIZ.length).padStart(2, "0")}</p>
         <h1>${question.title}</h1>
         ${question.sub ? `<p>${question.sub}</p>` : ""}
+        <div class="quiz-question-buttons">
+          ${state.quizStep > 0 ? `<button class="secondary-btn" id="quiz-back-btn" type="button">Back</button>` : ""}
+          <button class="primary-btn" id="quiz-next-btn" type="button">${isLast ? "Show me results" : "Continue"} ${iconArrow()}</button>
+        </div>
       </div>
 
       ${isSlider ? renderSliderQuestion(question, selected) : isScale ? renderScaleQuestion(question, selected) : `
@@ -1477,11 +1526,7 @@ function renderQuiz() {
       ${question.id === "face" && selected.includes("unknown") ? renderFaceHelper() : ""}
 
       <div class="quiz-footer">
-        <span>${selected.length ? `<b>${selected.filter((value) => value !== "__all").length || selected.length}</b> selected` : (isScale || isSlider) ? "Select your answer" : "Select any that apply"}</span>
-        <div class="quiz-footer-buttons">
-          ${state.quizStep > 0 ? `<button class="secondary-btn" id="quiz-back-btn" type="button">Back</button>` : ""}
-          <button class="primary-btn" id="quiz-next-btn" type="button">${isLast ? "Show me results" : "Continue"} ${iconArrow()}</button>
-        </div>
+        <span>${selected.length ? `<b>${selected.filter((value) => value !== "__all").length || selected.length}</b> selected` : ""}</span>
       </div>
     </section>
   `;
@@ -1507,7 +1552,44 @@ function renderQuiz() {
         if (option) toggleQuizOption(question, option);
       });
     });
+    wireCarouselDots(question);
   }
+}
+
+function isMobileViewport() {
+  return window.matchMedia("(max-width: 820px)").matches;
+}
+
+function wireCarouselDots(question) {
+  if (!isMobileViewport() || question.layout === "text" || question.layout === "slider" || question.layout === "scale") return;
+
+  const grid = document.querySelector(".option-grid:not(.is-text)");
+  if (!grid) return;
+
+  const cards = Array.from(grid.querySelectorAll(".option-card"));
+  if (cards.length < 2) return;
+
+  // Insert dot container right after the grid
+  const dotsEl = document.createElement("div");
+  dotsEl.className = "carousel-dots";
+  dotsEl.setAttribute("aria-hidden", "true");
+  cards.forEach((_, i) => {
+    const dot = document.createElement("span");
+    dot.className = "carousel-dot" + (i === 0 ? " is-active" : "");
+    dotsEl.appendChild(dot);
+  });
+  grid.after(dotsEl);
+
+  const dots = Array.from(dotsEl.querySelectorAll(".carousel-dot"));
+
+  function updateDots() {
+    const scrollLeft = grid.scrollLeft;
+    const cardWidth = cards[0].offsetWidth + 12; // gap = 12px
+    const index = Math.round(scrollLeft / cardWidth);
+    dots.forEach((d, i) => d.classList.toggle("is-active", i === index));
+  }
+
+  grid.addEventListener("scroll", updateDots, { passive: true });
 }
 
 function renderOption(question, option, on) {
