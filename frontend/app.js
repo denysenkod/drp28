@@ -1699,11 +1699,12 @@ function sliderProductsColsClass(products) {
   return `slider-products--cols-${cols}`;
 }
 
-function sliderProductsHtml(products) {
+function sliderProductsHtml(products, activeIds) {
   return (products || []).map((product) => {
     const src = (product.images && product.images[0]) || "";
+    const isActive = !activeIds || activeIds.has(product.id);
     return `
-      <a class="slider-product" href="?product=${product.id}" data-product="${product.id}">
+      <a class="slider-product${isActive ? "" : " is-greyed"}" href="?product=${product.id}" data-product="${product.id}">
         <span class="slider-product-thumb">
           ${src ? `<img src="${escapeAttr(src)}" alt="${escapeAttr(product.name)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}
         </span>
@@ -1722,11 +1723,13 @@ function renderSliderQuestion(question, selected) {
     : -1;
   const hasSelection = selectedIndex !== -1;
   const selectedOption = hasSelection ? regularOptions[selectedIndex] : null;
-  const isLowMaintenance = selectedOption && selectedOption.value === "low";
   const sliderValue = hasSelection ? selectedIndex : Math.floor((regularOptions.length - 1) / 2);
   const displayLabel = hasSelection ? regularOptions[selectedIndex].label : "Slide to answer";
-  const displayProducts = hasSelection && !isLowMaintenance ? sliderOptionProducts(regularOptions[selectedIndex]) : [];
-  const hasProducts = displayProducts.length > 0;
+  // All products from the highest level (superset of all lower levels)
+  const allProducts = sliderOptionProducts(regularOptions[regularOptions.length - 1]);
+  const activeIds = hasSelection && selectedOption.value !== "low"
+    ? new Set(selectedOption.products || [])
+    : new Set();
 
   return `
     <div class="slider-question-wrap">
@@ -1747,11 +1750,8 @@ function renderSliderQuestion(question, selected) {
         >
         <span class="slider-end-label">${escapeHtml(regularOptions[regularOptions.length - 1].label)}</span>
       </div>
-      <p class="slider-info-text slider-guidance" ${!hasSelection ? "" : "hidden"}>Check maintenance options to see appropriate products</p>
-      <p class="slider-info-text slider-guidance-alt" ${isLowMaintenance ? "" : "hidden"}>Check other options to see hair products</p>
-      <p class="slider-info-text slider-description" ${hasProducts ? "" : "hidden"}>Maitanence-level equivalent hair products: </p>
-      <div class="slider-products ${sliderProductsColsClass(displayProducts)}" ${hasProducts ? "" : "hidden"}>${sliderProductsHtml(displayProducts)}</div>
-      <p class="slider-product-hint" ${hasProducts ? "" : "hidden"}>Tap a product to learn more about it</p>
+      <div class="slider-products ${sliderProductsColsClass(allProducts)}">${sliderProductsHtml(allProducts, activeIds)}</div>
+      <p class="slider-product-hint">Tap a product to learn more about it</p>
       ${exclusiveOption ? `
         <div class="scale-skip-row">
           <button
@@ -1772,10 +1772,6 @@ function wireSliderQuestion(question) {
   const regularOptions = question.options.filter((o) => !o.exclusive);
   const slider = document.getElementById("quiz-slider-input");
   const display = document.querySelector(".slider-value-display");
-  const guidanceDiv = document.querySelector(".slider-guidance");
-  const guidanceAltDiv = document.querySelector(".slider-guidance-alt");
-  const descDiv = document.querySelector(".slider-description");
-  const hintDiv = document.querySelector(".slider-product-hint");
   const productsDiv = document.querySelector(".slider-products");
 
   // Make the (possibly pre-selected) answer's product thumbnails tappable.
@@ -1787,22 +1783,12 @@ function wireSliderQuestion(question) {
       if (option && display) {
         display.textContent = option.label;
         display.classList.remove("is-placeholder");
-        const isLowMaintenance = option.value === "low";
-        const products = !isLowMaintenance ? sliderOptionProducts(option) : [];
-        const hasProducts = products.length > 0;
-        if (guidanceDiv) guidanceDiv.hidden = true;
-        if (guidanceAltDiv) guidanceAltDiv.hidden = !isLowMaintenance;
-        if (descDiv) {
-          descDiv.textContent = hasProducts ? "Maitanence-level equivalent hair products: " : "";
-          descDiv.hidden = !hasProducts;
-        }
+        const activeIds = option.value !== "low" ? new Set(option.products || []) : new Set();
         if (productsDiv) {
-          productsDiv.innerHTML = sliderProductsHtml(products);
-          productsDiv.className = `slider-products ${sliderProductsColsClass(products)}`;
-          productsDiv.hidden = !hasProducts;
-          wireProductLinks(productsDiv);
+          productsDiv.querySelectorAll(".slider-product").forEach((el) => {
+            el.classList.toggle("is-greyed", !activeIds.has(el.dataset.product));
+          });
         }
-        if (hintDiv) hintDiv.hidden = !hasProducts;
       }
     });
     slider.addEventListener("change", () => {
