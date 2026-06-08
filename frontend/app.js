@@ -1506,7 +1506,7 @@ function renderWelcome() {
     writeStored(STEP_KEY, state.quizStep);
     setView("quiz");
   });
-  $("#have-mind-btn").addEventListener("click", () => setView("search"));
+  $("#have-mind-btn").addEventListener("click", () => setView("results"));
   $("#build-brief-btn").addEventListener("click", () => setView("brief"));
 }
 
