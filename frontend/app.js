@@ -232,7 +232,7 @@ const PRODUCTS = {
       "Scrunch upward toward the scalp to encourage the curl pattern.",
       "Air-dry or diffuse on low heat - don't touch it while it sets."
     ],
-    images: ["https://www.boucleme.co.uk/cdn/shop/products/Texture-Resize-New-Website_0000s_0008_Curl-Cream_38362f76-0fcd-4fb6-96db-d48e34789a26.png?v=1718805205&width=1946", "https://joanmorais.com/wp-content/uploads/2023/12/curl-cream.png"],
+    images: ["https://www.boucleme.co.uk/cdn/shop/products/Texture-Resize-New-Website_0000s_0008_Curl-Cream_38362f76-0fcd-4fb6-96db-d48e34789a26.png?v=1718805205&width=1946"],
     after: "https://slickgorilla.co.uk/cdn/shop/files/slick-gorilla-curl-cream-1228741454.jpg?v=1774957054&width=1080"
   },
   "sea-salt-spray": {
