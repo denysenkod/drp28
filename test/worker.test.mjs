@@ -123,12 +123,14 @@ function createMockD1() {
             const existing = tables.style_briefs.find((row) => row.session_id === values[1]);
             if (existing) {
               existing.items_json = values[2];
+              existing.details_json = values[3];
               existing.updated_at = now();
             } else {
               tables.style_briefs.push({
                 id: values[0],
                 session_id: values[1],
                 items_json: values[2],
+                details_json: values[3],
                 created_at: now(),
                 updated_at: now()
               });
@@ -580,7 +582,8 @@ test('saves a shareable brief, reads it back, and accepts reviewer feedback', as
       items: [
         { id: 'item-1', partition: 'me', imageUrl: 'data:image/webp;base64,aaa', rating: 4, annotation: 'current cut' },
         { id: 'item-2', partition: 'references', imageUrl: 'https://example.com/ref.webp', rating: 5, annotation: 'love this' }
-      ]
+      ],
+      details: { colour: 'Platinum blonde', allergies: 'PPD', previousTreatments: 'box dye', damage: 'dry ends', notes: 'keep length' }
     })
   }), env);
   const saved = await saveResponse.json();
@@ -588,6 +591,8 @@ test('saves a shareable brief, reads it back, and accepts reviewer feedback', as
   assert.equal(saveResponse.status, 201);
   assert.equal(saved.item.sessionId, 'session-owner');
   assert.equal(saved.item.items.length, 2);
+  assert.equal(saved.item.details.colour, 'Platinum blonde');
+  assert.equal(saved.item.details.allergies, 'PPD');
   assert.deepEqual(saved.item.feedback, []);
   const briefId = saved.item.id;
   assert.ok(briefId);
@@ -622,6 +627,7 @@ test('saves a shareable brief, reads it back, and accepts reviewer feedback', as
 
   assert.equal(getResponse.status, 200);
   assert.equal(got.item.id, briefId);
+  assert.equal(typeof got.item.details, 'object');
   assert.equal(got.item.feedback.length, 1);
   assert.equal(got.item.feedback[0].note, 'Great starting point');
 });

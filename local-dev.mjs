@@ -517,12 +517,14 @@ async function handleApi(req, res, url) {
       }
 
       const sessionId = body.sessionId.trim();
+      const details = parseRecord(body.details);
       let brief = store.briefs.find((item) => item.sessionId === sessionId);
       if (brief) {
         brief.items = body.items;
+        brief.details = details;
         brief.updatedAt = new Date().toISOString();
       } else {
-        brief = createItem({ sessionId, items: body.items, updatedAt: new Date().toISOString() });
+        brief = createItem({ sessionId, items: body.items, details, updatedAt: new Date().toISOString() });
         store.briefs.unshift(brief);
       }
 
