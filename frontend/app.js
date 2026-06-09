@@ -495,14 +495,14 @@ const QUIZ = [
         masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/liberty-spikes-hairstyle-men.webp?v=1758794959", 
         feminine: "https://content.latest-hairstyles.com/wp-content/uploads/edgy-haircuts-for-women-1200x900.jpg"}  },
       { value: "soft", label: "Romantic", vibe: "soft", keywords: ["soft", "curtain", "fringe", "long"], images: {
-        masculine: "https://i.pinimg.com/736x/80/f6/c2/80f6c2c04c873b8a2466484c6f50539c.jpg", 
+        masculine: "https://i.pinimg.com/236x/0d/4a/0a/0d4a0a65aa47fc1010e099c67b54bd90.jpg", 
         feminine: "https://hairstyles.thehairstyler.com/hairstyle_views/front_view_images/14314/original/long-hairstyle-with-curls.jpg"}  },
       { value: "low-maintanence", label: "Effortless", vibe: "low-maintanence", keywords: ["natural", "effortless", "grow out", "wavy", "low-maintanence"], images: {
         masculine: "https://www.byrdie.com/thmb/u4lP1HcP1E12OnhYVHq4H56lowM=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc():format(webp)/Ryan-Gosling-Lead-c41f2cebb31d405ebd197955987481d9-a0f47d9bbc3f4dd88fe4cdffbbb24f36.jpeg", 
         feminine: "https://toallmyblackgirls.com/cdn/shop/articles/446355566_988788219324898_6116544399704763552_n_b223fb90-210e-4257-b74d-54db7183e1f0.jpg?v=1756882061"}  },
       { value: "professional", label: "Professional", vibe: "professional", keywords: ["professional", "classic", "crew", "side"], images: {
         masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/brushed-back-hairstyle-for-men.webp?v=1765268282", 
-        feminine: "https://i.pinimg.com/736x/35/66/a0/3566a02c87a625fec8af5765fc637247.jpg"}  },
+        feminine: "https://i.pinimg.com/236x/22/c1/56/22c156d1db360c4616bf58c00d15e6c3.jpg"}  },
       { value: "playful", label: "Playful", vibe: "playful", keywords: ["playful", "frosted", "dyed", "shag"], images: {
         masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/curly-mullet-hairstyle-men.webp?v=1767776997", 
         feminine: "https://content.latest-hairstyles.com/wp-content/uploads/galleries/10/07/playful-y2k-double-bun-hairstyle-with-curly-bangs.jpg"}  },
@@ -2167,10 +2167,16 @@ function wireDiscoveryControls() {
 function renderCurrentDiscoveryView({ preserveFilterScroll = false } = {}) {
   const panel = $(".answer-filter-panel");
   const scrollTop = preserveFilterScroll && panel ? panel.scrollTop : null;
+  const refineRow = $(".refine-row");
+  const refineScrollLeft = refineRow ? refineRow.scrollLeft : 0;
   renderResultsPage();
   if (scrollTop !== null) {
     const nextPanel = $(".answer-filter-panel");
     if (nextPanel) nextPanel.scrollTop = scrollTop;
+  }
+  if (refineScrollLeft > 0) {
+    const nextRefineRow = $(".refine-row");
+    if (nextRefineRow) nextRefineRow.scrollTo({ left: refineScrollLeft, behavior: "instant" });
   }
 }
 

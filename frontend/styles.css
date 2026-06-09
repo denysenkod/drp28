@@ -442,7 +442,7 @@ body[data-view="quiz"] .app-shell {
 }
 
 .option-grid.is-collage .option-media {
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 4 / 5;
 }
 
 .option-card {
@@ -1674,6 +1674,7 @@ body[data-view="quiz"] .app-shell {
   gap: 12px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   padding-bottom: 2px;
@@ -1854,7 +1855,7 @@ body[data-view="quiz"] .app-shell {
   }
 
   .option-grid.is-collage .option-media {
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 4 / 5;
   }
 
   .option-body {
@@ -2550,6 +2551,18 @@ body[data-view="quiz"] .app-shell {
     scroll-snap-stop: always;
   }
 
+  /* Refine filter pills: 3-stop swipeable carousel */
+  .refine-pill {
+    flex: 0 0 72vw;
+    scroll-snap-stop: always;
+  }
+
+  /* Trailing spacer so the last pill can scroll all the way to the start position */
+  .refine-row::after {
+    content: '';
+    flex: 0 0 28vw;
+  }
+
   .option-grid.is-collage {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -2560,7 +2573,7 @@ body[data-view="quiz"] .app-shell {
   }
 
   .option-grid.is-collage .option-media {
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 4 / 5;
   }
 
   .option-grid.is-text {
