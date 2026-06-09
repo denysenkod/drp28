@@ -18,7 +18,9 @@ const store = {
   gallery: [],
   quizResponses: [],
   userPhotos: [],
-  favorites: []
+  favorites: [],
+  briefs: [],
+  briefFeedback: []
 };
 
 const MIME_TYPES = {
@@ -498,6 +500,83 @@ async function handleApi(req, res, url) {
         (item) => item.sessionId !== sessionId.trim() || item.imageId !== imageId.trim()
       );
       sendJson(res, 200, { ok: true });
+      return true;
+    }
+  }
+
+  if (url.pathname === '/api/briefs') {
+    if (req.method === 'POST') {
+      const body = await readJson(req);
+      if (!body || typeof body.sessionId !== 'string' || !body.sessionId.trim()) {
+        sendJson(res, 400, { ok: false, error: 'Style brief sessionId is required.' });
+        return true;
+      }
+      if (!Array.isArray(body.items)) {
+        sendJson(res, 400, { ok: false, error: 'Style brief items must be an array.' });
+        return true;
+      }
+
+      const sessionId = body.sessionId.trim();
+      let brief = store.briefs.find((item) => item.sessionId === sessionId);
+      if (brief) {
+        brief.items = body.items;
+        brief.updatedAt = new Date().toISOString();
+      } else {
+        brief = createItem({ sessionId, items: body.items, updatedAt: new Date().toISOString() });
+        store.briefs.unshift(brief);
+      }
+
+      sendJson(res, 201, { ok: true, item: { ...brief, feedback: [] } });
+      return true;
+    }
+  }
+
+  const briefFeedbackMatch = url.pathname.match(/^\/api\/briefs\/([^/]+)\/feedback$/);
+  if (briefFeedbackMatch) {
+    if (req.method === 'POST') {
+      const id = decodeURIComponent(briefFeedbackMatch[1]);
+      const brief = store.briefs.find((item) => item.id === id);
+      if (!brief) {
+        sendJson(res, 404, { ok: false, error: 'Style brief not found.' });
+        return true;
+      }
+
+      const body = await readJson(req);
+      const note = typeof body?.note === 'string' ? body.note.trim() : '';
+      const hasRating = body && body.rating !== null && body.rating !== undefined && body.rating !== '';
+      const rating = hasRating ? Math.max(0, Math.min(5, Math.round(Number(body.rating) || 0))) : null;
+
+      if (!note && rating === null) {
+        sendJson(res, 400, { ok: false, error: 'Feedback needs a note or a rating.' });
+        return true;
+      }
+
+      const author = typeof body?.author === 'string' && body.author.trim()
+        ? body.author.trim().slice(0, 80)
+        : 'Reviewer';
+      const itemId = typeof body?.itemId === 'string' && body.itemId.trim() ? body.itemId.trim() : null;
+      const feedback = createItem({ briefId: id, itemId, author, rating, note });
+      store.briefFeedback.push(feedback);
+
+      sendJson(res, 201, { ok: true, item: feedback });
+      return true;
+    }
+  }
+
+  const briefMatch = url.pathname.match(/^\/api\/briefs\/([^/]+)$/);
+  if (briefMatch) {
+    if (req.method === 'GET') {
+      const id = decodeURIComponent(briefMatch[1]);
+      const brief = store.briefs.find((item) => item.id === id);
+      if (!brief) {
+        sendJson(res, 404, { ok: false, error: 'Style brief not found.' });
+        return true;
+      }
+
+      const feedback = store.briefFeedback
+        .filter((item) => item.briefId === id)
+        .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+      sendJson(res, 200, { ok: true, item: { ...brief, feedback } });
       return true;
     }
   }
