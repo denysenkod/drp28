@@ -180,6 +180,29 @@ function rowToFavoriteImage(row: any): Record<string, unknown> {
   };
 }
 
+function rowToBriefFeedback(row: any): Record<string, unknown> {
+  return {
+    id: row.id,
+    briefId: row.brief_id,
+    itemId: row.item_id || null,
+    author: row.author,
+    rating: row.rating === null || row.rating === undefined ? null : Number(row.rating),
+    note: row.note || '',
+    createdAt: row.created_at
+  };
+}
+
+function rowToStyleBrief(row: any, feedback: any = []): Record<string, unknown> {
+  return {
+    id: row.id,
+    sessionId: row.session_id,
+    items: decodeJson(row.items_json, []),
+    feedback: feedback.map(rowToBriefFeedback),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+}
+
 async function listGallery(db: any): Promise<Response> {
   const { results } = await db
     .prepare('SELECT * FROM gallery_images ORDER BY created_at DESC')
@@ -458,6 +481,107 @@ async function deleteFavoriteImage(request: Request, url: URL, db: any): Promise
   return json({ ok: true });
 }
 
+// Upsert the owner's brief keyed by their session. The brief id is a stable
+// share token: a brand-new id is only used the first time a session saves; on
+// later saves the ON CONFLICT branch keeps the existing id so the share link
+// never changes.
+async function saveBrief(request: Request, db: any): Promise<Response> {
+  const body = await readJson(request);
+
+  if (!body || typeof body.sessionId !== 'string' || !body.sessionId.trim()) {
+    return error('Style brief sessionId is required.');
+  }
+
+  if (!Array.isArray(body.items)) {
+    return error('Style brief items must be an array.');
+  }
+
+  const sessionId = body.sessionId.trim();
+  const itemsJson = JSON.stringify(body.items);
+  const id = crypto.randomUUID();
+
+  await db
+    .prepare(
+      `INSERT INTO style_briefs (id, session_id, items_json, updated_at)
+       VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+       ON CONFLICT(session_id) DO UPDATE SET
+         items_json = excluded.items_json,
+         updated_at = CURRENT_TIMESTAMP`
+    )
+    .bind(id, sessionId, itemsJson)
+    .run();
+
+  const row = await db
+    .prepare('SELECT * FROM style_briefs WHERE session_id = ?')
+    .bind(sessionId)
+    .first();
+
+  return json({ ok: true, item: rowToStyleBrief(row) }, { status: 201 });
+}
+
+// Public read of a shared brief: returns the owner's items plus any reviewer
+// feedback. Used both by the owner (to confirm a share) and by reviewers.
+async function getBrief(db: any, id: string): Promise<Response> {
+  const row = await db
+    .prepare('SELECT * FROM style_briefs WHERE id = ?')
+    .bind(id)
+    .first();
+
+  if (!row) {
+    return error('Style brief not found.', 404);
+  }
+
+  const { results } = await db
+    .prepare('SELECT * FROM brief_feedback WHERE brief_id = ? ORDER BY created_at ASC')
+    .bind(id)
+    .all();
+
+  return json({ ok: true, item: rowToStyleBrief(row, results || []) });
+}
+
+// A reviewer appends feedback to a shared brief. Stored in its own table so the
+// owner's auto-save never overwrites it. Feedback needs a note, a rating, or both.
+async function addBriefFeedback(request: Request, db: any, id: string): Promise<Response> {
+  const brief = await db
+    .prepare('SELECT id FROM style_briefs WHERE id = ?')
+    .bind(id)
+    .first();
+
+  if (!brief) {
+    return error('Style brief not found.', 404);
+  }
+
+  const body = await readJson(request);
+  const note = typeof body?.note === 'string' ? body.note.trim() : '';
+  const hasRating = body && body.rating !== null && body.rating !== undefined && body.rating !== '';
+  const rating = hasRating ? Math.max(0, Math.min(5, Math.round(Number(body.rating) || 0))) : null;
+
+  if (!note && rating === null) {
+    return error('Feedback needs a note or a rating.');
+  }
+
+  const author = typeof body?.author === 'string' && body.author.trim()
+    ? body.author.trim().slice(0, 80)
+    : 'Reviewer';
+  const itemId = typeof body?.itemId === 'string' && body.itemId.trim() ? body.itemId.trim() : null;
+  const feedbackId = crypto.randomUUID();
+
+  await db
+    .prepare(
+      `INSERT INTO brief_feedback (id, brief_id, item_id, author, rating, note)
+       VALUES (?, ?, ?, ?, ?, ?)`
+    )
+    .bind(feedbackId, id, itemId, author, rating, note)
+    .run();
+
+  const row = await db
+    .prepare('SELECT * FROM brief_feedback WHERE id = ?')
+    .bind(feedbackId)
+    .first();
+
+  return json({ ok: true, item: rowToBriefFeedback(row) }, { status: 201 });
+}
+
 async function handleApi(request: Request, env: Env, url: URL): Promise<Response | null> {
   if (url.pathname === '/api/status') {
     return json({
@@ -520,6 +644,22 @@ async function handleApi(request: Request, env: Env, url: URL): Promise<Response
     if (request.method === 'GET') return listFavoriteImages(url, db);
     if (request.method === 'POST') return createFavoriteImage(request, db);
     if (request.method === 'DELETE') return deleteFavoriteImage(request, url, db);
+  }
+
+  if (url.pathname === '/api/briefs') {
+    if (request.method === 'POST') return saveBrief(request, db);
+  }
+
+  const briefFeedbackMatch = url.pathname.match(/^\/api\/briefs\/([^/]+)\/feedback$/);
+  if (briefFeedbackMatch) {
+    if (request.method === 'POST') {
+      return addBriefFeedback(request, db, decodeURIComponent(briefFeedbackMatch[1]));
+    }
+  }
+
+  const briefMatch = url.pathname.match(/^\/api\/briefs\/([^/]+)$/);
+  if (briefMatch) {
+    if (request.method === 'GET') return getBrief(db, decodeURIComponent(briefMatch[1]));
   }
 
   return error('API route not found.', 404);

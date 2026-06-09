@@ -38,7 +38,9 @@ function createMockD1() {
     gallery_images: [],
     quiz_responses: [],
     user_photos: [],
-    favorite_images: []
+    favorite_images: [],
+    style_briefs: [],
+    brief_feedback: []
   };
 
   const clone = (row) => row ? { ...row } : null;
@@ -117,6 +119,34 @@ function createMockD1() {
             );
           }
 
+          if (sql.includes('INSERT INTO style_briefs')) {
+            const existing = tables.style_briefs.find((row) => row.session_id === values[1]);
+            if (existing) {
+              existing.items_json = values[2];
+              existing.updated_at = now();
+            } else {
+              tables.style_briefs.push({
+                id: values[0],
+                session_id: values[1],
+                items_json: values[2],
+                created_at: now(),
+                updated_at: now()
+              });
+            }
+          }
+
+          if (sql.includes('INSERT INTO brief_feedback')) {
+            tables.brief_feedback.push({
+              id: values[0],
+              brief_id: values[1],
+              item_id: values[2],
+              author: values[3],
+              rating: values[4],
+              note: values[5],
+              created_at: now()
+            });
+          }
+
           if (sql.includes('DELETE FROM gallery_images WHERE id = ?')) {
             tables.gallery_images = tables.gallery_images.filter((row) => row.id !== values[0]);
           }
@@ -157,6 +187,18 @@ function createMockD1() {
             ));
           }
 
+          if (sql.includes('FROM style_briefs WHERE session_id = ?')) {
+            return clone(tables.style_briefs.find((row) => row.session_id === values[0]));
+          }
+
+          if (sql.includes('FROM style_briefs WHERE id = ?')) {
+            return clone(tables.style_briefs.find((row) => row.id === values[0]));
+          }
+
+          if (sql.includes('FROM brief_feedback WHERE id = ?')) {
+            return clone(tables.brief_feedback.find((row) => row.id === values[0]));
+          }
+
           return null;
         },
         async all() {
@@ -192,6 +234,15 @@ function createMockD1() {
             return {
               results: orderByCreatedAt(tables.favorite_images)
                 .filter((row) => row.session_id === values[0])
+                .map(clone)
+            };
+          }
+
+          if (sql.includes('FROM brief_feedback WHERE brief_id = ?')) {
+            return {
+              results: tables.brief_feedback
+                .filter((row) => row.brief_id === values[0])
+                .sort((a, b) => a.created_at.localeCompare(b.created_at))
                 .map(clone)
             };
           }
@@ -515,6 +566,84 @@ test('stores and removes favorite images in D1', async () => {
   const empty = await emptyResponse.json();
 
   assert.equal(empty.items.length, 0);
+});
+
+test('saves a shareable brief, reads it back, and accepts reviewer feedback', async () => {
+  const { default: worker } = await loadWorker();
+  const env = await createAssetEnv();
+
+  // Owner saves their brief.
+  const saveResponse = await worker.fetch(new Request('https://example.com/api/briefs', {
+    method: 'POST',
+    body: JSON.stringify({
+      sessionId: 'session-owner',
+      items: [
+        { id: 'item-1', partition: 'me', imageUrl: 'data:image/webp;base64,aaa', rating: 4, annotation: 'current cut' },
+        { id: 'item-2', partition: 'references', imageUrl: 'https://example.com/ref.webp', rating: 5, annotation: 'love this' }
+      ]
+    })
+  }), env);
+  const saved = await saveResponse.json();
+
+  assert.equal(saveResponse.status, 201);
+  assert.equal(saved.item.sessionId, 'session-owner');
+  assert.equal(saved.item.items.length, 2);
+  assert.deepEqual(saved.item.feedback, []);
+  const briefId = saved.item.id;
+  assert.ok(briefId);
+
+  // Re-saving the same session keeps the same share id (stable link).
+  const resaveResponse = await worker.fetch(new Request('https://example.com/api/briefs', {
+    method: 'POST',
+    body: JSON.stringify({
+      sessionId: 'session-owner',
+      items: [{ id: 'item-1', partition: 'me', rating: 3, annotation: 'updated' }]
+    })
+  }), env);
+  const resaved = await resaveResponse.json();
+  assert.equal(resaved.item.id, briefId);
+  assert.equal(resaved.item.items.length, 1);
+
+  // A reviewer opens the link and adds feedback.
+  const feedbackResponse = await worker.fetch(new Request(`https://example.com/api/briefs/${briefId}/feedback`, {
+    method: 'POST',
+    body: JSON.stringify({ author: 'Stylist', itemId: 'item-1', rating: 4, note: 'Great starting point' })
+  }), env);
+  const feedback = await feedbackResponse.json();
+
+  assert.equal(feedbackResponse.status, 201);
+  assert.equal(feedback.item.author, 'Stylist');
+  assert.equal(feedback.item.itemId, 'item-1');
+  assert.equal(feedback.item.rating, 4);
+
+  // Reading the brief returns items plus the feedback.
+  const getResponse = await worker.fetch(new Request(`https://example.com/api/briefs/${briefId}`), env);
+  const got = await getResponse.json();
+
+  assert.equal(getResponse.status, 200);
+  assert.equal(got.item.id, briefId);
+  assert.equal(got.item.feedback.length, 1);
+  assert.equal(got.item.feedback[0].note, 'Great starting point');
+});
+
+test('rejects empty feedback and missing briefs', async () => {
+  const { default: worker } = await loadWorker();
+  const env = await createAssetEnv();
+
+  const missing = await worker.fetch(new Request('https://example.com/api/briefs/nope'), env);
+  assert.equal(missing.status, 404);
+
+  const save = await worker.fetch(new Request('https://example.com/api/briefs', {
+    method: 'POST',
+    body: JSON.stringify({ sessionId: 'session-x', items: [] })
+  }), env);
+  const saved = await save.json();
+
+  const empty = await worker.fetch(new Request(`https://example.com/api/briefs/${saved.item.id}/feedback`, {
+    method: 'POST',
+    body: JSON.stringify({ note: '   ' })
+  }), env);
+  assert.equal(empty.status, 400);
 });
 
 test('returns 404 for unknown routes', async () => {

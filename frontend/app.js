@@ -2,7 +2,8 @@
 const API = {
   gallery: "/api/gallery",
   favorites: "/api/favorites",
-  userPhotos: "/api/user-photos"
+  userPhotos: "/api/user-photos",
+  briefs: "/api/briefs"
 };
 
 const SESSION_KEY = "drp28.frontend.sessionId";
@@ -11,6 +12,8 @@ const ANSWERS_KEY = "drp28.frontend.answers";
 const STEP_KEY = "drp28.frontend.quizStep";
 const PREV_VIEW_KEY = "drp28.frontend.prevView";
 const BRIEF_KEY = "drp28.frontend.brief";
+const BRIEF_ID_KEY = "drp28.frontend.briefId";
+const REVIEWER_NAME_KEY = "drp28.frontend.reviewerName";
 
 function readStored(key, fallback) {
   try {
@@ -80,6 +83,10 @@ function iconPlus() {
 
 function iconStar() {
   return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.6l2.6 5.27 5.82.85-4.21 4.1.99 5.79L12 16.86l-5.2 2.75.99-5.79-4.21-4.1 5.82-.85z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+}
+
+function iconShare() {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3" ${iconAttrs}/><circle cx="6" cy="12" r="3" ${iconAttrs}/><circle cx="18" cy="19" r="3" ${iconAttrs}/><path d="m8.6 13.5 6.8 3.98M15.4 6.5 8.6 10.49" ${iconAttrs}/></svg>`;
 }
 
 function textureIcon(kind) {
@@ -876,7 +883,13 @@ const state = {
   searchQuery: "",
   favourites: new Set(),
   brief: readStored(BRIEF_KEY, []),
+  briefId: readStored(BRIEF_ID_KEY, null),
   briefPickerOpen: false,
+  shareStatus: "",
+  sharedBriefId: null,
+  sharedBrief: null,
+  sharedBriefError: false,
+  reviewerName: readStored(REVIEWER_NAME_KEY, ""),
   uploadedPhotoName: null,
   filterPanelOpen: false,
   openFilterGroups: new Set(),
@@ -1466,6 +1479,7 @@ function render() {
   else if (state.view === "search") renderSearch();
   else if (state.view === "results") renderResultsPage();
   else if (state.view === "brief") renderBrief();
+  else if (state.view === "shared") renderSharedBrief();
   else renderWelcome();
 }
 
@@ -2346,11 +2360,318 @@ function renderFavourites() {
 // Every item is classified with the same rubric (a 5-star rating and free-text
 // notes). Photos are added straight into a partition via that partition's own
 // add tile, so the source of the upload decides where it lands.
-// The brief lives in localStorage so it survives reloads without a backend.
+// The brief lives in localStorage so it survives reloads, and is mirrored to the
+// backend (debounced) so the owner can share a link that a stylist can review.
 function setBrief(next) {
   state.brief = next;
   writeStored(BRIEF_KEY, next);
   updateBriefCount();
+  scheduleBriefSync();
+}
+
+// ---------- Sharing the brief ----------
+// Every edit auto-saves to the server so the share link always reflects the
+// latest state ("live brief"). Saves are debounced to avoid a request per
+// keystroke; the server upserts by session so the share id (link) stays stable.
+let briefSyncTimer = null;
+let briefSyncInFlight = false;
+let briefSyncQueued = false;
+
+function scheduleBriefSync() {
+  if (briefSyncTimer) clearTimeout(briefSyncTimer);
+  briefSyncTimer = setTimeout(() => {
+    briefSyncTimer = null;
+    syncBrief();
+  }, 800);
+}
+
+async function syncBrief() {
+  if (briefSyncInFlight) {
+    briefSyncQueued = true;
+    return null;
+  }
+  briefSyncInFlight = true;
+  try {
+    const data = await apiJson(API.briefs, {
+      method: "POST",
+      body: JSON.stringify({ sessionId: state.sessionId, items: state.brief })
+    });
+    if (data.item?.id && data.item.id !== state.briefId) {
+      state.briefId = data.item.id;
+      writeStored(BRIEF_ID_KEY, state.briefId);
+    }
+    return data.item;
+  } catch {
+    return null;
+  } finally {
+    briefSyncInFlight = false;
+    if (briefSyncQueued) {
+      briefSyncQueued = false;
+      syncBrief();
+    }
+  }
+}
+
+// Force a save (flushing any pending debounce) and return the share id. Used by
+// the Share button so the link reflects the very latest edits before copying.
+async function flushBriefSync() {
+  if (briefSyncTimer) {
+    clearTimeout(briefSyncTimer);
+    briefSyncTimer = null;
+  }
+  await syncBrief();
+  return state.briefId;
+}
+
+function briefShareLink() {
+  if (!state.briefId) return "";
+  return `${window.location.origin}/?brief=${encodeURIComponent(state.briefId)}`;
+}
+
+async function handleBriefShare() {
+  setShareStatus("Saving…");
+  let id = state.briefId;
+  try {
+    id = await flushBriefSync();
+  } catch {
+    id = state.briefId;
+  }
+  if (!id) {
+    setShareStatus("Couldn't create a link. Check your connection and try again.");
+    return;
+  }
+  const link = briefShareLink();
+  let copied = false;
+  try {
+    await navigator.clipboard.writeText(link);
+    copied = true;
+  } catch {
+    copied = false;
+  }
+  setShareStatus(copied ? "Link copied to clipboard." : link, link);
+}
+
+function setShareStatus(message, link = "") {
+  state.shareStatus = message;
+  const node = $("#brief-share-status");
+  if (node) {
+    node.textContent = message;
+    node.hidden = !message;
+    if (link) node.dataset.link = link;
+  }
+}
+
+// ---------- Reviewing a shared brief (read-only + feedback) ----------
+// When the app is opened with a foreign ?brief=<id>, it loads that brief from
+// the server. The reviewer can read the owner's photos, ratings and notes, and
+// leave their own feedback per item.
+async function loadSharedBrief(id) {
+  state.sharedBrief = null;
+  state.sharedBriefError = false;
+  if (state.view === "shared") render();
+  try {
+    const data = await apiJson(`${API.briefs}/${encodeURIComponent(id)}`);
+    state.sharedBrief = data.item || null;
+    state.sharedBriefError = !state.sharedBrief;
+  } catch {
+    state.sharedBriefError = true;
+  }
+  if (state.view === "shared") render();
+}
+
+function feedbackForItem(itemId) {
+  const all = state.sharedBrief?.feedback || [];
+  return all.filter((entry) => (entry.itemId || null) === (itemId || null));
+}
+
+function renderStaticStars(rating) {
+  const value = Number(rating) || 0;
+  if (!value) return "";
+  return `
+    <div class="brief-stars brief-stars--static" role="img" aria-label="Rated ${value} out of 5">
+      ${[1, 2, 3, 4, 5].map((n) => `<span class="brief-star ${n <= value ? "is-on" : ""}" aria-hidden="true">${iconStar()}</span>`).join("")}
+    </div>
+  `;
+}
+
+function renderFeedbackList(list) {
+  if (!list.length) return "";
+  return `
+    <ul class="brief-feedback-list">
+      ${list.map((entry) => `
+        <li class="brief-feedback-entry">
+          <div class="brief-feedback-meta">
+            <span class="brief-feedback-author">${escapeHtml(entry.author || "Reviewer")}</span>
+            ${entry.rating ? renderStaticStars(entry.rating) : ""}
+          </div>
+          ${entry.note ? `<p class="brief-feedback-note">${escapeHtml(entry.note)}</p>` : ""}
+        </li>
+      `).join("")}
+    </ul>
+  `;
+}
+
+function renderSharedItem(item) {
+  const id = item.id || "";
+  const list = feedbackForItem(id);
+  return `
+    <article class="brief-card brief-card--review" data-shared-id="${escapeAttr(id)}">
+      <div class="brief-card-image">
+        ${item.imageUrl
+          ? `<img src="${escapeAttr(item.imageUrl)}" alt="${escapeAttr(item.name || "Reference image")}" loading="lazy" referrerpolicy="no-referrer">`
+          : `<span>${escapeHtml(item.name || "Reference")}</span>`}
+      </div>
+      <div class="brief-card-body">
+        ${renderStaticStars(item.rating)}
+        ${item.annotation ? `<p class="brief-owner-note">${escapeHtml(item.annotation)}</p>` : `<p class="brief-owner-note brief-owner-note--empty">No notes from the client.</p>`}
+        <div class="brief-feedback">
+          <p class="brief-feedback-title">Stylist feedback</p>
+          ${renderFeedbackList(list)}
+          <form class="brief-feedback-form" data-feedback-form="${escapeAttr(id)}">
+            <div class="brief-stars brief-feedback-stars" role="group" aria-label="Your rating out of 5">
+              ${[1, 2, 3, 4, 5].map((n) => `
+                <button class="brief-star" type="button" data-feedback-star="${n}" aria-label="${n} star${n > 1 ? "s" : ""}">${iconStar()}</button>
+              `).join("")}
+            </div>
+            <textarea class="brief-annotation" data-feedback-note rows="2" placeholder="Add a note for the client…"></textarea>
+            <button class="primary-btn brief-feedback-submit" type="submit">Add feedback</button>
+          </form>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function renderSharedBrief() {
+  if (state.sharedBriefError) {
+    els.app.innerHTML = `
+      <section class="brief-screen brief-screen--review">
+        <div class="screen-heading"><div>
+          <p class="eyebrow">Style brief</p>
+          <h1>Brief not found</h1>
+          <p>This link may be incorrect or the brief is no longer available.</p>
+        </div></div>
+      </section>
+    `;
+    return;
+  }
+
+  if (!state.sharedBrief) {
+    els.app.innerHTML = `
+      <section class="brief-screen brief-screen--review">
+        <div class="screen-heading"><div>
+          <p class="eyebrow">Style brief</p>
+          <h1>Loading brief…</h1>
+        </div></div>
+      </section>
+    `;
+    return;
+  }
+
+  const items = Array.isArray(state.sharedBrief.items) ? state.sharedBrief.items : [];
+  const meItems = items.filter((item) => itemPartition(item) === "me");
+  const refItems = items.filter((item) => itemPartition(item) === "references");
+
+  els.app.innerHTML = `
+    <section class="brief-screen brief-screen--review">
+      <div class="screen-heading">
+        <div>
+          <p class="eyebrow">Style brief · for review</p>
+          <h1>A client's style brief</h1>
+          <p>Photos of the client's own hair and the references they love, with their ratings and notes. Leave feedback on any item below.</p>
+        </div>
+        <label class="brief-reviewer-name">
+          <span>Your name</span>
+          <input type="text" id="reviewer-name" placeholder="e.g. Alex at the salon" value="${escapeAttr(state.reviewerName)}" maxlength="80">
+        </label>
+      </div>
+
+      <div class="brief-partitions">
+        <section class="brief-partition brief-partition--me">
+          <div class="brief-partition-head"><h2>Their hair</h2></div>
+          <div class="brief-grid">
+            ${meItems.length ? meItems.map(renderSharedItem).join("") : `<p class="brief-picker-empty">No photos of their own hair.</p>`}
+          </div>
+        </section>
+
+        <section class="brief-partition brief-partition--references">
+          <div class="brief-partition-head">
+            <p class="eyebrow">Inspiration</p>
+            <h2>References</h2>
+          </div>
+          <div class="brief-grid">
+            ${refItems.length ? refItems.map(renderSharedItem).join("") : `<p class="brief-picker-empty">No references added.</p>`}
+          </div>
+        </section>
+      </div>
+    </section>
+  `;
+
+  wireSharedBrief();
+}
+
+function wireSharedBrief() {
+  const nameInput = $("#reviewer-name");
+  if (nameInput) {
+    nameInput.addEventListener("input", () => {
+      state.reviewerName = nameInput.value;
+      writeStored(REVIEWER_NAME_KEY, state.reviewerName);
+    });
+  }
+
+  // Rating stars set a value on their form without re-rendering, so the note
+  // textarea keeps focus while the reviewer works.
+  document.querySelectorAll("[data-feedback-star]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const form = button.closest("[data-feedback-form]");
+      const value = parseInt(button.dataset.feedbackStar, 10);
+      const current = Number(form.dataset.rating) || 0;
+      const next = current === value ? 0 : value;
+      form.dataset.rating = String(next);
+      form.querySelectorAll("[data-feedback-star]").forEach((star) => {
+        star.classList.toggle("is-on", parseInt(star.dataset.feedbackStar, 10) <= next);
+      });
+    });
+  });
+
+  document.querySelectorAll("[data-feedback-form]").forEach((form) => {
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      submitBriefFeedback(form.dataset.feedbackForm, form);
+    });
+  });
+}
+
+async function submitBriefFeedback(itemId, form) {
+  const note = form.querySelector("[data-feedback-note]").value.trim();
+  const rating = Number(form.dataset.rating) || 0;
+  const submitBtn = form.querySelector(".brief-feedback-submit");
+
+  if (!note && !rating) {
+    form.classList.add("is-invalid");
+    return;
+  }
+  form.classList.remove("is-invalid");
+  if (submitBtn) submitBtn.disabled = true;
+
+  try {
+    const data = await apiJson(`${API.briefs}/${encodeURIComponent(state.sharedBriefId)}/feedback`, {
+      method: "POST",
+      body: JSON.stringify({
+        itemId,
+        author: state.reviewerName.trim() || "Reviewer",
+        rating: rating || null,
+        note
+      })
+    });
+    if (state.sharedBrief && data.item) {
+      state.sharedBrief.feedback = [...(state.sharedBrief.feedback || []), data.item];
+    }
+    render();
+  } catch {
+    if (submitBtn) submitBtn.disabled = false;
+    form.classList.add("is-invalid");
+  }
 }
 
 function updateBriefCount() {
@@ -2386,6 +2707,12 @@ function renderBrief() {
           <p class="eyebrow">Design</p>
           <h1>My style brief</h1>
           <p>Gather photos of your own hair and references on other people, pull in styles you've saved, then rate and annotate each one. Bring the whole brief to your stylist.</p>
+        </div>
+        <div class="brief-share">
+          <button class="primary-btn brief-share-btn" id="brief-share-btn" type="button" ${state.brief.length ? "" : "disabled"}>
+            ${iconShare()}<span>Share with stylist</span>
+          </button>
+          <p class="brief-share-status" id="brief-share-status" ${state.shareStatus ? "" : "hidden"}>${escapeHtml(state.shareStatus)}</p>
         </div>
       </div>
 
@@ -2533,6 +2860,10 @@ function renderBriefItem(item) {
 }
 
 function wireBrief() {
+  const shareBtn = $("#brief-share-btn");
+  if (shareBtn) {
+    shareBtn.addEventListener("click", handleBriefShare);
+  }
   // Uploads from the "Me" tile go straight into the Me partition.
   const selfInput = $("#brief-self-input");
   if (selfInput) {
@@ -2991,6 +3322,10 @@ function init() {
   } else if (urlParams.has("results")) {
     state.view = "results";
     writeStored(VIEW_KEY, "results");
+  } else if (urlParams.get("brief") && urlParams.get("brief") !== state.briefId) {
+    // A shared link to someone else's brief: open it read-only for review.
+    state.view = "shared";
+    state.sharedBriefId = urlParams.get("brief");
   } else if (urlParams.has("brief")) {
     state.view = "brief";
     writeStored(VIEW_KEY, "brief");
@@ -3002,6 +3337,7 @@ function init() {
   render();
   loadGallery();
   loadFavourites();
+  if (state.view === "shared") loadSharedBrief(state.sharedBriefId);
 }
 
 init();

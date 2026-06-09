@@ -2216,6 +2216,149 @@ body[data-view="quiz"] .app-shell {
   border-color: var(--accent);
 }
 
+/* ----- Share the brief ----- */
+.brief-share {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.brief-share-btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.brief-share-status {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+  word-break: break-all;
+}
+
+/* ----- Reviewer (read-only) brief ----- */
+.brief-reviewer-name {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 16px;
+  max-width: 320px;
+}
+
+.brief-reviewer-name span {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.brief-reviewer-name input {
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.brief-reviewer-name input:focus {
+  outline: 0;
+  border-color: var(--accent);
+}
+
+.brief-stars--static .brief-star {
+  width: 22px;
+  height: 22px;
+  cursor: default;
+}
+
+.brief-stars--static .brief-star svg {
+  width: 18px;
+  height: 18px;
+}
+
+.brief-owner-note {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.brief-owner-note--empty {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.brief-feedback {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.brief-feedback-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.brief-feedback-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.brief-feedback-entry {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+}
+
+.brief-feedback-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.brief-feedback-author {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.brief-feedback-note {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+.brief-feedback-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.brief-feedback-stars {
+  justify-content: flex-start;
+}
+
+.brief-feedback-form.is-invalid .brief-annotation {
+  border-color: #c0392b;
+}
+
 @media (max-width: 820px) {
   .topbar {
     flex-wrap: wrap;
