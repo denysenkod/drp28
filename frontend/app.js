@@ -13,7 +13,59 @@ const STEP_KEY = "drp28.frontend.quizStep";
 const PREV_VIEW_KEY = "drp28.frontend.prevView";
 const BRIEF_KEY = "drp28.frontend.brief";
 const BRIEF_ID_KEY = "drp28.frontend.briefId";
+const BRIEF_DETAILS_KEY = "drp28.frontend.briefDetails";
 const REVIEWER_NAME_KEY = "drp28.frontend.reviewerName";
+
+// Colour & consultation info that travels with the brief. "No colour treatment"
+// is the default so an untouched brief reads as natural/virgin hair.
+const NO_COLOUR_TREATMENT = "No colour treatment";
+const HAIR_COLOUR_OPTIONS = [
+  NO_COLOUR_TREATMENT,
+  "Jet black",
+  "Soft black",
+  "Darkest brown",
+  "Dark brown",
+  "Medium brown",
+  "Light brown",
+  "Chestnut brown",
+  "Ash brown",
+  "Dark blonde",
+  "Medium blonde",
+  "Light blonde",
+  "Ash blonde",
+  "Platinum blonde",
+  "Honey blonde",
+  "Strawberry blonde",
+  "Auburn",
+  "Copper / ginger",
+  "Bright red",
+  "Burgundy",
+  "Mahogany",
+  "Rose gold",
+  "Pastel pink",
+  "Hot pink",
+  "Lavender",
+  "Purple",
+  "Blue",
+  "Teal",
+  "Green",
+  "Silver / grey",
+  "Highlights",
+  "Balayage",
+  "Ombré",
+  "Bleached / lightened",
+  "Other (describe in notes)"
+];
+
+function defaultBriefDetails() {
+  return {
+    colour: NO_COLOUR_TREATMENT,
+    allergies: "",
+    previousTreatments: "",
+    damage: "",
+    notes: ""
+  };
+}
 
 function readStored(key, fallback) {
   try {
@@ -891,6 +943,7 @@ const state = {
   favourites: new Set(),
   brief: readStored(BRIEF_KEY, []),
   briefId: readStored(BRIEF_ID_KEY, null),
+  briefDetails: { ...defaultBriefDetails(), ...readStored(BRIEF_DETAILS_KEY, {}) },
   briefPickerOpen: false,
   shareStatus: "",
   sharedBriefId: null,
@@ -2330,6 +2383,39 @@ function setBrief(next) {
   scheduleBriefSync();
 }
 
+// Colour & consultation info (colour treatment, allergies, previous treatments,
+// damage, general notes). Persisted alongside the brief items and synced so it
+// reaches the stylist who opens the share link.
+function setBriefDetails(next) {
+  state.briefDetails = next;
+  writeStored(BRIEF_DETAILS_KEY, next);
+  scheduleBriefSync();
+}
+
+function updateBriefDetail(key, value) {
+  setBriefDetails({ ...state.briefDetails, [key]: value });
+  refreshShareButton();
+}
+
+// A brief is worth sharing once it has any item, a colour treatment other than
+// the default, or any consultation notes filled in.
+function briefHasContent() {
+  if (state.brief.length) return true;
+  const d = state.briefDetails || {};
+  if (d.colour && d.colour !== NO_COLOUR_TREATMENT) return true;
+  return Boolean(
+    String(d.allergies || "").trim() ||
+    String(d.previousTreatments || "").trim() ||
+    String(d.damage || "").trim() ||
+    String(d.notes || "").trim()
+  );
+}
+
+function refreshShareButton() {
+  const btn = $("#brief-share-btn");
+  if (btn) btn.disabled = !briefHasContent();
+}
+
 // ---------- Sharing the brief ----------
 // Every edit auto-saves to the server so the share link always reflects the
 // latest state ("live brief"). Saves are debounced to avoid a request per
@@ -2355,7 +2441,7 @@ async function syncBrief() {
   try {
     const data = await apiJson(API.briefs, {
       method: "POST",
-      body: JSON.stringify({ sessionId: state.sessionId, items: state.brief })
+      body: JSON.stringify({ sessionId: state.sessionId, items: state.brief, details: state.briefDetails })
     });
     if (data.item?.id && data.item.id !== state.briefId) {
       state.briefId = data.item.id;
@@ -2440,11 +2526,6 @@ async function loadSharedBrief(id) {
   if (state.view === "shared") render();
 }
 
-function feedbackForItem(itemId) {
-  const all = state.sharedBrief?.feedback || [];
-  return all.filter((entry) => (entry.itemId || null) === (itemId || null));
-}
-
 function renderStaticStars(rating) {
   const value = Number(rating) || 0;
   if (!value) return "";
@@ -2455,28 +2536,43 @@ function renderStaticStars(rating) {
   `;
 }
 
-function renderFeedbackList(list) {
-  if (!list.length) return "";
+// Read-only colour & consultation readout for the reviewer. Shows any field the
+// client filled in; colour always shows since the default is still useful.
+function renderBriefDetailsReview(details) {
+  const d = details || {};
+  const rows = [
+    ["Colour treatment", d.colour || NO_COLOUR_TREATMENT],
+    ["Allergies or sensitivities", d.allergies],
+    ["Previous colour treatments", d.previousTreatments],
+    ["Damage or breakage", d.damage],
+    ["General notes", d.notes]
+  ].filter(([, value]) => value && String(value).trim());
+
+  if (!rows.length) return "";
+
   return `
-    <ul class="brief-feedback-list">
-      ${list.map((entry) => `
-        <li class="brief-feedback-entry">
-          <div class="brief-feedback-meta">
-            <span class="brief-feedback-author">${escapeHtml(entry.author || "Reviewer")}</span>
-            ${entry.rating ? renderStaticStars(entry.rating) : ""}
+    <section class="brief-details brief-details--review">
+      <div class="brief-partition-head">
+        <p class="eyebrow">Colour &amp; care</p>
+        <h2>Colour &amp; consultation</h2>
+      </div>
+      <dl class="brief-details-readout">
+        ${rows.map(([label, value]) => `
+          <div class="brief-detail-row">
+            <dt>${escapeHtml(label)}</dt>
+            <dd>${escapeHtml(String(value))}</dd>
           </div>
-          ${entry.note ? `<p class="brief-feedback-note">${escapeHtml(entry.note)}</p>` : ""}
-        </li>
-      `).join("")}
-    </ul>
+        `).join("")}
+      </dl>
+    </section>
   `;
 }
 
+// Read-only card: the client's photo with their own rating and note. The stylist
+// no longer comments per photo — feedback is a single high-level summary below.
 function renderSharedItem(item) {
-  const id = item.id || "";
-  const list = feedbackForItem(id);
   return `
-    <article class="brief-card brief-card--review" data-shared-id="${escapeAttr(id)}">
+    <article class="brief-card brief-card--review">
       <div class="brief-card-image">
         ${item.imageUrl
           ? `<img src="${escapeAttr(item.imageUrl)}" alt="${escapeAttr(item.name || "Reference image")}" loading="lazy" referrerpolicy="no-referrer">`
@@ -2485,21 +2581,40 @@ function renderSharedItem(item) {
       <div class="brief-card-body">
         ${renderStaticStars(item.rating)}
         ${item.annotation ? `<p class="brief-owner-note">${escapeHtml(item.annotation)}</p>` : `<p class="brief-owner-note brief-owner-note--empty">No notes from the client.</p>`}
-        <div class="brief-feedback">
-          <p class="brief-feedback-title">Stylist feedback</p>
-          ${renderFeedbackList(list)}
-          <form class="brief-feedback-form" data-feedback-form="${escapeAttr(id)}">
-            <div class="brief-stars brief-feedback-stars" role="group" aria-label="Your rating out of 5">
-              ${[1, 2, 3, 4, 5].map((n) => `
-                <button class="brief-star" type="button" data-feedback-star="${n}" aria-label="${n} star${n > 1 ? "s" : ""}">${iconStar()}</button>
-              `).join("")}
-            </div>
-            <textarea class="brief-annotation" data-feedback-note rows="2" placeholder="Add a note for the client…"></textarea>
-            <button class="primary-btn brief-feedback-submit" type="submit">Add feedback</button>
-          </form>
-        </div>
       </div>
     </article>
+  `;
+}
+
+// One high-level summary for the whole brief: any previously-left comments,
+// plus a single box for the stylist to add their overall feedback.
+function renderStylistSummary() {
+  const comments = state.sharedBrief?.feedback || [];
+  const list = comments.length
+    ? `<ul class="brief-feedback-list">
+        ${comments.map((entry) => `
+          <li class="brief-feedback-entry">
+            <div class="brief-feedback-meta">
+              <span class="brief-feedback-author">${escapeHtml(entry.author || "Reviewer")}</span>
+            </div>
+            ${entry.note ? `<p class="brief-feedback-note">${escapeHtml(entry.note)}</p>` : ""}
+          </li>
+        `).join("")}
+      </ul>`
+    : "";
+  return `
+    <section class="brief-summary">
+      <div class="brief-partition-head">
+        <p class="eyebrow">Stylist</p>
+        <h2>Overall feedback</h2>
+        <p class="brief-partition-copy">Leave a high-level summary of your thoughts for the client.</p>
+      </div>
+      ${list}
+      <form class="brief-feedback-form brief-summary-form" id="brief-summary-form">
+        <textarea class="brief-annotation" id="brief-summary-note" rows="4" placeholder="Share your overall thoughts on this brief…"></textarea>
+        <button class="primary-btn brief-feedback-submit" type="submit">Add feedback</button>
+      </form>
+    </section>
   `;
 }
 
@@ -2539,13 +2654,15 @@ function renderSharedBrief() {
         <div>
           <p class="eyebrow">Style brief · for review</p>
           <h1>A client's style brief</h1>
-          <p>Photos of the client's own hair and the references they love, with their ratings and notes. Leave feedback on any item below.</p>
+          <p>Photos of the client's own hair and the references they love, with their ratings and notes. Leave one overall summary at the end.</p>
         </div>
         <label class="brief-reviewer-name">
           <span>Your name</span>
           <input type="text" id="reviewer-name" placeholder="e.g. Alex at the salon" value="${escapeAttr(state.reviewerName)}" maxlength="80">
         </label>
       </div>
+
+      ${renderBriefDetailsReview(state.sharedBrief.details)}
 
       <div class="brief-partitions">
         <section class="brief-partition brief-partition--me">
@@ -2565,6 +2682,8 @@ function renderSharedBrief() {
           </div>
         </section>
       </div>
+
+      ${renderStylistSummary()}
     </section>
   `;
 
@@ -2580,35 +2699,22 @@ function wireSharedBrief() {
     });
   }
 
-  // Rating stars set a value on their form without re-rendering, so the note
-  // textarea keeps focus while the reviewer works.
-  document.querySelectorAll("[data-feedback-star]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const form = button.closest("[data-feedback-form]");
-      const value = parseInt(button.dataset.feedbackStar, 10);
-      const current = Number(form.dataset.rating) || 0;
-      const next = current === value ? 0 : value;
-      form.dataset.rating = String(next);
-      form.querySelectorAll("[data-feedback-star]").forEach((star) => {
-        star.classList.toggle("is-on", parseInt(star.dataset.feedbackStar, 10) <= next);
-      });
-    });
-  });
-
-  document.querySelectorAll("[data-feedback-form]").forEach((form) => {
-    form.addEventListener("submit", (event) => {
+  const summaryForm = $("#brief-summary-form");
+  if (summaryForm) {
+    summaryForm.addEventListener("submit", (event) => {
       event.preventDefault();
-      submitBriefFeedback(form.dataset.feedbackForm, form);
+      submitBriefSummary(summaryForm);
     });
-  });
+  }
 }
 
-async function submitBriefFeedback(itemId, form) {
-  const note = form.querySelector("[data-feedback-note]").value.trim();
-  const rating = Number(form.dataset.rating) || 0;
+// Submit one brief-level summary comment (no rating, no per-image target).
+async function submitBriefSummary(form) {
+  const noteInput = $("#brief-summary-note");
+  const note = noteInput ? noteInput.value.trim() : "";
   const submitBtn = form.querySelector(".brief-feedback-submit");
 
-  if (!note && !rating) {
+  if (!note) {
     form.classList.add("is-invalid");
     return;
   }
@@ -2619,9 +2725,7 @@ async function submitBriefFeedback(itemId, form) {
     const data = await apiJson(`${API.briefs}/${encodeURIComponent(state.sharedBriefId)}/feedback`, {
       method: "POST",
       body: JSON.stringify({
-        itemId,
         author: state.reviewerName.trim() || "Reviewer",
-        rating: rating || null,
         note
       })
     });
@@ -2670,12 +2774,14 @@ function renderBrief() {
           <p>Gather photos of your own hair and references on other people, pull in styles you've saved, then rate and annotate each one. Bring the whole brief to your stylist.</p>
         </div>
         <div class="brief-share">
-          <button class="primary-btn brief-share-btn" id="brief-share-btn" type="button" ${state.brief.length ? "" : "disabled"}>
+          <button class="primary-btn brief-share-btn" id="brief-share-btn" type="button" ${briefHasContent() ? "" : "disabled"}>
             ${iconShare()}<span>Share with stylist</span>
           </button>
           <p class="brief-share-status" id="brief-share-status" ${state.shareStatus ? "" : "hidden"}>${escapeHtml(state.shareStatus)}</p>
         </div>
       </div>
+
+      ${renderBriefDetails()}
 
       ${pickerOpen ? renderBriefPicker(savedStyles) : ""}
 
@@ -2706,6 +2812,47 @@ function renderBrief() {
   `;
 
   wireBrief();
+}
+
+// Colour & consultation section: a searchable colour dropdown (native datalist,
+// so the user can pick a shade or type their own) plus consultation prompts. All
+// fields update state silently on input (no re-render) so focus is preserved.
+function renderBriefDetails() {
+  const d = state.briefDetails || defaultBriefDetails();
+  return `
+    <section class="brief-details">
+      <div class="brief-partition-head">
+        <p class="eyebrow">Colour &amp; care</p>
+        <h2>Colour &amp; consultation</h2>
+        <p class="brief-partition-copy">Tell your stylist about colour, sensitivities, and your hair's history.</p>
+      </div>
+      <div class="brief-details-grid">
+        <label class="brief-field">
+          <span>Colour treatment</span>
+          <input type="text" id="brief-colour" list="brief-colour-list" autocomplete="off" placeholder="Search hair colours…" value="${escapeAttr(d.colour || "")}">
+          <datalist id="brief-colour-list">
+            ${HAIR_COLOUR_OPTIONS.map((c) => `<option value="${escapeAttr(c)}"></option>`).join("")}
+          </datalist>
+        </label>
+        <label class="brief-field">
+          <span>Allergies or sensitivities</span>
+          <textarea id="brief-allergies" rows="2" placeholder="e.g. PPD allergy, sensitive scalp — or none">${escapeHtml(d.allergies || "")}</textarea>
+        </label>
+        <label class="brief-field">
+          <span>Previous colour treatments</span>
+          <textarea id="brief-previous" rows="2" placeholder="e.g. box dye 3 months ago, balayage last year">${escapeHtml(d.previousTreatments || "")}</textarea>
+        </label>
+        <label class="brief-field">
+          <span>Damage or breakage</span>
+          <textarea id="brief-damage" rows="2" placeholder="e.g. dry ends, breakage from bleach, heat damage">${escapeHtml(d.damage || "")}</textarea>
+        </label>
+        <label class="brief-field brief-field--wide">
+          <span>General notes</span>
+          <textarea id="brief-notes" rows="3" placeholder="Anything else you'd like your stylist to know">${escapeHtml(d.notes || "")}</textarea>
+        </label>
+      </div>
+    </section>
+  `;
 }
 
 // A placeholder tile that keeps the "Me" partition occupying at least one grid
@@ -2825,6 +2972,19 @@ function wireBrief() {
   if (shareBtn) {
     shareBtn.addEventListener("click", handleBriefShare);
   }
+  // Colour & consultation fields update state silently (no re-render) so the
+  // input keeps focus while the user types or searches the colour list.
+  const detailFields = [
+    ["brief-colour", "colour"],
+    ["brief-allergies", "allergies"],
+    ["brief-previous", "previousTreatments"],
+    ["brief-damage", "damage"],
+    ["brief-notes", "notes"]
+  ];
+  detailFields.forEach(([id, key]) => {
+    const node = $(`#${id}`);
+    if (node) node.addEventListener("input", () => updateBriefDetail(key, node.value));
+  });
   // Uploads from the "Me" tile go straight into the Me partition.
   const selfInput = $("#brief-self-input");
   if (selfInput) {

@@ -197,6 +197,7 @@ function rowToStyleBrief(row: any, feedback: any = []): Record<string, unknown> 
     id: row.id,
     sessionId: row.session_id,
     items: decodeJson(row.items_json, []),
+    details: decodeJson(row.details_json, {}),
     feedback: feedback.map(rowToBriefFeedback),
     createdAt: row.created_at,
     updatedAt: row.updated_at
@@ -498,17 +499,19 @@ async function saveBrief(request: Request, db: any): Promise<Response> {
 
   const sessionId = body.sessionId.trim();
   const itemsJson = JSON.stringify(body.items);
+  const detailsJson = JSON.stringify(parseRecord(body.details));
   const id = crypto.randomUUID();
 
   await db
     .prepare(
-      `INSERT INTO style_briefs (id, session_id, items_json, updated_at)
-       VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+      `INSERT INTO style_briefs (id, session_id, items_json, details_json, updated_at)
+       VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
        ON CONFLICT(session_id) DO UPDATE SET
          items_json = excluded.items_json,
+         details_json = excluded.details_json,
          updated_at = CURRENT_TIMESTAMP`
     )
-    .bind(id, sessionId, itemsJson)
+    .bind(id, sessionId, itemsJson, detailsJson)
     .run();
 
   const row = await db
