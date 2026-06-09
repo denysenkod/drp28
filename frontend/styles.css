@@ -2286,6 +2286,26 @@ body[data-view="quiz"] .app-shell {
     grid-template-columns: 1fr;
   }
 
+  .similar-results {
+    display: flex;
+    flex-direction: row;
+    overflow-x: scroll;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 10px;
+    padding-bottom: 4px;
+  }
+
+  .similar-results::-webkit-scrollbar {
+    display: none;
+  }
+
+  .similar-results .style-card {
+    flex: 0 0 42vw;
+    scroll-snap-align: start;
+  }
+
   .welcome-options {
     margin-top: 28px;
   }
@@ -2338,9 +2358,26 @@ body[data-view="quiz"] .app-shell {
     scroll-snap-stop: always;
   }
 
-  .option-grid.is-text,
-  .results-grid {
+  .option-grid.is-text {
     grid-template-columns: 1fr;
+  }
+
+  .results-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .style-card-footer {
+    min-height: 60px;
+    padding: 8px 9px;
+  }
+
+  .style-card-footer h2 {
+    font-size: 13px;
+  }
+
+  .style-card-footer p {
+    font-size: 11px;
   }
 
   /* Dot indicators rendered below the carousel by JS */

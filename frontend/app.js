@@ -1842,7 +1842,6 @@ function wireSliderQuestion(question) {
 
 function renderSearch() {
   const matches = filteredSearchStyles();
-  const chips = summarizeAnswers();
   const selectedCount = selectedAnswerCount();
   els.app.innerHTML = `
     <section class="search-screen">
@@ -1864,8 +1863,6 @@ function renderSearch() {
       </div>
 
       ${state.uploadedPhotoName ? `<div class="upload-preview"><span>Photo saved:</span><b>${escapeHtml(state.uploadedPhotoName)}</b><button id="upload-clear" type="button" aria-label="Clear uploaded photo">&times;</button></div>` : ""}
-
-      ${chips.length ? renderSummaryChips(chips) : ""}
 
       ${state.filterPanelOpen ? renderAnswerFilterDrawer(selectedCount) : ""}
 
@@ -1990,7 +1987,6 @@ function renderResultsPage() {
   const filtered = selectedAnswerCount() ? answerFilteredStyles() : state.styles;
   const refined = applyRefineFilters(filtered);
   const results = scoredStyles(refined);
-  const chips = summarizeAnswers();
   const selectedCount = selectedAnswerCount();
 
   els.app.innerHTML = `
@@ -2003,8 +1999,6 @@ function renderResultsPage() {
         </div>
         ${renderDiscoveryActions(selectedCount)}
       </div>
-
-      ${chips.length ? renderSummaryChips(chips) : ""}
 
       ${state.filterPanelOpen ? renderAnswerFilterDrawer(selectedCount) : ""}
 
