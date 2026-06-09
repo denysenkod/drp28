@@ -436,6 +436,15 @@ body[data-view="quiz"] .app-shell {
   grid-template-columns: repeat(auto-fill, minmax(246px, 1fr));
 }
 
+.option-grid.is-collage {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.option-grid.is-collage .option-media {
+  aspect-ratio: 1 / 1;
+}
+
 .option-card {
   position: relative;
   display: flex;
@@ -897,6 +906,38 @@ body[data-view="quiz"] .app-shell {
 
 .quiz-footer b {
   color: var(--ink);
+}
+
+.length-gender-toggle {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.length-gender-btn {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.length-gender-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.length-gender-btn.is-active {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
 }
 
 .primary-btn {
@@ -1800,12 +1841,20 @@ body[data-view="quiz"] .app-shell {
     gap: 10px;
   }
 
+  .option-grid.is-collage {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
   .option-media {
     aspect-ratio: 2 / 3;
   }
 
   .option-media.is-icon {
     aspect-ratio: 2 / 3;
+  }
+
+  .option-grid.is-collage .option-media {
+    aspect-ratio: 1 / 1;
   }
 
   .option-body {
@@ -2332,8 +2381,8 @@ body[data-view="quiz"] .app-shell {
   }
 
   /* Phone / tablet: image-based quiz options become a swipeable carousel.
-     Text-row options and the gallery stay as a stacked single column. */
-  .option-grid:not(.is-text) {
+     Text-row and collage options stay as a grid. */
+  .option-grid:not(.is-text):not(.is-collage) {
     display: flex;
     flex-direction: row;
     overflow-x: scroll;
@@ -2348,14 +2397,27 @@ body[data-view="quiz"] .app-shell {
     scrollbar-width: none;
   }
 
-  .option-grid:not(.is-text)::-webkit-scrollbar {
+  .option-grid:not(.is-text):not(.is-collage)::-webkit-scrollbar {
     display: none;
   }
 
-  .option-grid:not(.is-text) .option-card {
+  .option-grid:not(.is-text):not(.is-collage) .option-card {
     flex: 0 0 100%;
     scroll-snap-align: center;
     scroll-snap-stop: always;
+  }
+
+  .option-grid.is-collage {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    overflow-x: unset;
+    scroll-snap-type: unset;
+    gap: 10px;
+    padding-right: 0;
+  }
+
+  .option-grid.is-collage .option-media {
+    aspect-ratio: 1 / 1;
   }
 
   .option-grid.is-text {

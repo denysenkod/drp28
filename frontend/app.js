@@ -66,6 +66,14 @@ function iconSearch() {
   return `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" ${iconAttrs}/><path d="M16 16l4 4" ${iconAttrs}/></svg>`;
 }
 
+function iconMale() {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="15" r="5.5"/><line x1="13" y1="11" x2="21" y2="3"/><polyline points="16,3 21,3 21,8"/></svg>`;
+}
+
+function iconFemale() {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5.5"/><line x1="12" y1="13.5" x2="12" y2="21"/><line x1="8.5" y1="17.5" x2="15.5" y2="17.5"/></svg>`;
+}
+
 function iconArrow() {
   return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" ${iconAttrs}/></svg>`;
 }
@@ -407,7 +415,7 @@ function buildLengthOptions() {
         gendered.push({
           ...base,
           value: `${variant.prefix}:${base.value}`,
-          label: `${base.label} (${variant.gender})`,
+          label: base.label,
           gender: variant.gender,
           image: base.images?.[variant.imageKey] || base.image
         });
@@ -421,13 +429,12 @@ function buildLengthOptions() {
 const QUIZ = [
   {
     id: "style",
-    title: "What styles are you looking for?",
+    title: "What gendered styles are you looking for?",
     sub: "",
     layout: "image",
     options: [
       { value: "masculine", label: "Masculine styles", gender: "Men", image: "https://cdn.shopify.com/s/files/1/2384/0833/files/Textured_Crop.png?v=1771863492" },
-      { value: "feminine", label: "Feminine styles", gender: "Women", image: "https://www.copenhagenfashionsummit.com/wp-content/uploads/2025/12/layered-long-bob.png" },
-      { value: "__all", label: "Show me everything", selectAll: true }
+      { value: "feminine", label: "Feminine styles", gender: "Women", image: "https://i.pinimg.com/originals/9f/1d/2d/9f1d2d3bb3fbbbfccc5902d0ecdf9bc1.png" }
     ]
   },
   {
@@ -468,28 +475,28 @@ const QUIZ = [
   {
     id: "vibe",
     title: "Which words best describe the look you are going for?",
-    layout: "icon",
+    layout: "collage",
     sub: "Feel free to pick multiple options. This will help inform your recommendations.",
     options: [
-      { value: "classic", label: "Classic & timeless", vibe: "classic", keywords: ["classic", "side part", "centre part"], images: {
+      { value: "classic", label: "Timeless", vibe: "classic", keywords: ["classic", "side part", "centre part"], images: {
         masculine: "https://cdn.thecoolist.com/wp-content/uploads/2017/05/Slicked-Back-classic-mens-hairstyle-762x999.jpg", 
         feminine: "https://www.instyle.com/thmb/KdwsVUom4JWPeqkoDsiOV7_j0wI=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/GettyImages-1477697852-dc20ae570d684c6d8772bf1051736ff4.jpg"} },
-      { value: "trendy", label: "Trendy & modern", keywords: ["modern", "mod", "crop", "trendy"], images: {
+      { value: "trendy", label: "Trendy", keywords: ["modern", "mod", "crop", "trendy"], images: {
         masculine: "https://www.the5thelement.uk/wp-content/uploads/2025/06/men-perm-in-reading.jpg", 
         feminine: "https://media.glamour.com/photos/5f0e32bc9f970c720ce36ec6/master/w_1024%2Cc_limit/Screen%2520Shot%25202020-07-14%2520at%25206.33.11%2520PM.png"}  },
-      { value: "bold", label: "Bold & edgy", vibe: "bold", keywords: ["bold", "edgy", "mullet", "dyed", "frosted"], images: {
+      { value: "bold", label: "Edgy", vibe: "bold", keywords: ["bold", "edgy", "mullet", "dyed", "frosted"], images: {
         masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/liberty-spikes-hairstyle-men.webp?v=1758794959", 
         feminine: "https://content.latest-hairstyles.com/wp-content/uploads/edgy-haircuts-for-women-1200x900.jpg"}  },
-      { value: "soft", label: "Soft & romantic", vibe: "soft", keywords: ["soft", "curtain", "fringe", "long"], images: {
+      { value: "soft", label: "Romantic", vibe: "soft", keywords: ["soft", "curtain", "fringe", "long"], images: {
         masculine: "https://i.pinimg.com/736x/80/f6/c2/80f6c2c04c873b8a2466484c6f50539c.jpg", 
         feminine: "https://hairstyles.thehairstyler.com/hairstyle_views/front_view_images/14314/original/long-hairstyle-with-curls.jpg"}  },
-      { value: "low-maintanence", label: "Natural & Effortless", vibe: "low-maintanence", keywords: ["natural", "effortless", "grow out", "wavy", "low-maintanence"], images: {
+      { value: "low-maintanence", label: "Effortless", vibe: "low-maintanence", keywords: ["natural", "effortless", "grow out", "wavy", "low-maintanence"], images: {
         masculine: "https://www.byrdie.com/thmb/u4lP1HcP1E12OnhYVHq4H56lowM=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc():format(webp)/Ryan-Gosling-Lead-c41f2cebb31d405ebd197955987481d9-a0f47d9bbc3f4dd88fe4cdffbbb24f36.jpeg", 
         feminine: "https://toallmyblackgirls.com/cdn/shop/articles/446355566_988788219324898_6116544399704763552_n_b223fb90-210e-4257-b74d-54db7183e1f0.jpg?v=1756882061"}  },
-      { value: "professional", label: "Professional & polished", vibe: "professional", keywords: ["professional", "classic", "crew", "side"], images: {
+      { value: "professional", label: "Professional", vibe: "professional", keywords: ["professional", "classic", "crew", "side"], images: {
         masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/brushed-back-hairstyle-for-men.webp?v=1765268282", 
         feminine: "https://i.pinimg.com/736x/35/66/a0/3566a02c87a625fec8af5765fc637247.jpg"}  },
-      { value: "playful", label: "Playful & fun", vibe: "playful", keywords: ["playful", "frosted", "dyed", "shag"], images: {
+      { value: "playful", label: "Playful", vibe: "playful", keywords: ["playful", "frosted", "dyed", "shag"], images: {
         masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/curly-mullet-hairstyle-men.webp?v=1767776997", 
         feminine: "https://content.latest-hairstyles.com/wp-content/uploads/galleries/10/07/playful-y2k-double-bun-hairstyle-with-curly-bangs.jpg"}  },
       { value: "sporty", label: "Sporty", vibe: "sporty", keywords: ["sporty", "athletic", "active", "gym", "practical", "short"], images: {
@@ -869,7 +876,7 @@ const state = {
   dbStyles: [],
   galleryLoaded: false,
   galleryLoadError: false,
-  view: readStored(VIEW_KEY, "welcome"),
+  view: readStored(VIEW_KEY, "welcome") === "search" ? "results" : readStored(VIEW_KEY, "welcome"),
   previousView: readStored(PREV_VIEW_KEY, "welcome"),
   quizStep: readStored(STEP_KEY, 0),
   answers: readStored(ANSWERS_KEY, {}),
@@ -877,12 +884,12 @@ const state = {
   favourites: new Set(),
   brief: readStored(BRIEF_KEY, []),
   briefPickerOpen: false,
-  uploadedPhotoName: null,
   filterPanelOpen: false,
   openFilterGroups: new Set(),
   openPreferenceMenu: null,
   openRefineFilter: null,
-  refineFilters: { face_shape: new Set(), hair_colour: new Set(), thickness: null }
+  refineFilters: { face_shape: new Set(), hair_colour: new Set(), thickness: null },
+  lengthGenderFilter: "masculine"
 };
 
 const pendingFavouriteOps = new Map();
@@ -934,9 +941,6 @@ function setView(view) {
   if (view === "quiz") {
     window.history.pushState({ view: "quiz", quizStep: state.quizStep, previousView: state.previousView }, "", `?quiz=${state.quizStep}`);
   }
-  if (view === "search") {
-    window.history.pushState({ view: "search", previousView: state.previousView }, "", "?search");
-  }
   if (view === "results") {
     window.history.pushState({ view: "results", previousView: state.previousView }, "", "?results");
   }
@@ -946,7 +950,7 @@ function setView(view) {
   if (view === "welcome") {
     window.history.pushState({ view: "welcome", previousView: state.previousView }, "", "/");
   }
-  if (!["results", "search"].includes(view)) {
+  if (view !== "results") {
     state.filterPanelOpen = false;
     state.openFilterGroups.clear();
     state.openPreferenceMenu = null;
@@ -987,6 +991,7 @@ function startOver() {
   state.filterPanelOpen = false;
   state.openFilterGroups.clear();
   state.openPreferenceMenu = null;
+  state.lengthGenderFilter = "masculine";
   writeStored(STEP_KEY, state.quizStep);
   setView("welcome");
 }
@@ -1129,6 +1134,11 @@ function toggleQuizOption(question, option) {
   if (footerSpan) {
     const count = selected.filter((v) => v !== "__all").length || selected.length;
     footerSpan.innerHTML = selected.length ? `<b>${count}</b> selected` : "";
+  }
+  const labelEl = document.querySelector("#quiz-next-label");
+  if (labelEl) {
+    const isLast = state.quizStep === QUIZ.length - 1;
+    labelEl.textContent = selected.length ? (isLast ? "Show me results" : "Continue") : "Skip";
   }
 }
 
@@ -1463,7 +1473,6 @@ function render() {
   updateBriefCount();
 
   if (state.view === "quiz") renderQuiz();
-  else if (state.view === "search") renderSearch();
   else if (state.view === "results") renderResultsPage();
   else if (state.view === "brief") renderBrief();
   else renderWelcome();
@@ -1517,6 +1526,12 @@ function renderQuiz() {
   const isLast = state.quizStep === QUIZ.length - 1;
   const isScale = question.layout === "scale";
   const isSlider = question.layout === "slider";
+  const hasSelection = isSlider || isScale || selected.length > 0;
+  const nextLabel = hasSelection ? (isLast ? "Show me results" : "Continue") : "Skip";
+  const showLengthGenderToggle = question.id === "length" && selectedSurveyGender() === "both";
+  const visibleOptions = showLengthGenderToggle
+    ? question.options.filter((o) => o.gender === (state.lengthGenderFilter === "masculine" ? "Men" : "Women"))
+    : question.options;
 
   els.app.innerHTML = `
     <section class="quiz-screen">
@@ -1538,13 +1553,19 @@ function renderQuiz() {
         ${question.sub ? `<p>${question.sub}</p>` : ""}
         <div class="quiz-question-buttons">
           ${state.quizStep > 0 ? `<button class="secondary-btn" id="quiz-back-btn" type="button">Back</button>` : ""}
-          <button class="primary-btn" id="quiz-next-btn" type="button">${isLast ? "Show me results" : "Continue"} ${iconArrow()}</button>
+          <button class="primary-btn" id="quiz-next-btn" type="button"><span id="quiz-next-label">${nextLabel}</span> ${iconArrow()}</button>
+          ${showLengthGenderToggle ? `
+            <div class="length-gender-toggle">
+              <button class="length-gender-btn ${state.lengthGenderFilter === "masculine" ? "is-active" : ""}" type="button" data-length-gender="masculine" aria-label="Men">${iconMale()}</button>
+              <button class="length-gender-btn ${state.lengthGenderFilter === "feminine" ? "is-active" : ""}" type="button" data-length-gender="feminine" aria-label="Women">${iconFemale()}</button>
+            </div>
+          ` : ""}
         </div>
       </div>
 
       ${isSlider ? renderSliderQuestion(question, selected) : isScale ? renderScaleQuestion(question, selected) : `
-        <div class="option-grid ${question.layout === "text" ? "is-text" : ""}">
-          ${question.options.map((option) => renderOption(question, option, isQuizOptionSelected(question, option, selected))).join("")}
+        <div class="option-grid ${question.layout === "text" ? "is-text" : question.layout === "collage" ? "is-collage" : ""}">
+          ${visibleOptions.map((option) => renderOption(question, option, isQuizOptionSelected(question, option, selected))).join("")}
         </div>
       `}
 
@@ -1577,6 +1598,12 @@ function renderQuiz() {
         if (option) toggleQuizOption(question, option);
       });
     });
+    document.querySelectorAll("[data-length-gender]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        state.lengthGenderFilter = btn.dataset.lengthGender;
+        renderQuiz();
+      });
+    });
     wireCarouselDots(question);
   }
 }
@@ -1586,7 +1613,7 @@ function isMobileViewport() {
 }
 
 function wireCarouselDots(question) {
-  if (!isMobileViewport() || question.layout === "text" || question.layout === "slider" || question.layout === "scale") return;
+  if (!isMobileViewport() || question.layout === "text" || question.layout === "collage" || question.layout === "slider" || question.layout === "scale") return;
 
   const grid = document.querySelector(".option-grid:not(.is-text)");
   if (!grid) return;
@@ -1840,66 +1867,14 @@ function wireSliderQuestion(question) {
   }
 }
 
-function renderSearch() {
-  const matches = filteredSearchStyles();
-  const selectedCount = selectedAnswerCount();
-  els.app.innerHTML = `
-    <section class="search-screen">
-      <div class="screen-heading discovery-heading">
-        <div>
-          <p class="eyebrow">Search</p>
-          <h1>Hair Styles</h1>
-          <p>Browse freely and like photos. Each save gives your profile a clearer direction.</p>
-        </div>
-        ${renderDiscoveryActions(selectedCount)}
-      </div>
-
-      <div class="search-tools">
-        <label class="upload-btn" title="Upload a photo to inform search">
-          <span aria-hidden="true">${iconCheck()}</span>
-          <span>Upload photo</span>
-          <input type="file" id="upload-input" accept="image/*" hidden>
-        </label>
-      </div>
-
-      ${state.uploadedPhotoName ? `<div class="upload-preview"><span>Photo saved:</span><b>${escapeHtml(state.uploadedPhotoName)}</b><button id="upload-clear" type="button" aria-label="Clear uploaded photo">&times;</button></div>` : ""}
-
-      ${state.filterPanelOpen ? renderAnswerFilterDrawer(selectedCount) : ""}
-
-      <div class="profile-strip">
-        <span><b>${state.favourites.size}</b> saved styles</span>
-        <span>Saved photos become your working profile.</span>
-      </div>
-
-      <section class="results-grid" id="search-results-grid">
-        ${matches.length ? matches.map((style) => buildStyleCardHtml(style)).join("") : `<p class="empty-state">No styles match that search. Try a shorter keyword.</p>`}
-      </section>
-    </section>
-  `;
-
-  $("#upload-input").addEventListener("change", (event) => {
-    const file = event.target.files && event.target.files[0];
-    handleUpload(file);
+function applyTextSearch(styles) {
+  const q = normalizeSearchText(state.searchQuery);
+  if (!q) return styles;
+  const tokens = q.split(/[\s,]+/).filter(Boolean);
+  return styles.filter((style) => {
+    const haystack = styleHaystack(style);
+    return tokens.every((token) => haystack.includes(token));
   });
-  const clear = $("#upload-clear");
-  if (clear) {
-    clear.addEventListener("click", () => {
-      state.uploadedPhotoName = null;
-      renderSearch();
-    });
-  }
-  wireDiscoveryControls();
-  wireCards();
-}
-
-function renderSearchGrid() {
-  const grid = $("#search-results-grid");
-  if (!grid) return;
-  const matches = filteredSearchStyles();
-  grid.innerHTML = matches.length
-    ? matches.map((style) => buildStyleCardHtml(style)).join("")
-    : `<p class="empty-state">No styles match that search. Try a shorter keyword.</p>`;
-  wireCards(grid);
 }
 
 function applyRefineFilters(styles) {
@@ -1985,7 +1960,8 @@ function renderRefineRow() {
 
 function renderResultsPage() {
   const filtered = selectedAnswerCount() ? answerFilteredStyles() : state.styles;
-  const refined = applyRefineFilters(filtered);
+  const textFiltered = applyTextSearch(filtered);
+  const refined = applyRefineFilters(textFiltered);
   const results = scoredStyles(refined);
   const selectedCount = selectedAnswerCount();
 
@@ -2162,7 +2138,7 @@ function wireDiscoveryControls() {
       renderCurrentDiscoveryView();
     });
   });
-  const discoveryScreen = $(".search-screen, .results-screen");
+  const discoveryScreen = $(".results-screen");
   if (discoveryScreen) {
     discoveryScreen.addEventListener("click", () => {
       if (!state.openPreferenceMenu && !state.openRefineFilter) return;
@@ -2176,8 +2152,7 @@ function wireDiscoveryControls() {
 function renderCurrentDiscoveryView({ preserveFilterScroll = false } = {}) {
   const panel = $(".answer-filter-panel");
   const scrollTop = preserveFilterScroll && panel ? panel.scrollTop : null;
-  if (state.view === "search") renderSearch();
-  else renderResultsPage();
+  renderResultsPage();
   if (scrollTop !== null) {
     const nextPanel = $(".answer-filter-panel");
     if (nextPanel) nextPanel.scrollTop = scrollTop;
@@ -2241,21 +2216,6 @@ function renderFilterOption(question, option, isSelected) {
       </span>
     </button>
   `;
-}
-
-function filteredSearchStyles() {
-  const q = normalizeSearchText(state.searchQuery);
-  const tokens = q.split(/[\s,]+/).filter(Boolean);
-  const queryMatches = state.styles.filter((style) => {
-    const haystack = styleHaystack(style);
-    if (!q) return true;
-    return tokens.every((token) => haystack.includes(token));
-  });
-
-  if (!selectedAnswerCount()) return seededShuffle(queryMatches, hashStr(q || "all"));
-
-  const answerMatches = queryMatches.filter(stylePassesAnswerFilters);
-  return scoredStyles(answerMatches);
 }
 
 function buildStyleCardHtml(style, compact = false) {
@@ -2840,28 +2800,6 @@ function selectedFeatures() {
   return features;
 }
 
-async function handleUpload(file) {
-  if (!file) return;
-  state.uploadedPhotoName = file.name;
-  renderSearch();
-
-  try {
-    const imageData = await imageFileToDataUrl(file);
-    await apiJson(API.userPhotos, {
-      method: "POST",
-      body: JSON.stringify({
-        sessionId: state.sessionId,
-        label: file.name,
-        imageData,
-        description: "Uploaded from the hairstyle search page.",
-        features: selectedFeatures()
-      })
-    });
-  } catch {
-    // Keep the selected filename visible even if upload persistence fails.
-  }
-}
-
 // ---------- Utilities ----------
 function escapeHtml(value) {
   return String(value ?? "")
@@ -2880,15 +2818,15 @@ function escapeAttr(value) {
 function init() {
   els.homeBtn.addEventListener("click", () => setView("welcome"));
   els.topbarSearchInput.addEventListener("focus", () => {
-    if (state.view !== "search") setView("search");
+    if (state.view !== "results") setView("results");
   });
   els.topbarSearchInput.addEventListener("input", (event) => {
     state.searchQuery = event.target.value;
-    if (state.view !== "search") {
-      setView("search");
+    if (state.view !== "results") {
+      setView("results");
       return;
     }
-    renderSearchGrid();
+    renderResultsPage();
   });
   els.favouritesBtn.addEventListener("click", () => {
     renderFavourites();
@@ -2942,11 +2880,6 @@ function init() {
       writeStored(PREV_VIEW_KEY, state.previousView);
       render();
       window.scrollTo({ top: 0, behavior: "smooth" });
-    } else if (event.state?.view === "search") {
-      state.view = "search";
-      state.previousView = event.state.previousView ?? "welcome";
-      writeStored(PREV_VIEW_KEY, state.previousView);
-      render();
     } else if (event.state?.view === "results") {
       state.view = "results";
       state.previousView = event.state.previousView ?? "welcome";
@@ -2979,10 +2912,7 @@ function init() {
     state.quizStep = step;
     writeStored(VIEW_KEY, "quiz");
     writeStored(STEP_KEY, step);
-  } else if (urlParams.has("search")) {
-    state.view = "search";
-    writeStored(VIEW_KEY, "search");
-  } else if (urlParams.has("results")) {
+  } else if (urlParams.has("search") || urlParams.has("results")) {
     state.view = "results";
     writeStored(VIEW_KEY, "results");
   } else if (urlParams.has("brief")) {
