@@ -191,6 +191,25 @@ function iconShare() {
   return `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3" ${iconAttrs}/><circle cx="6" cy="12" r="3" ${iconAttrs}/><circle cx="18" cy="19" r="3" ${iconAttrs}/><path d="m8.6 13.5 6.8 3.98M15.4 6.5 8.6 10.49" ${iconAttrs}/></svg>`;
 }
 
+function iconFaceShapeControl() {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c4.1 0 7 3.3 7 8.2 0 4.7-3 8.8-7 8.8s-7-4.1-7-8.8c0-4.9 2.9-8.2 7-8.2z" ${iconAttrs}/><path d="M9 11.2h.01M15 11.2h.01M9.5 15.6c1.5 1.1 3.5 1.1 5 0" ${iconAttrs}/></svg>`;
+}
+
+function iconHairColourControl() {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5s6 6.1 6 10.2a6 6 0 0 1-12 0c0-4.1 6-10.2 6-10.2z" ${iconAttrs}/><path d="M9.4 15.8c1.5 1 3.7 1 5.2 0" ${iconAttrs}/></svg>`;
+}
+
+function iconHairDensityControl() {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 4.5c-1.5 4.2-1.5 10.8 0 15M12 4.5c-2 4.2-2 10.8 0 15M16.8 4.5c-1.5 4.2-1.5 10.8 0 15" ${iconAttrs}/></svg>`;
+}
+
+function refineControlIcon(id) {
+  if (id === "face_shape") return iconFaceShapeControl();
+  if (id === "hair_colour") return iconHairColourControl();
+  if (id === "thickness") return iconHairDensityControl();
+  return iconCheck();
+}
+
 function textureIcon(kind) {
   const columns = [8, 16, 24].map((x) => x * 2);
   if (kind === "straight") {
@@ -721,8 +740,8 @@ const REFINE_FILTERS = [
   {
     id: "thickness",
     label: "✧ Specify a hair thickness",
-    noun: "hair thickness",
-    question: "What is your hair thickness?",
+    noun: "hair density",
+    question: "What is your hair density?",
     options: [
       { value: "especially thin", label: "Especially thin" },
       { value: "thin", label: "Thin" },
@@ -2028,55 +2047,72 @@ function refinePillLabel(filter) {
   return `${val.size} ${filter.noun}s`;
 }
 
+function refineTriggerLabel(filter) {
+  if (filter.id === "face_shape") return "Face";
+  if (filter.id === "hair_colour") return "Colour";
+  if (filter.id === "thickness") return "Density";
+  return filter.label;
+}
+
 function refineHasSelection(filter) {
   const val = state.refineFilters[filter.id];
   return filter.id === "thickness" ? val !== null : val.size > 0;
 }
 
-function renderRefineRow() {
+function renderRefineControls() {
   const open = state.openRefineFilter;
-  const openFilter = open ? REFINE_FILTERS.find((f) => f.id === open) : null;
   return `
-    <div class="refine-filters">
-      <div class="refine-row">
-        ${REFINE_FILTERS.map((filter) => {
-          const hasSelection = refineHasSelection(filter);
-          const isOpen = open === filter.id;
-          return `
-            <button
-              class="refine-pill${hasSelection ? " is-active" : ""}${isOpen ? " is-open" : ""}"
-              type="button"
-              data-refine="${escapeAttr(filter.id)}"
-              aria-expanded="${isOpen}"
-            >${hasSelection ? escapeHtml(refinePillLabel(filter)) : `✧ Specify a <b>${escapeHtml(filter.noun)}</b>`}</button>
-          `;
-        }).join("")}
-      </div>
-      ${openFilter ? `
-        <div class="refine-panel">
-          <p class="refine-question">${escapeHtml(openFilter.question)}</p>
-          <div class="refine-options">
-            ${openFilter.options.map((option) => {
-              const val = state.refineFilters[openFilter.id];
-              const isOn = openFilter.id === "thickness"
-                ? val === option.value
-                : val.has(option.value);
-              return `
-                <button
-                  class="refine-option${isOn ? " is-on" : ""}"
-                  type="button"
-                  data-refine-select="${escapeAttr(openFilter.id)}"
-                  data-refine-value="${escapeAttr(option.value)}"
-                >${escapeHtml(option.label)}</button>
-              `;
-            }).join("")}
-          </div>
-        </div>
-      ` : ""}
+    <div class="refine-icon-group" aria-label="Extra style filters">
+      ${REFINE_FILTERS.map((filter) => {
+        const hasSelection = refineHasSelection(filter);
+        const isOpen = open === filter.id;
+        const label = refineTriggerLabel(filter);
+        return `
+          <button
+            class="refine-icon-btn${hasSelection ? " is-active" : ""}${isOpen ? " is-open" : ""}"
+            type="button"
+            data-refine="${escapeAttr(filter.id)}"
+            aria-label="${escapeAttr(label)} filter"
+            aria-expanded="${isOpen}"
+            title="${escapeAttr(hasSelection ? refinePillLabel(filter) : `${label} filter`)}"
+          >
+            ${refineControlIcon(filter.id)}
+            <span>${escapeHtml(label)}</span>
+          </button>
+        `;
+      }).join("")}
     </div>
   `;
 }
 
+function renderRefineRow() {
+  const open = state.openRefineFilter;
+  const openFilter = open ? REFINE_FILTERS.find((f) => f.id === open) : null;
+  if (!openFilter) return "";
+  return `
+    <div class="refine-filters">
+      <div class="refine-panel">
+        <p class="refine-question">${escapeHtml(openFilter.question)}</p>
+        <div class="refine-options">
+          ${openFilter.options.map((option) => {
+            const val = state.refineFilters[openFilter.id];
+            const isOn = openFilter.id === "thickness"
+              ? val === option.value
+              : val.has(option.value);
+            return `
+              <button
+                class="refine-option${isOn ? " is-on" : ""}"
+                type="button"
+                data-refine-select="${escapeAttr(openFilter.id)}"
+                data-refine-value="${escapeAttr(option.value)}"
+              >${escapeHtml(option.label)}</button>
+            `;
+          }).join("")}
+        </div>
+      </div>
+    </div>
+  `;
+}
 // Shared results pipeline: narrow by quiz answers, then text search, then the
 // refine pills, then rank. Used by both the Search page and the Home feed.
 function computeResults() {
@@ -2149,6 +2185,7 @@ function renderDiscoveryActions(selectedCount) {
         Preferences
         ${selectedCount ? `<span class="filter-count">${selectedCount}</span>` : ""}
       </button>
+      ${renderRefineControls()}
     </div>
   `;
 }

@@ -1273,6 +1273,7 @@ body[data-view="quiz"] .app-shell {
 
 .results-actions {
   display: flex;
+  align-items: center;
   gap: 8px;
   flex-wrap: wrap;
   justify-content: flex-end;
@@ -1294,6 +1295,51 @@ body[data-view="quiz"] .app-shell {
   background: var(--accent);
   color: var(--surface);
   font-size: 12px;
+}
+
+.refine-icon-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.refine-icon-btn {
+  min-height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 13px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.refine-icon-btn svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.refine-icon-btn:hover,
+.refine-icon-btn.is-open {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: #fffaf1;
+}
+
+.refine-icon-btn.is-active {
+  border-color: var(--accent);
+  color: var(--ink);
+  background: var(--accent-soft);
 }
 
 .answer-filter-panel {
@@ -3265,7 +3311,23 @@ body[data-view="quiz"] .app-shell {
 
   .results-actions {
     margin-top: 16px;
+    align-items: center;
+    flex-wrap: nowrap;
     justify-content: flex-start;
+  }
+
+  .refine-icon-group {
+    flex: 0 0 auto;
+  }
+
+  .refine-icon-btn {
+    width: 52px;
+    min-width: 52px;
+    padding: 0;
+  }
+
+  .refine-icon-btn span {
+    display: none;
   }
 
   .answer-filter-panel {
