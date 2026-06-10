@@ -93,6 +93,16 @@ function setBriefDetailsOpen(open) {
   scheduleBriefSync();
 }
 
+function removeBriefDetails() {
+  state.briefDetails = defaultBriefDetails();
+  state.briefDetailsOpen = false;
+  writeStored(BRIEF_DETAILS_KEY, state.briefDetails);
+  writeStored(BRIEF_DETAILS_OPEN_KEY, state.briefDetailsOpen);
+  refreshShareButton();
+  scheduleBriefSync();
+  renderBrief();
+}
+
 function briefDetailsPayload() {
   return briefDetailsIsOpen()
     ? { ...state.briefDetails, detailsOpen: true }
@@ -978,6 +988,7 @@ const state = {
   briefDetails: { ...defaultBriefDetails(), ...readStored(BRIEF_DETAILS_KEY, {}) },
   briefDetailsOpen: readStored(BRIEF_DETAILS_OPEN_KEY, null),
   briefPickerOpen: false,
+  briefRefAddOpen: false,
   shareStatus: "",
   sharedBriefId: null,
   sharedBrief: null,
@@ -1039,6 +1050,7 @@ function setView(view) {
 
   if (view !== "brief") {
     state.briefPickerOpen = false;
+    state.briefRefAddOpen = false;
     if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden) {
       document.body.style.overflow = "";
     }
@@ -2637,9 +2649,24 @@ function renderColourCareTab(bodyHtml, details = state.briefDetails, options = {
   const isOpen = typeof options.isOpen === "boolean" ? options.isOpen : briefDetailsIsOpen();
   const title = "Hair colour treatment";
   const addLabel = "Add hair colour treatment";
-  const action = options.actionLabel ?? (isOpen ? "Remove" : "");
+  const showRemoveButton = Boolean(options.removable && isOpen);
+  const action = options.actionLabel ?? "";
   const detailsClass = `brief-details brief-details-accordion${!isOpen && options.showGhostAdd ? " brief-details--ghost" : ""}`;
   const summaryClass = `brief-details-summary${!isOpen && options.showGhostAdd ? " brief-details-summary--ghost" : ""}`;
+
+  if (showRemoveButton) {
+    return `
+      <section class="${detailsClass} is-open" id="brief-details-accordion">
+        <div class="brief-details-summary brief-details-summary--static">
+          <span class="brief-details-summary-title">${escapeHtml(title)}</span>
+          <button class="brief-details-remove-btn" type="button" data-remove-brief-details>Remove</button>
+        </div>
+        <div class="brief-details-panel">
+          ${bodyHtml}
+        </div>
+      </section>
+    `;
+  }
 
   return `
     <details class="${detailsClass}" id="brief-details-accordion"${isOpen ? " open" : ""}>
@@ -2926,6 +2953,7 @@ function briefItemsFor(partition) {
 
 function openBriefPicker() {
   state.briefPickerOpen = true;
+  state.briefRefAddOpen = false;
   document.body.style.overflow = "hidden";
   renderBrief();
 }
@@ -2939,9 +2967,25 @@ function closeBriefPicker() {
   if (state.view === "brief") renderBrief();
 }
 
+function openBriefRefAdd() {
+  state.briefRefAddOpen = true;
+  document.body.style.overflow = "hidden";
+  renderBrief();
+}
+
+function closeBriefRefAdd() {
+  if (!state.briefRefAddOpen) return;
+  state.briefRefAddOpen = false;
+  if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden && !state.briefPickerOpen) {
+    document.body.style.overflow = "";
+  }
+  if (state.view === "brief") renderBrief();
+}
+
 function renderBrief() {
   const savedStyles = state.styles.filter((style) => state.favourites.has(style.id));
   const pickerOpen = state.briefPickerOpen;
+  const refAddOpen = state.briefRefAddOpen;
   const meItems = briefItemsFor("me");
   const refItems = briefItemsFor("references");
 
@@ -2966,7 +3010,7 @@ function renderBrief() {
           <div class="brief-partition-head">
             <h2>Your hair</h2>
           </div>
-          <div class="brief-grid">
+          <div class="brief-grid" id="brief-me-grid">
             ${meItems.map(renderBriefItem).join("")}
             ${renderBriefAddSelf()}
           </div>
@@ -2978,7 +3022,7 @@ function renderBrief() {
             <h2>References</h2>
             <p class="brief-partition-copy">Looks on other people you'd like to take cues from.</p>
           </div>
-          <div class="brief-grid">
+          <div class="brief-grid" id="brief-ref-grid">
             ${refItems.map(renderBriefItem).join("")}
             ${renderBriefAddRef()}
           </div>
@@ -2988,6 +3032,7 @@ function renderBrief() {
       ${renderBriefDetails()}
     </section>
 
+    ${refAddOpen ? renderBriefRefAddPopup() : ""}
     ${pickerOpen ? renderBriefPicker(savedStyles) : ""}
   `;
 
@@ -3027,7 +3072,7 @@ function renderBriefDetails() {
           <textarea id="brief-notes" rows="3" placeholder="Anything else you'd like your stylist to know">${escapeHtml(d.notes || "")}</textarea>
         </label>
       </div>
-  `, d, { isOpen, showGhostAdd: true });
+  `, d, { isOpen, showGhostAdd: true, removable: true });
 }
 
 // A placeholder tile that keeps the "Me" partition occupying at least one grid
@@ -3035,28 +3080,49 @@ function renderBriefDetails() {
 // here go straight into the Me partition.
 function renderBriefAddSelf() {
   return `
-    <label class="brief-add-self" title="Add a photo of yourself">
+    <label class="brief-add-self brief-add-self--upload" title="Add a photo of yourself">
       <span class="brief-add-self-icon" aria-hidden="true">${iconPlus()}</span>
       <span class="brief-add-self-text">Add a photo of you</span>
-      <input type="file" id="brief-self-input" accept="image/*" multiple hidden>
+      <span class="brief-add-self-sub">Upload from device</span>
+      <input class="brief-file-input" type="file" id="brief-self-input" accept="image/*" multiple>
     </label>
   `;
 }
 
-// The matching tile for the References partition. Hovering (or focusing) it
-// reveals two ways to add a reference: upload from the device, or pull one in
-// from the user's saved styles.
+// The matching tile for the References partition. It opens a modal choice so
+// upload controls never sit directly inside the grid card.
 function renderBriefAddRef() {
   return `
-    <div class="brief-add-self brief-add-ref" tabindex="0" title="Add a reference">
+    <button class="brief-add-self brief-add-ref" type="button" id="brief-ref-add" title="Add a reference">
       <span class="brief-add-self-icon" aria-hidden="true">${iconPlus()}</span>
       <span class="brief-add-self-text">Add a reference</span>
-      <div class="brief-add-ref-menu">
-        <label class="brief-add-ref-btn">
-          Upload from device
-          <input type="file" id="brief-ref-input" accept="image/*" multiple hidden>
-        </label>
-        <button class="brief-add-ref-btn" type="button" id="brief-ref-saved">Add from saved</button>
+      <span class="brief-add-self-sub">Upload or choose saved</span>
+    </button>
+  `;
+}
+
+function renderBriefRefAddPopup() {
+  return `
+    <div class="overlay brief-ref-add-overlay" id="brief-ref-add-overlay" role="dialog" aria-modal="true" aria-labelledby="brief-ref-add-title">
+      <div class="overlay-card brief-ref-add-card">
+        <button class="close-btn close-btn--text" id="brief-ref-add-close" type="button" aria-label="Close">Close</button>
+        <div class="brief-picker-head">
+          <div class="overlay-heading">
+            <p class="eyebrow">References</p>
+            <h2 id="brief-ref-add-title">Add a reference</h2>
+          </div>
+        </div>
+        <div class="brief-ref-add-actions">
+          <label class="brief-ref-add-choice">
+            <span class="brief-ref-add-choice-title">Upload photo</span>
+            <span class="brief-ref-add-choice-copy">Choose an image from this device.</span>
+            <input class="brief-file-input" type="file" id="brief-ref-input" accept="image/*" multiple>
+          </label>
+          <button class="brief-ref-add-choice" type="button" id="brief-ref-saved">
+            <span class="brief-ref-add-choice-title">Add from saved</span>
+            <span class="brief-ref-add-choice-copy">Pick one of your favourited styles.</span>
+          </button>
+        </div>
       </div>
     </div>
   `;
@@ -3067,7 +3133,7 @@ function renderBriefPicker(savedStyles) {
   return `
     <div class="overlay brief-picker-overlay" id="brief-picker-overlay" role="dialog" aria-modal="true" aria-labelledby="brief-picker-title">
       <div class="overlay-card brief-picker-card">
-        <button class="close-btn" id="brief-picker-close" type="button" aria-label="Close">&times;</button>
+        <button class="close-btn close-btn--text" id="brief-picker-close" type="button" aria-label="Close">Close</button>
         <div class="brief-picker-head">
           <div class="overlay-heading">
             <p class="eyebrow">References</p>
@@ -3152,6 +3218,44 @@ function renderBriefItem(item) {
   `;
 }
 
+function wireBriefItemCard(card) {
+  if (!card) return;
+
+  card.querySelectorAll("[data-brief-remove]").forEach((button) => {
+    button.addEventListener("click", () => removeBriefItem(button.dataset.briefRemove));
+  });
+  card.querySelectorAll("[data-brief-self-style]").forEach((button) => {
+    button.addEventListener("click", () => {
+      setBriefSelfStyle(button.dataset.briefSelfStyle, button.dataset.selfStyleValue);
+    });
+  });
+  card.querySelectorAll("[data-brief-star]").forEach((button) => {
+    button.addEventListener("click", () => {
+      setBriefRating(button.dataset.briefStar, parseInt(button.dataset.starValue, 10));
+    });
+  });
+  card.querySelectorAll("[data-brief-note]").forEach((area) => {
+    area.addEventListener("input", () => updateBriefNote(area.dataset.briefNote, area.value));
+  });
+}
+
+function insertBriefItemCard(item) {
+  const container = itemPartition(item) === "me" ? $("#brief-me-grid") : $("#brief-ref-grid");
+  if (!container) return false;
+
+  const marker = itemPartition(item) === "me" ? container.querySelector(".brief-add-self") : container.querySelector(".brief-add-ref");
+  const host = document.createElement("div");
+  host.innerHTML = renderBriefItem(item).trim();
+  const card = host.firstElementChild;
+  if (!card) return false;
+
+  if (marker) container.insertBefore(card, marker);
+  else container.appendChild(card);
+
+  wireBriefItemCard(card);
+  return true;
+}
+
 function wireBrief() {
   const shareBtn = $("#brief-share-btn");
   if (shareBtn) {
@@ -3171,10 +3275,18 @@ function wireBrief() {
     if (node) node.addEventListener("input", () => updateBriefDetail(key, node.value));
   });
   const colourCareTab = $("#brief-details-accordion");
-  if (colourCareTab) {
+  if (colourCareTab && colourCareTab.tagName === "DETAILS") {
     colourCareTab.addEventListener("toggle", () => {
       setBriefDetailsOpen(colourCareTab.open);
       renderBrief();
+    });
+  }
+  const removeBriefDetailsBtn = $("[data-remove-brief-details]");
+  if (removeBriefDetailsBtn) {
+    removeBriefDetailsBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      removeBriefDetails();
     });
   }
   // Uploads from the "Me" tile go straight into the Me partition.
@@ -3191,7 +3303,22 @@ function wireBrief() {
     refInput.addEventListener("change", (event) => {
       handleBriefUpload(event.target.files, "references");
       event.target.value = "";
+      closeBriefRefAdd();
     });
+  }
+  const refAdd = $("#brief-ref-add");
+  if (refAdd) {
+    refAdd.addEventListener("click", openBriefRefAdd);
+  }
+  const refAddOverlay = $("#brief-ref-add-overlay");
+  if (refAddOverlay) {
+    refAddOverlay.addEventListener("click", (event) => {
+      if (event.target === refAddOverlay) closeBriefRefAdd();
+    });
+  }
+  const refAddClose = $("#brief-ref-add-close");
+  if (refAddClose) {
+    refAddClose.addEventListener("click", closeBriefRefAdd);
   }
   const refSaved = $("#brief-ref-saved");
   if (refSaved) {
@@ -3210,29 +3337,14 @@ function wireBrief() {
     pickerClose.addEventListener("click", closeBriefPicker);
   }
   document.querySelectorAll("[data-brief-add-saved]").forEach((button) => {
-    button.addEventListener("click", () => addSavedToBrief(button.dataset.briefAddSaved));
-  });
-  document.querySelectorAll("[data-brief-remove]").forEach((button) => {
-    button.addEventListener("click", () => removeBriefItem(button.dataset.briefRemove));
-  });
-  document.querySelectorAll("[data-brief-self-style]").forEach((button) => {
-    button.addEventListener("click", () => {
-      setBriefSelfStyle(button.dataset.briefSelfStyle, button.dataset.selfStyleValue);
-    });
-  });
-  document.querySelectorAll("[data-brief-star]").forEach((button) => {
-    button.addEventListener("click", () => {
-      setBriefRating(button.dataset.briefStar, parseInt(button.dataset.starValue, 10));
-    });
+    button.addEventListener("click", () => addSavedToBrief(button.dataset.briefAddSaved, button));
   });
   // Reference notes update state silently (no re-render) so the textarea keeps
   // focus and the caret position while the user types.
-  document.querySelectorAll("[data-brief-note]").forEach((area) => {
-    area.addEventListener("input", () => updateBriefNote(area.dataset.briefNote, area.value));
-  });
+  document.querySelectorAll(".brief-card").forEach(wireBriefItemCard);
 }
 
-function addSavedToBrief(styleId) {
+function addSavedToBrief(styleId, button = null) {
   const style = state.styles.find((item) => item.id === String(styleId));
   if (!style) return;
   if (state.brief.some((item) => item.styleId === style.id)) return;
@@ -3247,6 +3359,16 @@ function addSavedToBrief(styleId) {
     annotation: ""
   };
   setBrief([item, ...state.brief]);
+  refreshShareButton();
+
+  if (button) {
+    button.disabled = true;
+    button.classList.add("is-added");
+    const flag = button.querySelector(".brief-picker-flag");
+    if (flag) flag.textContent = "Added";
+  }
+
+  if (state.view === "brief" && state.briefPickerOpen && insertBriefItemCard(item)) return;
   renderBrief();
 }
 
@@ -3580,11 +3702,13 @@ function init() {
       document.body.style.overflow = "";
     }
     else if (state.briefPickerOpen) closeBriefPicker();
+    else if (state.briefRefAddOpen) closeBriefRefAdd();
   });
 
   window.addEventListener("popstate", (event) => {
-    if (state.briefPickerOpen) {
+    if (state.briefPickerOpen || state.briefRefAddOpen) {
       state.briefPickerOpen = false;
+      state.briefRefAddOpen = false;
       if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden) {
         document.body.style.overflow = "";
       }

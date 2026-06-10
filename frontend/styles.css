@@ -125,12 +125,6 @@ body[data-view="quiz"] .topbar {
   border-radius: 0;
   color: var(--accent);
   text-align: left;
-  transition: color 120ms ease, transform 120ms ease;
-}
-
-.brief-btn:hover {
-  color: var(--accent-2);
-  transform: translateX(1px);
 }
 
 .brief-btn:focus {
@@ -1689,6 +1683,25 @@ body[data-view="quiz"] .app-shell {
   color: var(--ink);
 }
 
+.close-btn--text {
+  width: auto;
+  min-width: 76px;
+  height: 38px;
+  padding: 0 14px;
+  background: rgba(255, 250, 240, 0.98);
+  border: 1px solid var(--line);
+  box-shadow: 0 8px 20px rgba(70, 54, 34, 0.08);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.close-btn--text:hover {
+  background: #fff3d6;
+  border-color: #d7bf83;
+}
+
 .detail-layout {
   display: grid;
   grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1fr);
@@ -2118,12 +2131,13 @@ body[data-view="quiz"] .app-shell {
   text-transform: uppercase;
 }
 
-.brief-details-summary:hover {
-  background: rgba(237, 226, 200, 0.28);
+.brief-details-summary--static {
+  cursor: default;
 }
 
 /* "Add a photo of you" placeholder tile that keeps the Me box filling a cell */
 .brief-add-self {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2137,12 +2151,6 @@ body[data-view="quiz"] .app-shell {
   color: var(--accent);
   text-align: center;
   cursor: pointer;
-  transition: border-color 150ms ease, background 150ms ease;
-}
-
-.brief-add-self:hover {
-  border-color: var(--accent);
-  background: #fffaf0;
 }
 
 .brief-add-self-icon {
@@ -2165,33 +2173,34 @@ body[data-view="quiz"] .app-shell {
   font-weight: 800;
 }
 
-/* References add tile: hovering/focusing swaps the prompt for its two options. */
-.brief-add-ref:hover,
-.brief-add-ref:focus-within {
-  border-color: var(--accent);
-  background: #fffaf0;
+.brief-add-self-sub {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
-.brief-add-ref-menu {
-  display: none;
-  flex-direction: column;
-  gap: 8px;
+.brief-file-input {
+  position: absolute;
+  inset: 0;
   width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
 }
 
-.brief-add-ref:hover .brief-add-self-icon,
-.brief-add-ref:hover .brief-add-self-text,
-.brief-add-ref:focus-within .brief-add-self-icon,
-.brief-add-ref:focus-within .brief-add-self-text {
-  display: none;
+.brief-add-self--upload .brief-file-input {
+  border-radius: var(--radius);
 }
 
-.brief-add-ref:hover .brief-add-ref-menu,
-.brief-add-ref:focus-within .brief-add-ref-menu {
-  display: flex;
+.brief-add-ref {
+  font: inherit;
 }
 
 .brief-add-ref-btn {
+  position: relative;
+  overflow: hidden;
   width: 100%;
   min-height: 40px;
   display: flex;
@@ -2206,12 +2215,54 @@ body[data-view="quiz"] .app-shell {
   font-weight: 700;
   text-align: center;
   cursor: pointer;
-  transition: border-color 120ms ease, color 120ms ease;
 }
 
-.brief-add-ref-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
+.brief-add-ref-btn span {
+  pointer-events: none;
+}
+
+.brief-ref-add-overlay {
+  z-index: 108;
+  align-items: center;
+}
+
+.brief-ref-add-card {
+  width: min(560px, 100%);
+  padding: 28px 26px 24px;
+}
+
+.brief-ref-add-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.brief-ref-add-choice {
+  position: relative;
+  min-height: 138px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.brief-ref-add-choice-title {
+  font-weight: 800;
+}
+
+.brief-ref-add-choice-copy {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
 }
 
 .brief-picker {
@@ -2277,12 +2328,6 @@ body[data-view="quiz"] .app-shell {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   text-align: left;
-  transition: border-color 150ms ease, transform 150ms ease;
-}
-
-.brief-picker-item:not(:disabled):hover {
-  border-color: var(--accent);
-  transform: translateY(-2px);
 }
 
 .brief-picker-item.is-added {
@@ -2387,10 +2432,6 @@ body[data-view="quiz"] .app-shell {
   line-height: 1;
 }
 
-.brief-remove-btn:hover {
-  background: var(--ink);
-}
-
 .brief-card-body {
   display: flex;
   flex-direction: column;
@@ -2429,12 +2470,6 @@ body[data-view="quiz"] .app-shell {
   font-weight: 700;
   line-height: 1.2;
   text-align: center;
-  transition: transform 120ms ease, border-color 120ms ease, background 120ms ease, color 120ms ease;
-}
-
-.brief-self-style-btn:hover {
-  transform: translateY(-1px);
-  border-color: var(--line-strong);
 }
 
 .brief-self-style-btn:focus {
@@ -2491,16 +2526,11 @@ body[data-view="quiz"] .app-shell {
   border: 0;
   background: transparent;
   color: #d3c4ae;
-  transition: color 120ms ease, transform 120ms ease;
 }
 
 .brief-star svg {
   width: 24px;
   height: 24px;
-}
-
-.brief-star:hover {
-  transform: scale(1.08);
 }
 
 .brief-star.is-on {
@@ -2705,16 +2735,36 @@ body[data-view="quiz"] .app-shell {
   padding: 22px;
 }
 
-.brief-details--ghost .brief-details-summary:hover {
-  background: #fffaf0;
-}
-
 .brief-details[open] .brief-details-summary {
   border-bottom: 1px solid var(--line);
 }
 
 .brief-details-panel {
   padding: 18px 22px 22px;
+}
+
+.brief-details-remove-btn {
+  flex: 0 0 auto;
+  min-height: 34px;
+  padding: 7px 14px;
+  background: #fff5dc;
+  border: 1px solid #dcc38a;
+  border-radius: 999px;
+  color: #8f6b0d;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.brief-details-remove-btn:focus {
+  outline: none;
+}
+
+.brief-details-remove-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .brief-details-grid {
@@ -3225,6 +3275,10 @@ body[data-view="quiz"] .app-shell {
   .brief-picker-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
+  }
+
+  .brief-ref-add-actions {
+    grid-template-columns: 1fr;
   }
 
   .welcome-screen h1,
