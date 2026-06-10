@@ -7,32 +7,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/styles.css?v=2026-06-10-merge-fix" />
+  <link rel="stylesheet" href="/styles.css?v=2026-06-11-nav-tabs" />
 </head>
 <body>
   <header class="topbar">
-    <div class="brand-zone">
-      <button class="brand-btn" id="home-btn" type="button">HairMatch</button>
-      <button class="brief-btn" id="brief-btn" type="button">
-        <span class="brief-btn-copy">
-          <span class="brief-btn-label">My style brief</span>
-          <span class="brief-btn-sub">Open your saved looks and notes</span>
-        </span>
-      </button>
-    </div>
-    <label class="topbar-search-wrap">
-      <span aria-hidden="true">
-        <svg viewBox="0 0 24 24">
-          <circle cx="11" cy="11" r="7"></circle>
-          <path d="M16 16l4 4"></path>
-        </svg>
-      </span>
-      <input type="search" id="topbar-search-input" placeholder="Search by length, texture, vibe, or style name" autocomplete="off">
-    </label>
-    <nav class="top-actions" aria-label="Primary">
-      <button class="favourites-btn" id="favourites-btn" type="button">
-        <span class="favourites-btn-label">Favourites</span>
-      </button>
+    <button class="brand-btn" id="home-btn" data-nav="home" type="button">HairMatch</button>
+    <nav class="top-nav" aria-label="Primary">
+      <button class="nav-link" data-nav="results" type="button">Search</button>
+      <button class="nav-link" data-nav="brief" type="button">Profile</button>
     </nav>
   </header>
 
@@ -113,6 +95,21 @@
   </div>
 
 
-  <script src="/app.js?v=2026-06-10-merge-fix"></script>
+  <nav class="bottom-nav" aria-label="Primary">
+    <button class="bottom-nav-btn" data-nav="home" type="button" aria-label="Home">
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"></path><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9"></path></svg>
+      <span class="bottom-nav-label">Home</span>
+    </button>
+    <button class="bottom-nav-btn" data-nav="results" type="button" aria-label="Search">
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M16 16l4 4"></path></svg>
+      <span class="bottom-nav-label">Search</span>
+    </button>
+    <button class="bottom-nav-btn" data-nav="brief" type="button" aria-label="Profile">
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7"></path></svg>
+      <span class="bottom-nav-label">Profile</span>
+    </button>
+  </nav>
+
+  <script src="/app.js?v=2026-06-11-nav-tabs"></script>
 </body>
 </html>

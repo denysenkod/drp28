@@ -977,8 +977,8 @@ const state = {
   dbStyles: [],
   galleryLoaded: false,
   galleryLoadError: false,
-  view: readStored(VIEW_KEY, "welcome") === "search" ? "results" : readStored(VIEW_KEY, "welcome"),
-  previousView: readStored(PREV_VIEW_KEY, "welcome"),
+  view: ((v) => (v === "search" || v === "welcome" ? (v === "search" ? "results" : "home") : v))(readStored(VIEW_KEY, "home")),
+  previousView: ((v) => (v === "welcome" ? "home" : v))(readStored(PREV_VIEW_KEY, "home")),
   quizStep: readStored(STEP_KEY, 0),
   answers: readStored(ANSWERS_KEY, {}),
   searchQuery: "",
@@ -1012,10 +1012,8 @@ const $ = (sel) => document.querySelector(sel);
 const els = {
   app: $("#app"),
   homeBtn: $("#home-btn"),
-  topbarSearchInput: $("#topbar-search-input"),
-  favouritesBtn: $("#favourites-btn"),
+  navButtons: document.querySelectorAll("[data-nav]"),
   favCount: $("#fav-count"),
-  briefBtn: $("#brief-btn"),
   briefCount: $("#brief-count"),
   detailOverlay: $("#detail-overlay"),
   detailImage: $("#detail-image"),
@@ -1066,8 +1064,8 @@ function setView(view) {
   if (view === "brief") {
     window.history.pushState({ view: "brief", previousView: state.previousView }, "", "?brief");
   }
-  if (view === "welcome") {
-    window.history.pushState({ view: "welcome", previousView: state.previousView }, "", "/");
+  if (view === "home") {
+    window.history.pushState({ view: "home", previousView: state.previousView }, "", "/");
   }
   if (view !== "results") {
     state.filterPanelOpen = false;
@@ -1112,7 +1110,7 @@ function startOver() {
   state.openPreferenceMenu = null;
   state.lengthGenderFilter = "masculine";
   writeStored(STEP_KEY, state.quizStep);
-  setView("welcome");
+  setView("home");
 }
 
 // ---------- Data loading ----------
@@ -1585,10 +1583,7 @@ function stylePassesAnswerFilters(style) {
 function render() {
   syncStylesForCurrentRoute();
   document.body.dataset.view = state.view;
-  if (els.topbarSearchInput && els.topbarSearchInput.value !== state.searchQuery) {
-    els.topbarSearchInput.value = state.searchQuery;
-  }
-  syncTopbarChrome();
+  syncNav();
   updateFavouriteCount();
   updateBriefCount();
 
@@ -1596,51 +1591,33 @@ function render() {
   else if (state.view === "results") renderResultsPage();
   else if (state.view === "brief") renderBrief();
   else if (state.view === "shared") renderSharedBrief();
-  else renderWelcome();
+  else renderHome();
 }
 
-function syncTopbarChrome() {
-  if (!els.briefBtn) return;
-
-  const isBriefView = state.view === "brief";
-  const label = els.briefBtn.querySelector(".brief-btn-label");
-  const sub = els.briefBtn.querySelector(".brief-btn-sub");
-
-  if (label) label.textContent = isBriefView ? "Find your style" : "My style brief";
-  if (sub) sub.textContent = isBriefView ? "Back to search results" : "Open your saved looks and notes";
-  els.briefBtn.setAttribute("aria-label", isBriefView ? "Find your style" : "My style brief");
-  els.briefBtn.title = isBriefView ? "Find your style" : "My style brief";
+// Highlight the active destination in the top (desktop) and bottom (mobile) nav.
+function syncNav() {
+  document.querySelectorAll("[data-nav]").forEach((btn) => {
+    btn.classList.toggle("is-active", btn.dataset.nav === state.view);
+  });
 }
 
-function renderWelcome() {
+// Home: the "Find me a style" call-to-action that opens the survey, followed by
+// a doomscroll feed of the results matching the user's search so far (and
+// nothing else — searching and filtering live on the Search page).
+function renderHome() {
+  const results = computeResults();
   els.app.innerHTML = `
-    <section class="welcome-screen">
-      <div class="welcome-logo-row">
-        <div class="welcome-logo">HairMatch</div>
-      </div>
-      <p class="eyebrow">Let's begin</p>
-      <h1><span>Find a haircut that's </span><em>actually you.</em></h1>
-      <p class="welcome-copy">No endless scrolling. Tell us a little about yourself, or dive straight in and save what catches your eye.</p>
-      <div class="welcome-options">
-        <button class="choice-card" id="find-style-btn" type="button">
-          <span class="choice-icon">${iconCheck()}</span>
-          <span class="choice-title">Find me a style</span>
-          <span class="choice-copy">Answer a few quick questions. We'll narrow thousands of looks down to the ones that suit you.</span>
-          <span class="choice-action">${QUIZ.length} quick questions ${iconArrow()}</span>
-        </button>
-        <button class="choice-card" id="have-mind-btn" type="button">
-          <span class="choice-icon">${iconSearch()}</span>
-          <span class="choice-title">I have something in mind</span>
-          <span class="choice-copy">Jump into the gallery and search freely. Like the photos that speak to you to build your profile.</span>
-          <span class="choice-action">Browse the gallery ${iconArrow()}</span>
-        </button>
-        <button class="choice-card" id="build-brief-btn" type="button">
-          <span class="choice-icon">${iconStar()}</span>
-          <span class="choice-title">Build a style brief</span>
-          <span class="choice-copy">Collect photos of your own hair and references you love, rate them, and bring the brief to your stylist.</span>
-          <span class="choice-action">Start your brief ${iconArrow()}</span>
-        </button>
-      </div>
+    <section class="home-screen">
+      <button class="home-cta choice-card" id="find-style-btn" type="button">
+        <span class="choice-icon">${iconCheck()}</span>
+        <span class="choice-title">Find me a style</span>
+        <span class="choice-copy">Answer a few quick questions. We'll narrow thousands of looks down to the ones that suit you.</span>
+        <span class="choice-action">${QUIZ.length} quick questions ${iconArrow()}</span>
+      </button>
+
+      <section class="results-grid home-feed" id="results-grid">
+        ${results.length ? results.map((style) => buildStyleCardHtml(style)).join("") : `<p class="empty-state">Loading styles…</p>`}
+      </section>
     </section>
   `;
   $("#find-style-btn").addEventListener("click", () => {
@@ -1649,8 +1626,7 @@ function renderWelcome() {
     writeStored(STEP_KEY, state.quizStep);
     setView("quiz");
   });
-  $("#have-mind-btn").addEventListener("click", () => setView("results"));
-  $("#build-brief-btn").addEventListener("click", () => setView("brief"));
+  wireCards();
 }
 
 function renderQuiz() {
@@ -2099,19 +2075,30 @@ function renderRefineRow() {
   `;
 }
 
-function renderResultsPage() {
+// Shared results pipeline: narrow by quiz answers, then text search, then the
+// refine pills, then rank. Used by both the Search page and the Home feed.
+function computeResults() {
   const filtered = selectedAnswerCount() ? answerFilteredStyles() : state.styles;
   const textFiltered = applyTextSearch(filtered);
   const refined = applyRefineFilters(textFiltered);
-  const results = scoredStyles(refined);
+  return scoredStyles(refined);
+}
+
+function renderResultsPage() {
+  const results = computeResults();
   const selectedCount = selectedAnswerCount();
 
   els.app.innerHTML = `
     <section class="results-screen">
+      <label class="search-bar">
+        <span aria-hidden="true">${iconSearch()}</span>
+        <input type="search" id="search-input" placeholder="Search by length, texture, vibe, or style name" value="${escapeAttr(state.searchQuery)}" autocomplete="off">
+      </label>
+
       <div class="results-summary">
         <div>
           <p class="eyebrow">Curated for you</p>
-          <h1>${results.length} styles to try</h1>
+          <h1 id="results-count">${results.length} styles to try</h1>
           <p>These are ranked from the answers you gave. Like anything that feels close.</p>
         </div>
         ${renderDiscoveryActions(selectedCount)}
@@ -2127,7 +2114,29 @@ function renderResultsPage() {
     </section>
   `;
 
+  const searchInput = $("#search-input");
+  if (searchInput) {
+    searchInput.addEventListener("input", (event) => {
+      state.searchQuery = event.target.value;
+      refreshResultsGrid();
+    });
+  }
+
   wireDiscoveryControls();
+  wireCards();
+}
+
+// Re-render only the grid (and result count) so the search field keeps focus
+// while the user is typing.
+function refreshResultsGrid() {
+  const grid = $("#results-grid");
+  if (!grid) return;
+  const results = computeResults();
+  grid.innerHTML = results.length
+    ? results.map((style) => buildStyleCardHtml(style)).join("")
+    : `<p class="empty-state">No exact matches yet. Search all styles instead.</p>`;
+  const count = $("#results-count");
+  if (count) count.textContent = `${results.length} styles to try`;
   wireCards();
 }
 
@@ -2994,7 +3003,7 @@ function renderBrief() {
       <div class="screen-heading">
         <div>
           <p class="eyebrow">Design</p>
-          <h1>My style brief</h1>
+          <h1>Profile</h1>
           <p>Gather photos of your own hair and references on other people, pull in styles you've saved, then rate and annotate each one.</p>
         </div>
         <div class="brief-share">
@@ -3649,24 +3658,10 @@ function escapeAttr(value) {
 
 // ---------- Wire up ----------
 function init() {
-  els.homeBtn.addEventListener("click", () => setView("welcome"));
-  els.topbarSearchInput.addEventListener("focus", () => {
-    if (state.view !== "results") setView("results");
+  // Top nav (desktop) and bottom nav (mobile) share the same data-nav buttons.
+  document.querySelectorAll("[data-nav]").forEach((btn) => {
+    btn.addEventListener("click", () => setView(btn.dataset.nav));
   });
-  els.topbarSearchInput.addEventListener("input", (event) => {
-    state.searchQuery = event.target.value;
-    if (state.view !== "results") {
-      setView("results");
-      return;
-    }
-    renderResultsPage();
-  });
-  els.favouritesBtn.addEventListener("click", () => {
-    renderFavourites();
-    els.favouritesOverlay.hidden = false;
-    document.body.style.overflow = "hidden";
-  });
-  els.briefBtn.addEventListener("click", () => setView(state.view === "brief" ? "results" : "brief"));
 
   els.closeDetail.addEventListener("click", closeDetail);
   els.detailOverlay.addEventListener("click", (event) => {
@@ -3732,15 +3727,15 @@ function init() {
       state.previousView = event.state.previousView ?? "welcome";
       writeStored(PREV_VIEW_KEY, state.previousView);
       render();
-    } else if (event.state?.view === "welcome") {
-      state.view = "welcome";
-      state.previousView = event.state.previousView ?? "welcome";
+    } else if (event.state?.view === "home" || event.state?.view === "welcome") {
+      state.view = "home";
+      state.previousView = event.state.previousView ?? "home";
       writeStored(PREV_VIEW_KEY, state.previousView);
       render();
     } else {
       // Fallback for navigation to root or unknown state
-      state.view = "welcome";
-      state.previousView = "welcome";
+      state.view = "home";
+      state.previousView = "home";
       writeStored(PREV_VIEW_KEY, state.previousView);
       render();
     }
@@ -3765,8 +3760,8 @@ function init() {
     state.view = "brief";
     writeStored(VIEW_KEY, "brief");
   } else {
-    state.view = "welcome";
-    writeStored(VIEW_KEY, "welcome");
+    state.view = "home";
+    writeStored(VIEW_KEY, "home");
   }
 
   render();
