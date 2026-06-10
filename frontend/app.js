@@ -1536,6 +1536,7 @@ function render() {
   if (els.topbarSearchInput && els.topbarSearchInput.value !== state.searchQuery) {
     els.topbarSearchInput.value = state.searchQuery;
   }
+  syncTopbarChrome();
   updateFavouriteCount();
   updateBriefCount();
 
@@ -1544,6 +1545,19 @@ function render() {
   else if (state.view === "brief") renderBrief();
   else if (state.view === "shared") renderSharedBrief();
   else renderWelcome();
+}
+
+function syncTopbarChrome() {
+  if (!els.briefBtn) return;
+
+  const isBriefView = state.view === "brief";
+  const label = els.briefBtn.querySelector(".brief-btn-label");
+  const sub = els.briefBtn.querySelector(".brief-btn-sub");
+
+  if (label) label.textContent = isBriefView ? "Find your style" : "My style brief";
+  if (sub) sub.textContent = isBriefView ? "Back to search results" : "Open your saved looks and notes";
+  els.briefBtn.setAttribute("aria-label", isBriefView ? "Find your style" : "My style brief");
+  els.briefBtn.title = isBriefView ? "Find your style" : "My style brief";
 }
 
 function renderWelcome() {
@@ -2363,7 +2377,7 @@ async function toggleFavourite(id) {
 }
 
 function updateFavouriteCount() {
-  els.favCount.textContent = state.favourites.size;
+  if (els.favCount) els.favCount.textContent = state.favourites.size;
 }
 
 function renderFavourites() {
@@ -3338,7 +3352,7 @@ function init() {
     els.favouritesOverlay.hidden = false;
     document.body.style.overflow = "hidden";
   });
-  els.briefBtn.addEventListener("click", () => setView("brief"));
+  els.briefBtn.addEventListener("click", () => setView(state.view === "brief" ? "results" : "brief"));
 
   els.closeDetail.addEventListener("click", closeDetail);
   els.detailOverlay.addEventListener("click", (event) => {

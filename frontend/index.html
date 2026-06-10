@@ -13,6 +13,12 @@
   <header class="topbar">
     <div class="brand-zone">
       <button class="brand-btn" id="home-btn" type="button">HairMatch</button>
+      <button class="brief-btn" id="brief-btn" type="button">
+        <span class="brief-btn-copy">
+          <span class="brief-btn-label">My style brief</span>
+          <span class="brief-btn-sub">Open your saved looks and notes</span>
+        </span>
+      </button>
     </div>
     <label class="topbar-search-wrap">
       <span aria-hidden="true">
@@ -24,15 +30,8 @@
       <input type="search" id="topbar-search-input" placeholder="Search by length, texture, vibe, or style name" autocomplete="off">
     </label>
     <nav class="top-actions" aria-label="Primary">
-      <button class="favourites-btn brief-btn" id="brief-btn" type="button">
-        <span aria-hidden="true">&#10022;</span>
-        <span>My style brief</span>
-        <span class="fav-count brief-count" id="brief-count">0</span>
-      </button>
       <button class="favourites-btn" id="favourites-btn" type="button">
-        <span aria-hidden="true">&hearts;</span>
-        <span>Saved</span>
-        <span class="fav-count" id="fav-count">0</span>
+        <span class="favourites-btn-label">Favourites</span>
       </button>
     </nav>
   </header>
