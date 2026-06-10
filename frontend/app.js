@@ -1616,7 +1616,7 @@ function renderHome() {
       </button>
 
       <section class="results-grid home-feed" id="results-grid">
-        ${results.length ? results.map((style) => buildStyleCardHtml(style)).join("") : `<p class="empty-state">Loading styles…</p>`}
+        ${results.length ? results.map((style) => buildStyleCardHtml(style, false, { hideFooter: true })).join("") : `<p class="empty-state">Loading styles…</p>`}
       </section>
     </section>
   `;
@@ -2109,7 +2109,7 @@ function renderResultsPage() {
       ${renderRefineRow()}
 
       <section class="results-grid" id="results-grid">
-        ${results.length ? results.map((style) => buildStyleCardHtml(style)).join("") : `<p class="empty-state">No exact matches yet. Search all styles instead.</p>`}
+        ${results.length ? results.map((style) => buildStyleCardHtml(style, false, { hideFooter: true })).join("") : `<p class="empty-state">No exact matches yet. Search all styles instead.</p>`}
       </section>
     </section>
   `;
@@ -2133,7 +2133,7 @@ function refreshResultsGrid() {
   if (!grid) return;
   const results = computeResults();
   grid.innerHTML = results.length
-    ? results.map((style) => buildStyleCardHtml(style)).join("")
+    ? results.map((style) => buildStyleCardHtml(style, false, { hideFooter: true })).join("")
     : `<p class="empty-state">No exact matches yet. Search all styles instead.</p>`;
   const count = $("#results-count");
   if (count) count.textContent = `${results.length} styles to try`;
@@ -2374,14 +2374,15 @@ function renderFilterOption(question, option, isSelected) {
   `;
 }
 
-function buildStyleCardHtml(style, compact = false) {
+function buildStyleCardHtml(style, compact = false, options = {}) {
   const liked = state.favourites.has(style.id);
+  const hideFooter = Boolean(options.hideFooter);
   return `
     <article class="style-card ${compact ? "is-compact" : ""}" data-style-id="${style.id}">
       <button class="style-card-image" type="button" data-open-style="${style.id}" aria-label="Open ${escapeAttr(style.name)}">
         ${style.imageUrl ? `<img src="${style.imageUrl}" alt="${escapeAttr(style.name)}" loading="lazy" referrerpolicy="no-referrer">` : `<span>${escapeHtml(style.name)}</span>`}
       </button>
-      ${compact ? "" : `
+      ${compact || hideFooter ? "" : `
         <div class="style-card-footer">
           <div>
             <h2>${escapeHtml(style.name)}</h2>
