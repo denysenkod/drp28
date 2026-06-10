@@ -2064,6 +2064,64 @@ body[data-view="quiz"] .app-shell {
   font-size: 14px;
 }
 
+.brief-details-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 18px 22px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.brief-details-summary::-webkit-details-marker {
+  display: none;
+}
+
+.brief-details-summary--ghost {
+  justify-content: center;
+  text-align: center;
+}
+
+.brief-details-summary-title {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.05;
+  color: var(--ink);
+}
+
+.brief-details-summary-add {
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.brief-details-summary-state {
+  flex: 0 0 auto;
+  min-width: 66px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-2);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.brief-details-summary:hover {
+  background: rgba(237, 226, 200, 0.28);
+}
+
 /* "Add a photo of you" placeholder tile that keeps the Me box filling a cell */
 .brief-add-self {
   display: flex;
@@ -2311,6 +2369,82 @@ body[data-view="quiz"] .app-shell {
   padding: 14px;
 }
 
+.brief-self-style {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.brief-self-style-label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.brief-self-style-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.brief-self-style-btn {
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  transition: transform 120ms ease, border-color 120ms ease, background 120ms ease, color 120ms ease;
+}
+
+.brief-self-style-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--line-strong);
+}
+
+.brief-self-style-btn:focus {
+  outline: none;
+}
+
+.brief-self-style-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.brief-self-style-btn.is-on {
+  background: var(--accent-soft);
+  border-color: rgba(143, 107, 13, 0.45);
+  color: var(--accent-2);
+}
+
+.brief-self-style-pill {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-2);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.brief-self-style-pill--past {
+  background: #efe8dd;
+  color: #6d5844;
+}
+
 .brief-stars {
   display: flex;
   align-items: center;
@@ -2527,14 +2661,31 @@ body[data-view="quiz"] .app-shell {
 /* ----- Colour & consultation ----- */
 .brief-details {
   margin: 28px 0 4px;
-  padding: 22px;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
+  overflow: hidden;
 }
 
-.brief-details .brief-partition-head {
-  margin-bottom: 16px;
+.brief-details--ghost {
+  background: rgba(255, 250, 240, 0.55);
+  border: 1.5px dashed #d3c4ae;
+}
+
+.brief-details--ghost .brief-details-summary {
+  padding: 22px;
+}
+
+.brief-details--ghost .brief-details-summary:hover {
+  background: #fffaf0;
+}
+
+.brief-details[open] .brief-details-summary {
+  border-bottom: 1px solid var(--line);
+}
+
+.brief-details-panel {
+  padding: 18px 22px 22px;
 }
 
 .brief-details-grid {
@@ -3010,6 +3161,27 @@ body[data-view="quiz"] .app-shell {
 
   .brief-btn-sub {
     font-size: 11px;
+  }
+
+  .brief-details-summary {
+    padding: 16px 18px;
+  }
+
+  .brief-details-summary-title {
+    font-size: 22px;
+  }
+
+  .brief-details-summary-add {
+    font-size: 13px;
+  }
+
+  .brief-details-summary-state {
+    min-width: 56px;
+    font-size: 10px;
+  }
+
+  .brief-details-panel {
+    padding: 14px 18px 18px;
   }
 
   .welcome-screen h1,

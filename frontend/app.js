@@ -14,11 +14,13 @@ const PREV_VIEW_KEY = "drp28.frontend.prevView";
 const BRIEF_KEY = "drp28.frontend.brief";
 const BRIEF_ID_KEY = "drp28.frontend.briefId";
 const BRIEF_DETAILS_KEY = "drp28.frontend.briefDetails";
+const BRIEF_DETAILS_OPEN_KEY = "drp28.frontend.briefDetailsOpen";
 const REVIEWER_NAME_KEY = "drp28.frontend.reviewerName";
 
-// Colour & consultation info that travels with the brief. "No colour treatment"
-// is the default so an untouched brief reads as natural/virgin hair.
-const NO_COLOUR_TREATMENT = "No colour treatment";
+// Hair colour details that travel with the brief. Every field starts blank so
+// users can skip the whole section, while "Natural / undyed" remains available
+// as an explicit colour choice.
+const NO_COLOUR_TREATMENT = "Natural / undyed";
 const HAIR_COLOUR_OPTIONS = [
   NO_COLOUR_TREATMENT,
   "Jet black",
@@ -54,17 +56,47 @@ const HAIR_COLOUR_OPTIONS = [
   "Balayage",
   "Ombré",
   "Bleached / lightened",
-  "Other (describe in notes)"
+  "Other"
 ];
 
 function defaultBriefDetails() {
   return {
-    colour: NO_COLOUR_TREATMENT,
+    colour: "",
     allergies: "",
     previousTreatments: "",
     damage: "",
     notes: ""
   };
+}
+
+function briefDetailsHasContent(details = {}) {
+  const d = details || {};
+  return ["colour", "allergies", "previousTreatments", "damage", "notes"]
+    .some((key) => Boolean(String(d[key] || "").trim()));
+}
+
+function briefDetailsShouldShare(details = {}) {
+  const d = details || {};
+  if (typeof d.detailsOpen === "boolean") return d.detailsOpen;
+  return briefDetailsHasContent(d);
+}
+
+function briefDetailsIsOpen() {
+  if (typeof state.briefDetailsOpen === "boolean") return state.briefDetailsOpen;
+  return briefDetailsHasContent(state.briefDetails);
+}
+
+function setBriefDetailsOpen(open) {
+  state.briefDetailsOpen = Boolean(open);
+  writeStored(BRIEF_DETAILS_OPEN_KEY, state.briefDetailsOpen);
+  refreshShareButton();
+  scheduleBriefSync();
+}
+
+function briefDetailsPayload() {
+  return briefDetailsIsOpen()
+    ? { ...state.briefDetails, detailsOpen: true }
+    : { detailsOpen: false };
 }
 
 function readStored(key, fallback) {
@@ -944,6 +976,7 @@ const state = {
   brief: readStored(BRIEF_KEY, []),
   briefId: readStored(BRIEF_ID_KEY, null),
   briefDetails: { ...defaultBriefDetails(), ...readStored(BRIEF_DETAILS_KEY, {}) },
+  briefDetailsOpen: readStored(BRIEF_DETAILS_OPEN_KEY, null),
   briefPickerOpen: false,
   shareStatus: "",
   sharedBriefId: null,
@@ -2404,12 +2437,18 @@ function setBrief(next) {
   scheduleBriefSync();
 }
 
-// Colour & consultation info (colour treatment, allergies, previous treatments,
-// damage, general notes). Persisted alongside the brief items and synced so it
-// reaches the stylist who opens the share link.
+// Optional hair-colour details. Persisted alongside the brief items and synced
+// so they reach the stylist who opens the share link.
 function setBriefDetails(next) {
-  state.briefDetails = next;
-  writeStored(BRIEF_DETAILS_KEY, next);
+  const cleaned = {
+    colour: String(next?.colour || ""),
+    allergies: String(next?.allergies || ""),
+    previousTreatments: String(next?.previousTreatments || ""),
+    damage: String(next?.damage || ""),
+    notes: String(next?.notes || "")
+  };
+  state.briefDetails = cleaned;
+  writeStored(BRIEF_DETAILS_KEY, cleaned);
   scheduleBriefSync();
 }
 
@@ -2418,18 +2457,10 @@ function updateBriefDetail(key, value) {
   refreshShareButton();
 }
 
-// A brief is worth sharing once it has any item, a colour treatment other than
-// the default, or any consultation notes filled in.
+// A brief is worth sharing once it has any item or any hair-colour details.
 function briefHasContent() {
   if (state.brief.length) return true;
-  const d = state.briefDetails || {};
-  if (d.colour && d.colour !== NO_COLOUR_TREATMENT) return true;
-  return Boolean(
-    String(d.allergies || "").trim() ||
-    String(d.previousTreatments || "").trim() ||
-    String(d.damage || "").trim() ||
-    String(d.notes || "").trim()
-  );
+  return briefDetailsIsOpen() && briefDetailsHasContent(state.briefDetails);
 }
 
 function refreshShareButton() {
@@ -2462,7 +2493,7 @@ async function syncBrief() {
   try {
     const data = await apiJson(API.briefs, {
       method: "POST",
-      body: JSON.stringify({ sessionId: state.sessionId, items: state.brief, details: state.briefDetails })
+      body: JSON.stringify({ sessionId: state.sessionId, items: state.brief, details: briefDetailsPayload() })
     });
     if (data.item?.id && data.item.id !== state.briefId) {
       state.briefId = data.item.id;
@@ -2557,12 +2588,38 @@ function renderStaticStars(rating) {
   `;
 }
 
-// Read-only colour & consultation readout for the reviewer. Shows any field the
-// client filled in; colour always shows since the default is still useful.
+function renderColourCareTab(bodyHtml, details = state.briefDetails, options = {}) {
+  const isOpen = typeof options.isOpen === "boolean" ? options.isOpen : briefDetailsIsOpen();
+  const title = "Hair colour treatment";
+  const addLabel = "Add hair colour treatment";
+  const action = options.actionLabel ?? (isOpen ? "Remove" : "");
+  const detailsClass = `brief-details brief-details-accordion${!isOpen && options.showGhostAdd ? " brief-details--ghost" : ""}`;
+  const summaryClass = `brief-details-summary${!isOpen && options.showGhostAdd ? " brief-details-summary--ghost" : ""}`;
+
+  return `
+    <details class="${detailsClass}" id="brief-details-accordion"${isOpen ? " open" : ""}>
+      <summary class="${summaryClass}">
+        ${!isOpen && options.showGhostAdd
+          ? `<span class="brief-details-summary-add">${escapeHtml(addLabel)}</span>`
+          : `<span class="brief-details-summary-title">${escapeHtml(title)}</span>`
+        }
+        ${action ? `<span class="brief-details-summary-state">${escapeHtml(action)}</span>` : ""}
+      </summary>
+      <div class="brief-details-panel">
+        ${bodyHtml}
+      </div>
+    </details>
+  `;
+}
+
+// Read-only hair-colour readout for the reviewer. Shows only the fields the
+// client explicitly filled in.
 function renderBriefDetailsReview(details) {
   const d = details || {};
+  if (!briefDetailsShouldShare(d)) return "";
+
   const rows = [
-    ["Colour treatment", d.colour || NO_COLOUR_TREATMENT],
+    ["Hair colour treatment", d.colour],
     ["Allergies or sensitivities", d.allergies],
     ["Previous colour treatments", d.previousTreatments],
     ["Damage or breakage", d.damage],
@@ -2571,12 +2628,7 @@ function renderBriefDetailsReview(details) {
 
   if (!rows.length) return "";
 
-  return `
-    <section class="brief-details brief-details--review">
-      <div class="brief-partition-head">
-        <p class="eyebrow">Colour &amp; care</p>
-        <h2>Colour &amp; consultation</h2>
-      </div>
+  return renderColourCareTab(`
       <dl class="brief-details-readout">
         ${rows.map(([label, value]) => `
           <div class="brief-detail-row">
@@ -2585,13 +2637,58 @@ function renderBriefDetailsReview(details) {
           </div>
         `).join("")}
       </dl>
-    </section>
-  `;
+  `, d, { isOpen: true, actionLabel: "" });
 }
 
 // Read-only card: the client's photo with their own rating and note. The stylist
 // no longer comments per photo — feedback is a single high-level summary below.
+// Helpers for the "Your hair" partition: each photo can be marked as a current
+// or past hairstyle, and that choice is reflected in the shared brief too.
+function selfHairstyleStatus(item) {
+  const value = String(item?.hairstyleStatus || "").trim().toLowerCase();
+  return value === "current" || value === "past" ? value : "";
+}
+
+function selfHairstyleLabel(status) {
+  return status === "current"
+    ? "Current hairstyle"
+    : status === "past"
+      ? "Past hairstyle"
+      : "";
+}
+
+function renderSelfHairstyleStatus(item, isReadOnly = false) {
+  const status = selfHairstyleStatus(item);
+
+  if (isReadOnly) {
+    return status
+      ? `<p class="brief-self-style-pill brief-self-style-pill--${escapeAttr(status)}">${escapeHtml(selfHairstyleLabel(status))}</p>`
+      : `<p class="brief-owner-note brief-owner-note--empty">Current or past hairstyle not specified.</p>`;
+  }
+
+  return `
+    <div class="brief-self-style" role="group" aria-label="Mark whether this photo shows your current or past hairstyle">
+      <span class="brief-self-style-label">This photo shows</span>
+      <div class="brief-self-style-options">
+        ${[
+          ["current", "Current hairstyle"],
+          ["past", "Past hairstyle"]
+        ].map(([value, label]) => `
+          <button
+            class="brief-self-style-btn ${status === value ? "is-on" : ""}"
+            type="button"
+            data-brief-self-style="${escapeAttr(item.id)}"
+            data-self-style-value="${escapeAttr(value)}"
+            aria-pressed="${status === value}"
+          >${escapeHtml(label)}</button>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
 function renderSharedItem(item) {
+  const isOwnHair = itemPartition(item) === "me";
   return `
     <article class="brief-card brief-card--review">
       <div class="brief-card-image">
@@ -2600,8 +2697,10 @@ function renderSharedItem(item) {
           : `<span>${escapeHtml(item.name || "Reference")}</span>`}
       </div>
       <div class="brief-card-body">
-        ${renderStaticStars(item.rating)}
-        ${item.annotation ? `<p class="brief-owner-note">${escapeHtml(item.annotation)}</p>` : `<p class="brief-owner-note brief-owner-note--empty">No notes from the client.</p>`}
+        ${isOwnHair
+          ? renderSelfHairstyleStatus(item, true)
+          : `${renderStaticStars(item.rating)}${item.annotation ? `<p class="brief-owner-note">${escapeHtml(item.annotation)}</p>` : `<p class="brief-owner-note brief-owner-note--empty">No notes from the client.</p>`}`
+        }
       </div>
     </article>
   `;
@@ -2835,22 +2934,18 @@ function renderBrief() {
   wireBrief();
 }
 
-// Colour & consultation section: a searchable colour dropdown (native datalist,
-// so the user can pick a shade or type their own) plus consultation prompts. All
-// fields update state silently on input (no re-render) so focus is preserved.
+// Collapsible hair-colour section: the user can open it if they want to note
+// their colour, treatments, or related care notes, or leave it collapsed if it
+// is not relevant. The fields update state silently on input (no re-render) so
+// focus is preserved.
 function renderBriefDetails() {
   const d = state.briefDetails || defaultBriefDetails();
-  return `
-    <section class="brief-details">
-      <div class="brief-partition-head">
-        <p class="eyebrow">Colour &amp; care</p>
-        <h2>Colour &amp; consultation</h2>
-        <p class="brief-partition-copy">Tell your stylist about colour, sensitivities, and your hair's history.</p>
-      </div>
+  const isOpen = briefDetailsIsOpen();
+  return renderColourCareTab(`
       <div class="brief-details-grid">
-        <label class="brief-field">
-          <span>Colour treatment</span>
-          <input type="text" id="brief-colour" list="brief-colour-list" autocomplete="off" placeholder="Search hair colours…" value="${escapeAttr(d.colour || "")}">
+        <label class="brief-field brief-field--wide">
+          <span>Hair colour treatment</span>
+          <input type="text" id="brief-colour" list="brief-colour-list" autocomplete="off" placeholder="Search hair colours, or leave blank" value="${escapeAttr(d.colour || "")}">
           <datalist id="brief-colour-list">
             ${HAIR_COLOUR_OPTIONS.map((c) => `<option value="${escapeAttr(c)}"></option>`).join("")}
           </datalist>
@@ -2872,8 +2967,7 @@ function renderBriefDetails() {
           <textarea id="brief-notes" rows="3" placeholder="Anything else you'd like your stylist to know">${escapeHtml(d.notes || "")}</textarea>
         </label>
       </div>
-    </section>
-  `;
+  `, d, { isOpen, showGhostAdd: true });
 }
 
 // A placeholder tile that keeps the "Me" partition occupying at least one grid
@@ -2961,9 +3055,8 @@ function renderBriefStars(item) {
 }
 
 function renderBriefItem(item) {
-  const notePlaceholder = itemPartition(item) === "references"
-    ? "What did you like about this?"
-    : "Is this your hair currently? A past style you liked?";
+  const isOwnHair = itemPartition(item) === "me";
+  const notePlaceholder = "What did you like about this?";
   return `
     <article class="brief-card" data-brief-id="${escapeAttr(item.id)}">
       <div class="brief-card-image">
@@ -2973,7 +3066,9 @@ function renderBriefItem(item) {
         <button class="brief-remove-btn" type="button" data-brief-remove="${escapeAttr(item.id)}" aria-label="Remove from brief">&times;</button>
       </div>
       <div class="brief-card-body">
-        ${renderBriefStars(item)}
+        ${isOwnHair
+          ? renderSelfHairstyleStatus(item)
+          : `${renderBriefStars(item)}
         <label class="brief-annotation-label">
           <span>Notes</span>
           <textarea
@@ -2982,7 +3077,8 @@ function renderBriefItem(item) {
             rows="2"
             placeholder="${escapeAttr(notePlaceholder)}"
           >${escapeHtml(item.annotation || "")}</textarea>
-        </label>
+        </label>`
+        }
       </div>
     </article>
   `;
@@ -2993,8 +3089,8 @@ function wireBrief() {
   if (shareBtn) {
     shareBtn.addEventListener("click", handleBriefShare);
   }
-  // Colour & consultation fields update state silently (no re-render) so the
-  // input keeps focus while the user types or searches the colour list.
+  // Hair-colour fields update state silently (no re-render) so the current
+  // input keeps focus while the user types.
   const detailFields = [
     ["brief-colour", "colour"],
     ["brief-allergies", "allergies"],
@@ -3006,6 +3102,13 @@ function wireBrief() {
     const node = $(`#${id}`);
     if (node) node.addEventListener("input", () => updateBriefDetail(key, node.value));
   });
+  const colourCareTab = $("#brief-details-accordion");
+  if (colourCareTab) {
+    colourCareTab.addEventListener("toggle", () => {
+      setBriefDetailsOpen(colourCareTab.open);
+      renderBrief();
+    });
+  }
   // Uploads from the "Me" tile go straight into the Me partition.
   const selfInput = $("#brief-self-input");
   if (selfInput) {
@@ -3042,13 +3145,18 @@ function wireBrief() {
   document.querySelectorAll("[data-brief-remove]").forEach((button) => {
     button.addEventListener("click", () => removeBriefItem(button.dataset.briefRemove));
   });
+  document.querySelectorAll("[data-brief-self-style]").forEach((button) => {
+    button.addEventListener("click", () => {
+      setBriefSelfStyle(button.dataset.briefSelfStyle, button.dataset.selfStyleValue);
+    });
+  });
   document.querySelectorAll("[data-brief-star]").forEach((button) => {
     button.addEventListener("click", () => {
       setBriefRating(button.dataset.briefStar, parseInt(button.dataset.starValue, 10));
     });
   });
-  // Notes update state silently (no re-render) so the textarea keeps focus and
-  // the caret position while the user types.
+  // Reference notes update state silently (no re-render) so the textarea keeps
+  // focus and the caret position while the user types.
   document.querySelectorAll("[data-brief-note]").forEach((area) => {
     area.addEventListener("input", () => updateBriefNote(area.dataset.briefNote, area.value));
   });
@@ -3080,7 +3188,8 @@ function addBriefImage(imageUrl, name, partition) {
     name,
     partition,
     rating: 0,
-    annotation: ""
+    annotation: "",
+    hairstyleStatus: ""
   };
   setBrief([item, ...state.brief]);
   if (state.view === "brief") renderBrief();
@@ -3102,6 +3211,19 @@ async function handleBriefUpload(fileList, partition) {
 
 function removeBriefItem(id) {
   setBrief(state.brief.filter((item) => item.id !== id));
+  renderBrief();
+}
+
+function setBriefSelfStyle(id, value) {
+  setBrief(state.brief.map((item) => {
+    if (item.id !== id) return item;
+    if (itemPartition(item) !== "me") return item;
+    const nextValue = value === "current" || value === "past" ? value : "";
+    return {
+      ...item,
+      hairstyleStatus: selfHairstyleStatus(item) === nextValue ? "" : nextValue
+    };
+  }));
   renderBrief();
 }
 
