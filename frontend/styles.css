@@ -345,11 +345,17 @@ body[data-view="quiz"] .app-shell {
   margin-bottom: 16px;
 }
 
-.quiz-top-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.quiz-logo-btn {
   flex-shrink: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1;
 }
 
 .text-btn {
@@ -2565,7 +2571,7 @@ body[data-view="quiz"] .app-shell {
   }
 
   .brand-btn {
-    font-size: 19px;
+    font-size: 23px;
   }
 
   .topbar-search-wrap {
@@ -2683,7 +2689,6 @@ body[data-view="quiz"] .app-shell {
     align-items: flex-end;
     gap: 4px;
   }
-
   .progress-meta {
     font-size: 11px;
   }

@@ -1608,15 +1608,13 @@ function renderQuiz() {
   els.app.innerHTML = `
     <section class="quiz-screen">
       <div class="quiz-top">
+        <button class="quiz-logo-btn" id="quiz-start-over-btn" type="button" aria-label="Start over">HairMatch</button>
         <div class="progress-wrap" aria-label="Question ${state.quizStep + 1} of ${QUIZ.length}">
           <div class="progress-meta">
             <span>Question <b>${state.quizStep + 1}</b> of ${QUIZ.length}</span>
             <span>${progress}%</span>
           </div>
           <div class="progress-track"><div style="width: ${progress}%"></div></div>
-        </div>
-        <div class="quiz-top-actions">
-          <button class="text-btn" id="quiz-start-over-btn" type="button">Start over</button>
         </div>
       </div>
 
