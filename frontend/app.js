@@ -442,16 +442,16 @@ const PRODUCT_LIST = Object.values(PRODUCTS);
 const LENGTH_OPTIONS_BASE = [
   { value: "buzz", label: "Very short", icon: lengthIcon(0), length: "Very Short", image: "/Images/LongHair.webp", images: { 
     masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/Crew-Cut-Fade.webp?v=1755505078", 
-    feminine: "https://i.pinimg.com/564x/3c/e9/4c/3ce94c4ba823664590feb0da06801db5.jpg"} },
+    feminine: "https://hairstyles.thehairstyler.com/hairstyle_views/front_view_images/14295/original/blonde-pixie-hair-cut.jpg"} },
   { value: "short", label: "Short", icon: lengthIcon(1), length: "Short", image: "/Images/LongHair.webp", images: { 
     masculine: "https://static.wixstatic.com/media/63282f_94724ec44c744bdc8bba3da51359d31c~mv2.png/v1/fill/w_980,h_1179,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/63282f_94724ec44c744bdc8bba3da51359d31c~mv2.png", 
-    feminine: "https://i.pinimg.com/736x/79/5c/2d/795c2de7cc8a3da5f77be5a03b02d026.jpg"} },
+    feminine: "https://i.pinimg.com/originals/87/a8/23/87a823af57c7965000c03a93df9406d7.jpg"} },
   { value: "medium", label: "Medium", icon: lengthIcon(2), length: "Medium", image: "/Images/LongHair.webp", images: { 
     masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/medium-length-fluffy-haircut-men_600x600.webp?v=1774622719", 
     feminine: "https://www.southernliving.com/thmb/3xQCbUDxtOwSx9Zr_dv7_yIYoX8=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/classic-mid-length-7447d02832af48a4982f72671dce722b.jpg"} },
   { value: "long", label: "Long", icon: lengthIcon(4), length: "Long", image: "/Images/LongHair.webp", images: { 
     masculine: "https://www.deauvilleaumasculin.com/cdn/shop/articles/thumbnail_d1aef075-6693-446d-9449-56536037a9cb_1100x.jpg?v=1745886543", 
-    feminine: "https://www.fabmood.com/inspiration/wp-content/uploads/2025/02/97425740572471240.jpg"} }
+    feminine: "https://ladyandthehair.com.au/wp-content/uploads/2025/04/Long-Wavy-Hair-with-Bangs-1.jpg"} }
 ];
 
 
@@ -493,7 +493,7 @@ const QUIZ = [
     layout: "image",
     options: [
       { value: "masculine", label: "Masculine styles", gender: "Men", image: "https://cdn.shopify.com/s/files/1/2384/0833/files/Textured_Crop.png?v=1771863492" },
-      { value: "feminine", label: "Feminine styles", gender: "Women", image: "https://i.pinimg.com/originals/9f/1d/2d/9f1d2d3bb3fbbbfccc5902d0ecdf9bc1.png" }
+      { value: "feminine", label: "Feminine styles", gender: "Women", image: "https://i.pinimg.com/736x/02/60/fb/0260fb8291cebe7d8ba355c9befaa81c.jpg" }
     ]
   },
   {
@@ -507,7 +507,7 @@ const QUIZ = [
         feminine: "https://i0.wp.com/therighthairstyles.com/wp-content/uploads/2024/01/12-straight-hair-with-curled-locks.jpg?resize=1440%2C1698&ssl=1" }},
       { value: "wavy", label: "Wavy", icon: textureIcon("wavy"), hairType: "Wavy Hair", image: "/Images/LongHair.webp", images: { 
         masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/medium-length-wavy-hairstyle-men.webp?v=1767878793", 
-        feminine: "https://content.latest-hairstyles.com/wp-content/uploads/curled-waves-on-mid-length-hair.jpg"} },
+        feminine: "https://content.latest-hairstyles.com/wp-content/uploads/best-hairstyles-for-thick-wavy-hair-1x1-1.jpg"} },
       { value: "curly", label: "Curly", icon: textureIcon("curly"), hairType: "Curly Hair", image: "/Images/LongHair.webp", images: { 
         masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/taper-fade-curly-hair-men.webp?v=1767776997", 
         feminine: "https://ucarecdn.com/2c12cace-f519-415a-adeb-fe89f9d123e7/-/format/auto/-/preview/3000x3000/-/quality/lighter/3422432_qdw2.jpg"} },
@@ -537,7 +537,7 @@ const QUIZ = [
     layout: "collage",
     sub: "Feel free to pick multiple options. This will help inform your recommendations.",
     options: [
-      { value: "classic", label: "Timeless", vibe: "classic", keywords: ["classic", "side part", "centre part"], images: {
+      { value: "classic", label: "Classic", vibe: "classic", keywords: ["classic", "side part", "centre part"], images: {
         masculine: "https://cdn.thecoolist.com/wp-content/uploads/2017/05/Slicked-Back-classic-mens-hairstyle-762x999.jpg", 
         feminine: "https://www.instyle.com/thmb/KdwsVUom4JWPeqkoDsiOV7_j0wI=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/GettyImages-1477697852-dc20ae570d684c6d8772bf1051736ff4.jpg"} },
       { value: "trendy", label: "Trendy", keywords: ["modern", "mod", "crop", "trendy"], images: {
@@ -548,13 +548,13 @@ const QUIZ = [
         feminine: "https://content.latest-hairstyles.com/wp-content/uploads/edgy-haircuts-for-women-1200x900.jpg"}  },
       { value: "soft", label: "Romantic", vibe: "soft", keywords: ["soft", "curtain", "fringe", "long"], images: {
         masculine: "https://i.pinimg.com/236x/0d/4a/0a/0d4a0a65aa47fc1010e099c67b54bd90.jpg", 
-        feminine: "https://hairstyles.thehairstyler.com/hairstyle_views/front_view_images/14314/original/long-hairstyle-with-curls.jpg"}  },
+        feminine: "https://nubihair.com/wp-content/uploads/Nubi-Hair-Romantic-Hairstyles.jpg"}  },
       { value: "low-maintanence", label: "Effortless", vibe: "low-maintanence", keywords: ["natural", "effortless", "grow out", "wavy", "low-maintanence"], images: {
         masculine: "https://www.byrdie.com/thmb/u4lP1HcP1E12OnhYVHq4H56lowM=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc():format(webp)/Ryan-Gosling-Lead-c41f2cebb31d405ebd197955987481d9-a0f47d9bbc3f4dd88fe4cdffbbb24f36.jpeg", 
-        feminine: "https://toallmyblackgirls.com/cdn/shop/articles/446355566_988788219324898_6116544399704763552_n_b223fb90-210e-4257-b74d-54db7183e1f0.jpg?v=1756882061"}  },
+        feminine: "https://media.glamour.com/photos/641b144fe20117d5137216b4/master/w_1024%2Cc_limit/IMG_1383.jpg"}  },
       { value: "professional", label: "Professional", vibe: "professional", keywords: ["professional", "classic", "crew", "side"], images: {
         masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/brushed-back-hairstyle-for-men.webp?v=1765268282", 
-        feminine: "https://i.pinimg.com/236x/22/c1/56/22c156d1db360c4616bf58c00d15e6c3.jpg"}  },
+        feminine: "https://media.lovelyish.com/wp-content/uploads/2026/04/Blunt-Bob-Haircut-20.jpg"}  },
       { value: "playful", label: "Playful", vibe: "playful", keywords: ["playful", "frosted", "dyed", "shag"], images: {
         masculine: "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/curly-mullet-hairstyle-men.webp?v=1767776997", 
         feminine: "https://content.latest-hairstyles.com/wp-content/uploads/galleries/10/07/playful-y2k-double-bun-hairstyle-with-curly-bangs.jpg"}  },
@@ -581,12 +581,12 @@ const QUIZ = [
   },
   {
     id: "maintenance",
-    title: "How much maintenance are you thinking of?",
+    title: "How much maintenance?",
     layout: "slider",
     options: [
-      { value: "low", label: "I'd rather not", upkeep: "Low" },
-      { value: "medium", label: "Some is fine", products: ["sea-salt-spray", "texture-powder", "matte-paste"], upkeep: "Medium" },
-      { value: "high", label: "All of it", products: ["curl-cream", "sea-salt-spray", "texture-powder", "matte-paste", "pomade", "gel", "heat-protectant", "hair-oil", "diffuser", "straighteners", "curling-iron"], upkeep: "High" }
+      { value: "low", label: "Low", upkeep: "Low" },
+      { value: "medium", label: "Medium", products: ["sea-salt-spray", "texture-powder", "matte-paste"], upkeep: "Medium" },
+      { value: "high", label: "High", products: ["curl-cream", "sea-salt-spray", "texture-powder", "matte-paste", "pomade", "gel", "heat-protectant", "hair-oil", "diffuser", "straighteners", "curling-iron"], upkeep: "High" }
     ]
   },
 ];
@@ -1600,6 +1600,10 @@ function renderQuiz() {
   const visibleOptions = showLengthGenderToggle
     ? question.options.filter((o) => o.gender === (state.lengthGenderFilter === "masculine" ? "Men" : "Women"))
     : question.options;
+  const quizContentClass = [
+    "quiz-content",
+    isSlider ? "is-slider" : isScale ? "is-scale" : "is-options"
+  ].join(" ");
 
   els.app.innerHTML = `
     <section class="quiz-screen">
@@ -1616,28 +1620,32 @@ function renderQuiz() {
         </div>
       </div>
 
-      <div class="quiz-question">
-        <h1>${question.title}</h1>
-        ${question.sub ? `<p>${question.sub}</p>` : ""}
-        <div class="quiz-question-buttons">
-          ${state.quizStep > 0 ? `<button class="secondary-btn" id="quiz-back-btn" type="button">Back</button>` : ""}
-          <button class="primary-btn" id="quiz-next-btn" type="button"><span id="quiz-next-label">${nextLabel}</span> ${iconArrow()}</button>
-          ${showLengthGenderToggle ? `
-            <div class="length-gender-toggle">
-              <button class="length-gender-btn ${state.lengthGenderFilter === "masculine" ? "is-active" : ""}" type="button" data-length-gender="masculine" aria-label="Men">${iconMale()}</button>
-              <button class="length-gender-btn ${state.lengthGenderFilter === "feminine" ? "is-active" : ""}" type="button" data-length-gender="feminine" aria-label="Women">${iconFemale()}</button>
+      <div class="${quizContentClass}">
+        <div class="quiz-question">
+          <h1>${question.title}</h1>
+          ${question.sub ? `<p>${question.sub}</p>` : ""}
+          <div class="quiz-question-buttons">
+            ${state.quizStep > 0 ? `<button class="secondary-btn" id="quiz-back-btn" type="button">Back</button>` : ""}
+            <button class="primary-btn" id="quiz-next-btn" type="button"><span id="quiz-next-label">${nextLabel}</span> ${iconArrow()}</button>
+            ${showLengthGenderToggle ? `
+              <div class="length-gender-toggle">
+                <button class="length-gender-btn ${state.lengthGenderFilter === "masculine" ? "is-active" : ""}" type="button" data-length-gender="masculine" aria-label="Men">${iconMale()}</button>
+                <button class="length-gender-btn ${state.lengthGenderFilter === "feminine" ? "is-active" : ""}" type="button" data-length-gender="feminine" aria-label="Women">${iconFemale()}</button>
+              </div>
+            ` : ""}
+          </div>
+        </div>
+
+        <div class="quiz-response">
+          ${isSlider ? renderSliderQuestion(question, selected) : isScale ? renderScaleQuestion(question, selected) : `
+            <div class="option-grid ${question.layout === "text" ? "is-text" : question.layout === "collage" ? "is-collage" : ""}">
+              ${visibleOptions.map((option) => renderOption(question, option, isQuizOptionSelected(question, option, selected))).join("")}
             </div>
-          ` : ""}
+          `}
+
+          ${question.id === "face" && selected.includes("unknown") ? renderFaceHelper() : ""}
         </div>
       </div>
-
-      ${isSlider ? renderSliderQuestion(question, selected) : isScale ? renderScaleQuestion(question, selected) : `
-        <div class="option-grid ${question.layout === "text" ? "is-text" : question.layout === "collage" ? "is-collage" : ""}">
-          ${visibleOptions.map((option) => renderOption(question, option, isQuizOptionSelected(question, option, selected))).join("")}
-        </div>
-      `}
-
-      ${question.id === "face" && selected.includes("unknown") ? renderFaceHelper() : ""}
 
       <div class="quiz-footer">
         <span>${selected.length ? `<b>${selected.filter((value) => value !== "__all").length || selected.length}</b> selected` : ""}</span>
@@ -1800,23 +1808,28 @@ function wireScaleQuestion(question) {
   });
 }
 
-// The product example images shown under a slider answer. An option lists the
-// products it wants to showcase by id (`products`); each resolves to its entry
-// in PRODUCTS. Order is preserved so the thumbnails read in the listed order.
-function sliderOptionProducts(option) {
-  return ((option && option.products) || [])
-    .map((id) => PRODUCTS[id])
-    .filter(Boolean);
-}
-
-// Product image thumbnails for an option's example products. They sit under the
-// maintenance answer and open the matching product page when tapped. Shown only
-// when the option lists some products.
+// Product image thumbnails shown under the maintenance slider. They open the
+// matching product page when tapped.
 // Column count for the product grid: one column per product up to 4, so 3
 // products read as a single 3-wide row and 8 wrap into a 2x4 grid.
 function sliderProductsColsClass(products) {
   const cols = Math.min((products || []).length || 1, 4);
   return `slider-products--cols-${cols}`;
+}
+
+// For the maintenance slider: "Some is fine" highlights a lightweight starter
+// trio, "All of it" highlights everything, and "I'd rather not" highlights none.
+function maintenanceActiveProductIds(optionValue) {
+  if (optionValue === "medium") {
+    return new Set(["hair-oil", "gel", "sea-salt-spray"]);
+  }
+  if (optionValue === "high") {
+    return null; // null means all products are active/visible.
+  }
+  if (optionValue === "low") {
+    return new Set();
+  }
+  return null;
 }
 
 function sliderProductsHtml(products, activeIds) {
@@ -1842,17 +1855,13 @@ function renderSliderQuestion(question, selected) {
     ? regularOptions.findIndex((o) => o.value === selected[0])
     : -1;
   const hasSelection = selectedIndex !== -1;
-  const selectedOption = hasSelection ? regularOptions[selectedIndex] : null;
   const sliderValue = hasSelection ? selectedIndex : Math.floor((regularOptions.length - 1) / 2);
   const displayLabel = hasSelection ? regularOptions[selectedIndex].label : "Slide to answer";
-  // All products from the highest level (superset of all lower levels),
-  // sorted by name length so the shortest names lead the wall.
-  const allProducts = sliderOptionProducts(regularOptions[regularOptions.length - 1])
+  // Always show the full product catalog in the final maintenance question.
+  const allProducts = PRODUCT_LIST
     .slice()
     .sort((a, b) => a.name.length - b.name.length);
-  const activeIds = hasSelection && selectedOption.value !== "low"
-    ? new Set(selectedOption.products || [])
-    : new Set();
+  const activeIds = maintenanceActiveProductIds(hasSelection ? regularOptions[selectedIndex].value : null);
 
   return `
     <div class="slider-question-wrap">
@@ -1906,10 +1915,10 @@ function wireSliderQuestion(question) {
       if (option && display) {
         display.textContent = option.label;
         display.classList.remove("is-placeholder");
-        const activeIds = option.value !== "low" ? new Set(option.products || []) : new Set();
+        const activeIds = maintenanceActiveProductIds(option.value);
         if (productsDiv) {
           productsDiv.querySelectorAll(".slider-product").forEach((el) => {
-            el.classList.toggle("is-greyed", !activeIds.has(el.dataset.product));
+            el.classList.toggle("is-greyed", activeIds ? !activeIds.has(el.dataset.product) : false);
           });
         }
       }
@@ -2771,7 +2780,7 @@ function renderBrief() {
         <div>
           <p class="eyebrow">Design</p>
           <h1>My style brief</h1>
-          <p>Gather photos of your own hair and references on other people, pull in styles you've saved, then rate and annotate each one. Bring the whole brief to your stylist.</p>
+          <p>Gather photos of your own hair and references on other people, pull in styles you've saved, then rate and annotate each one.</p>
         </div>
         <div class="brief-share">
           <button class="primary-btn brief-share-btn" id="brief-share-btn" type="button" ${briefHasContent() ? "" : "disabled"}>
@@ -2780,8 +2789,6 @@ function renderBrief() {
           <p class="brief-share-status" id="brief-share-status" ${state.shareStatus ? "" : "hidden"}>${escapeHtml(state.shareStatus)}</p>
         </div>
       </div>
-
-      ${renderBriefDetails()}
 
       ${pickerOpen ? renderBriefPicker(savedStyles) : ""}
 
@@ -2808,6 +2815,8 @@ function renderBrief() {
           </div>
         </section>
       </div>
+
+      ${renderBriefDetails()}
     </section>
   `;
 

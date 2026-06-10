@@ -191,8 +191,8 @@ body[data-view="welcome"] .app-shell {
 }
 
 body[data-view="quiz"] .app-shell {
-  padding-top: clamp(24px, 5vh, 46px);
-  padding-bottom: 24px;
+  padding-top: clamp(12px, 3vh, 28px);
+  padding-bottom: 18px;
 }
 
 .eyebrow {
@@ -331,9 +331,9 @@ body[data-view="quiz"] .app-shell {
 }
 
 .quiz-screen {
-  max-width: 1280px;
+  max-width: 1320px;
   margin: 0 auto;
-  min-height: calc(100vh - 108px);
+  min-height: calc(100vh - 92px);
   display: flex;
   flex-direction: column;
 }
@@ -342,7 +342,7 @@ body[data-view="quiz"] .app-shell {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .quiz-top-actions {
@@ -398,16 +398,32 @@ body[data-view="quiz"] .app-shell {
   transition: width 220ms ease;
 }
 
+.quiz-content {
+  display: grid;
+  grid-template-columns: minmax(260px, 370px) minmax(0, 1fr);
+  align-items: start;
+  gap: 18px;
+  flex: 1;
+  min-height: 0;
+}
+
+.quiz-response {
+  min-width: 0;
+}
+
 .quiz-question {
-  width: min(100%, 760px);
-  margin: 0 auto 22px;
+  width: 100%;
+  margin: 0;
   text-align: left;
+  position: sticky;
+  top: 8px;
 }
 
 .quiz-question-buttons {
   display: flex;
-  gap: 10px;
-  margin-top: 18px;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
 }
 
 .quiz-question .eyebrow {
@@ -417,23 +433,27 @@ body[data-view="quiz"] .app-shell {
 }
 
 .quiz-question h1 {
-  font-size: 46px;
+  font-size: clamp(30px, 4.3vw, 44px);
+  line-height: 1.02;
   max-width: none;
 }
 
 .quiz-question p:not(.eyebrow) {
-  margin: 18px 0 0;
+  margin: 12px 0 0;
+  max-width: 54ch;
+  font-size: clamp(14px, 1.45vw, 17px);
+  line-height: 1.4;
 }
 
 .option-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   grid-auto-rows: auto;
-  gap: 12px;
+  gap: 10px;
 }
 
 .option-grid.is-text {
-  grid-template-columns: repeat(auto-fill, minmax(246px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 .option-grid.is-collage {
@@ -470,11 +490,11 @@ body[data-view="quiz"] .app-shell {
 }
 
 .option-card.is-text {
-  min-height: 76px;
+  min-height: 64px;
   flex-direction: row;
   align-items: center;
-  gap: 12px;
-  padding: 16px;
+  gap: 10px;
+  padding: 12px;
 }
 
 .option-media {
@@ -482,7 +502,7 @@ body[data-view="quiz"] .app-shell {
   display: flex;
   align-items: center;
   justify-content: center;
-  aspect-ratio: 2 / 3;
+  aspect-ratio: 4 / 5;
   background: linear-gradient(180deg, #fbf8f1, var(--surface-2));
   color: var(--ink);
   overflow: hidden;
@@ -490,7 +510,7 @@ body[data-view="quiz"] .app-shell {
 }
 
 .option-media.is-icon {
-  aspect-ratio: 2 / 3;
+  aspect-ratio: 4 / 5;
 }
 
 .option-media svg {
@@ -524,11 +544,11 @@ body[data-view="quiz"] .app-shell {
   flex: 1;
   flex-direction: column;
   gap: 4px;
-  padding: 13px 14px 15px;
+  padding: 11px 12px 13px;
 }
 
 .option-card.is-text .option-body {
-  padding: 0 28px 0 0;
+  padding: 0 24px 0 0;
 }
 
 .option-label {
@@ -542,10 +562,10 @@ body[data-view="quiz"] .app-shell {
 
 .option-check {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 24px;
-  height: 24px;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -601,8 +621,8 @@ body[data-view="quiz"] .app-shell {
 .scale-question-wrap {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-bottom: 28px;
+  gap: 12px;
+  margin-bottom: 18px;
 }
 
 .scale-options {
@@ -617,12 +637,12 @@ body[data-view="quiz"] .app-shell {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 20px 20px;
+  padding: 14px 16px;
   background: var(--surface);
   border: none;
   border-top: 1px solid var(--line);
   text-align: left;
-  font-size: 16px;
+  font-size: 15px;
   color: var(--ink);
   cursor: pointer;
   transition: background 120ms ease, color 120ms ease;
@@ -667,12 +687,12 @@ body[data-view="quiz"] .app-shell {
 }
 
 .scale-skip-btn {
-  padding: 10px 24px;
+  padding: 8px 18px;
   background: var(--surface);
   border: 1.5px solid var(--line);
   border-radius: 100px;
   color: var(--ink);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 120ms ease;
@@ -695,8 +715,8 @@ body[data-view="quiz"] .app-shell {
 .slider-question-wrap {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  margin-bottom: 28px;
+  gap: 14px;
+  margin-bottom: 18px;
 }
 
 .slider-value-display {
@@ -742,10 +762,10 @@ body[data-view="quiz"] .app-shell {
 
 .slider-products {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 160px));
-  justify-content: center;
-  gap: 16px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
   margin-top: 0;
+  padding-bottom: 4px;
 }
 
 .slider-products--cols-1 {
@@ -775,7 +795,7 @@ body[data-view="quiz"] .app-shell {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
   text-decoration: none;
   color: inherit;
@@ -815,10 +835,10 @@ body[data-view="quiz"] .app-shell {
 }
 
 .slider-product-name {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   text-align: center;
-  line-height: 1.25;
+  line-height: 1.2;
 }
 
 .slider-track-wrap {
@@ -1764,7 +1784,7 @@ body[data-view="quiz"] .app-shell {
   }
 
   body[data-view="quiz"] .app-shell {
-    padding-top: 24px;
+    padding-top: 12px;
     padding-bottom: 12px;
   }
 
@@ -1815,18 +1835,24 @@ body[data-view="quiz"] .app-shell {
     min-height: calc(100vh - 68px);
   }
 
+  .quiz-content {
+    grid-template-columns: minmax(240px, 340px) minmax(0, 1fr);
+    gap: 14px;
+  }
+
   .quiz-top {
     margin-bottom: 18px;
   }
 
   .quiz-question {
-    width: min(100%, 780px);
-    margin-bottom: 18px;
+    width: 100%;
+    margin-bottom: 0;
+    top: 6px;
   }
 
   .quiz-question h1 {
     max-width: 780px;
-    font-size: 40px;
+    font-size: 36px;
     line-height: 0.98;
   }
 
@@ -1847,11 +1873,11 @@ body[data-view="quiz"] .app-shell {
   }
 
   .option-media {
-    aspect-ratio: 2 / 3;
+    aspect-ratio: 4 / 5;
   }
 
   .option-media.is-icon {
-    aspect-ratio: 2 / 3;
+    aspect-ratio: 4 / 5;
   }
 
   .option-grid.is-collage .option-media {
@@ -2555,12 +2581,18 @@ body[data-view="quiz"] .app-shell {
 
   .app-shell {
     width: min(100% - 24px, 1120px);
-    padding-top: 24px;
+    padding-top: 18px;
   }
 
   body[data-view="welcome"] .app-shell {
     width: min(100% - 40px, 1120px);
     padding-top: 58px;
+  }
+
+  body[data-view="quiz"] .app-shell {
+    width: min(100% - 24px, 1120px);
+    padding-top: 10px;
+    padding-bottom: 12px;
   }
 
   .welcome-screen {
@@ -2592,6 +2624,16 @@ body[data-view="quiz"] .app-shell {
   .quiz-question p {
     margin-left: 0;
     font-size: 16px;
+  }
+
+  .quiz-question h1 {
+    font-size: 32px;
+    line-height: 1.04;
+  }
+
+  .quiz-question p:not(.eyebrow) {
+    margin-top: 10px;
+    font-size: 15px;
   }
 
   .welcome-options,
@@ -2631,19 +2673,28 @@ body[data-view="quiz"] .app-shell {
   }
 
   .quiz-top {
-    gap: 10px;
-    margin-bottom: 26px;
+    gap: 8px;
+    margin-bottom: 14px;
     align-items: flex-start;
   }
 
   .quiz-top-actions {
-    flex-direction: column;
+    flex-direction: row;
     align-items: flex-end;
     gap: 4px;
   }
 
   .progress-meta {
     font-size: 11px;
+  }
+
+  .quiz-content {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .quiz-question {
+    position: static;
   }
 
   /* Phone / tablet: image-based quiz options become a swipeable carousel.
@@ -2657,7 +2708,7 @@ body[data-view="quiz"] .app-shell {
     scroll-behavior: smooth;
     gap: 12px;
     padding-left: 4px;
-    padding-right: 24px;
+    padding-right: 10px;
     padding-bottom: 4px;
     /* hide scrollbar visually */
     scrollbar-width: none;
@@ -2668,9 +2719,13 @@ body[data-view="quiz"] .app-shell {
   }
 
   .option-grid:not(.is-text):not(.is-collage) .option-card {
-    flex: 0 0 100%;
-    scroll-snap-align: center;
+    flex: 0 0 clamp(220px, 82vw, 340px);
+    scroll-snap-align: start;
     scroll-snap-stop: always;
+  }
+
+  .option-grid:not(.is-text):not(.is-collage) .option-media {
+    aspect-ratio: 1 / 1;
   }
 
   /* Refine filter pills: 3-stop swipeable carousel */
@@ -2690,16 +2745,16 @@ body[data-view="quiz"] .app-shell {
     grid-template-columns: repeat(2, 1fr);
     overflow-x: unset;
     scroll-snap-type: unset;
-    gap: 10px;
+    gap: 8px;
     padding-right: 0;
   }
 
   .option-grid.is-collage .option-media {
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 1 / 1;
   }
 
   .option-grid.is-text {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .results-grid {
@@ -2746,11 +2801,13 @@ body[data-view="quiz"] .app-shell {
   .quiz-footer {
     flex-direction: row;
     align-items: center;
-    padding-top: 8px;
+    padding-top: 6px;
   }
 
   .quiz-question-buttons {
     flex-direction: row;
+    gap: 7px;
+    margin-top: 10px;
   }
 
   .screen-heading,
@@ -2786,12 +2843,29 @@ body[data-view="quiz"] .app-shell {
 @media (max-width: 600px) {
   /* Phone: tighten the two-up quiz cards so the labels and images fit. */
   .option-grid {
-    gap: 8px;
+    gap: 6px;
   }
 
   .option-body {
-    padding: 10px 11px 12px;
+    padding: 9px 10px 11px;
     gap: 2px;
+  }
+
+  .option-card.is-text {
+    min-height: 58px;
+    padding: 10px;
+  }
+
+  .option-card.is-text .option-body {
+    padding-right: 20px;
+  }
+
+  .option-grid:not(.is-text):not(.is-collage) .option-card {
+    flex-basis: clamp(200px, 84vw, 300px);
+  }
+
+  .option-grid:not(.is-text):not(.is-collage) .option-media {
+    aspect-ratio: 9 / 10;
   }
 
   .option-label {
@@ -2811,19 +2885,23 @@ body[data-view="quiz"] .app-shell {
   .welcome-screen h1,
   .screen-heading h1,
   .results-summary h1 {
-    font-size: 34px;
+    font-size: 30px;
   }
 
   .quiz-question p,
   .welcome-copy,
   .screen-heading p,
   .results-summary p {
-    font-size: 15px;
+    font-size: 14px;
+  }
+
+  .quiz-top {
+    margin-bottom: 10px;
   }
 
   .quiz-screen,
   .welcome-screen {
-    padding-top: 16px;
+    padding-top: 10px;
   }
 }
 
@@ -2844,7 +2922,15 @@ body[data-view="quiz"] .app-shell {
   .quiz-question h1,
   .screen-heading h1,
   .results-summary h1 {
-    font-size: 32px;
+    font-size: 28px;
+  }
+
+  .option-grid.is-text {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .quiz-question-buttons .primary-btn {
+    flex: 1 1 180px;
   }
 
   .overlay {
