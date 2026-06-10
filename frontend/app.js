@@ -2485,10 +2485,11 @@ let briefSyncQueued = false;
 
 function scheduleBriefSync() {
   if (briefSyncTimer) clearTimeout(briefSyncTimer);
+  const delay = state.briefId ? 800 : 160;
   briefSyncTimer = setTimeout(() => {
     briefSyncTimer = null;
     syncBrief();
-  }, 800);
+  }, delay);
 }
 
 async function syncBrief() {
@@ -2541,19 +2542,14 @@ function prefersNativeBriefShare() {
 }
 
 async function handleBriefShare() {
-  setShareStatus("Preparing share options...");
-  let id = state.briefId;
-  try {
-    id = await flushBriefSync();
-  } catch {
-    id = state.briefId;
-  }
-  if (!id) {
-    setShareStatus("Couldn't create a link. Check your connection and try again.");
-    return;
-  }
-  const link = briefShareLink();
-  if (prefersNativeBriefShare() && typeof navigator.share === "function") {
+  const nativeShare = prefersNativeBriefShare() && typeof navigator.share === "function";
+
+  // Mobile share sheets need to open directly from the tap handler. Once we
+  // already have a stable brief id, we can share that link immediately and let
+  // the latest edits finish syncing in the background.
+  if (nativeShare && state.briefId) {
+    const link = briefShareLink();
+    void flushBriefSync().catch(() => null);
     try {
       await navigator.share({
         title: "HairMatch style brief",
@@ -2569,6 +2565,25 @@ async function handleBriefShare() {
       }
     }
   }
+
+  setShareStatus(nativeShare ? "Getting your share link ready..." : "Preparing share options...");
+  let id = state.briefId;
+  try {
+    id = await flushBriefSync();
+  } catch {
+    id = state.briefId;
+  }
+  if (!id) {
+    setShareStatus("Couldn't create a link. Check your connection and try again.");
+    return;
+  }
+  const link = briefShareLink();
+
+  if (nativeShare) {
+    setShareStatus("Your share link is ready. Tap Share with stylist once more to open your phone's share options.", link);
+    return;
+  }
+
   let copied = false;
   try {
     await navigator.clipboard?.writeText(link);
