@@ -1865,7 +1865,7 @@ function wireScaleQuestion(question) {
   });
 }
 
-// Product image thumbnails shown under the maintenance slider. They open the
+// Product image thumbnails shown under the maintenance selector. They open the
 // matching product page when tapped.
 // Column count for the product grid: one column per product up to 4, so 3
 // products read as a single 3-wide row and 8 wrap into a 2x4 grid.
@@ -1874,7 +1874,7 @@ function sliderProductsColsClass(products) {
   return `slider-products--cols-${cols}`;
 }
 
-// For the maintenance slider: "Some is fine" highlights a lightweight starter
+// For the maintenance selector: "Some is fine" highlights a lightweight starter
 // trio, "All of it" highlights everything, and "I'd rather not" highlights none.
 function maintenanceActiveProductIds(optionValue) {
   if (optionValue === "medium") {
@@ -1904,6 +1904,30 @@ function sliderProductsHtml(products, activeIds) {
   }).join("");
 }
 
+function maintenanceLevelCopy(value) {
+  if (value === "low") return "Minimal styling, easiest upkeep.";
+  if (value === "medium") return "A small product routine is fine.";
+  if (value === "high") return "Open to tools, products, and styling.";
+  return "";
+}
+
+function maintenanceProductPageHtml(option, products, isSelected) {
+  const activeIds = maintenanceActiveProductIds(option.value);
+  return `
+    <section
+      class="maintenance-product-page${isSelected ? " is-selected" : ""}"
+      data-maintenance-value="${escapeAttr(option.value)}"
+      aria-label="${escapeAttr(option.label)} upkeep"
+    >
+      <div class="maintenance-page-heading">
+        <span>${escapeHtml(option.label)}</span>
+        <small>${escapeHtml(maintenanceLevelCopy(option.value))}</small>
+      </div>
+      <div class="slider-products ${sliderProductsColsClass(products)}">${sliderProductsHtml(products, activeIds)}</div>
+    </section>
+  `;
+}
+
 function renderSliderQuestion(question, selected) {
   const regularOptions = question.options.filter((o) => !o.exclusive);
   const exclusiveOption = question.options.find((o) => o.exclusive);
@@ -1912,35 +1936,18 @@ function renderSliderQuestion(question, selected) {
     ? regularOptions.findIndex((o) => o.value === selected[0])
     : -1;
   const hasSelection = selectedIndex !== -1;
-  const sliderValue = hasSelection ? selectedIndex : Math.floor((regularOptions.length - 1) / 2);
-  const displayLabel = hasSelection ? regularOptions[selectedIndex].label : "Slide to answer";
+  const selectedValue = hasSelection ? regularOptions[selectedIndex].value : "";
   // Always show the full product catalog in the final maintenance question.
   const allProducts = PRODUCT_LIST
     .slice()
     .sort((a, b) => a.name.length - b.name.length);
-  const activeIds = maintenanceActiveProductIds(hasSelection ? regularOptions[selectedIndex].value : null);
 
   return `
     <div class="slider-question-wrap">
-      <div class="slider-value-display ${!hasSelection ? "is-placeholder" : ""}">
-        ${escapeHtml(displayLabel)}
-      </div>
-      <div class="slider-track-wrap">
-        <span class="slider-end-label">${escapeHtml(regularOptions[0].label)}</span>
-        <input
-          type="range"
-          class="quiz-slider"
-          id="quiz-slider-input"
-          min="0"
-          max="${regularOptions.length - 1}"
-          step="1"
-          value="${sliderValue}"
-          ${isExclusiveSelected ? "disabled" : ""}
-        >
-        <span class="slider-end-label">${escapeHtml(regularOptions[regularOptions.length - 1].label)}</span>
-      </div>
       <p class="slider-product-hint">Tap a product to learn more about it</p>
-      <div class="slider-products ${sliderProductsColsClass(allProducts)}">${sliderProductsHtml(allProducts, activeIds)}</div>
+      <div class="maintenance-product-pager" data-maintenance-picker>
+        ${regularOptions.map((option) => maintenanceProductPageHtml(option, allProducts, selectedValue === option.value)).join("")}
+      </div>
       ${exclusiveOption ? `
         <div class="scale-skip-row">
           <button
@@ -1959,34 +1966,47 @@ function renderSliderQuestion(question, selected) {
 
 function wireSliderQuestion(question) {
   const regularOptions = question.options.filter((o) => !o.exclusive);
-  const slider = document.getElementById("quiz-slider-input");
-  const display = document.querySelector(".slider-value-display");
-  const productsDiv = document.querySelector(".slider-products");
+  const picker = document.querySelector("[data-maintenance-picker]");
 
   // Make the (possibly pre-selected) answer's product thumbnails tappable.
-  if (productsDiv) wireProductLinks(productsDiv);
+  if (picker) wireProductLinks(picker);
 
-  if (slider) {
-    slider.addEventListener("input", () => {
-      const option = regularOptions[parseInt(slider.value, 10)];
-      if (option && display) {
-        display.textContent = option.label;
-        display.classList.remove("is-placeholder");
-        const activeIds = maintenanceActiveProductIds(option.value);
-        if (productsDiv) {
-          productsDiv.querySelectorAll(".slider-product").forEach((el) => {
-            el.classList.toggle("is-greyed", activeIds ? !activeIds.has(el.dataset.product) : false);
-          });
-        }
-      }
-    });
-    slider.addEventListener("change", () => {
-      const option = regularOptions[parseInt(slider.value, 10)];
-      if (option) {
-        setAnswers({ ...state.answers, [question.id]: [option.value] });
+  if (picker) {
+    const selectedValue = selectedFor(question).find((value) => regularOptions.some((option) => option.value === value));
+    const selectedPage = selectedValue
+      ? [...picker.querySelectorAll("[data-maintenance-value]")].find((card) => card.dataset.maintenanceValue === selectedValue)
+      : null;
+    if (selectedPage) {
+      requestAnimationFrame(() => selectedPage.scrollIntoView({ behavior: "instant", block: "nearest", inline: "center" }));
+    }
+
+    picker.querySelectorAll("[data-maintenance-value]").forEach((page) => {
+      page.addEventListener("click", (event) => {
+        if (event.target.closest("[data-product]")) return;
+        setAnswers({ ...state.answers, [question.id]: [page.dataset.maintenanceValue] });
         render();
-      }
+      });
     });
+
+    let scrollTimer = null;
+    picker.addEventListener("scroll", () => {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => {
+        const pages = [...picker.querySelectorAll("[data-maintenance-value]")];
+        if (!pages.length) return;
+        const pickerCenter = picker.getBoundingClientRect().left + picker.clientWidth / 2;
+        const closest = pages.reduce((best, page) => {
+          const rect = page.getBoundingClientRect();
+          const distance = Math.abs(rect.left + rect.width / 2 - pickerCenter);
+          return distance < best.distance ? { page, distance } : best;
+        }, { page: pages[0], distance: Infinity }).page;
+        const value = closest?.dataset.maintenanceValue;
+        if (value && selectedFor(question)[0] !== value) {
+          setAnswers({ ...state.answers, [question.id]: [value] });
+          render();
+        }
+      }, 160);
+    }, { passive: true });
   }
 
   const skipBtn = document.querySelector("[data-slider-skip]");
