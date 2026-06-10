@@ -55,12 +55,10 @@ svg {
   position: sticky;
   top: 0;
   z-index: 40;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-rows: auto auto;
-  column-gap: 16px;
-  row-gap: 8px;
-  align-items: start;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   min-height: 64px;
   padding: 0 24px;
   background: rgba(246, 241, 234, 0.92);
@@ -68,9 +66,35 @@ svg {
   backdrop-filter: blur(16px);
 }
 
+.top-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-link {
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.nav-link:hover {
+  background: var(--surface);
+}
+
+.nav-link.is-active {
+  background: var(--accent);
+  color: var(--surface);
+}
+
 .brand-zone {
-  grid-column: 1;
-  grid-row: 1;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -86,8 +110,17 @@ svg {
   margin-bottom: 62px;
 }
 
-body[data-view="welcome"] .topbar,
-body[data-view="quiz"] .topbar {
+body[data-view="quiz"] .topbar,
+body[data-view="shared"] .topbar {
+  display: none;
+}
+
+.brand-btn {
+  cursor: pointer;
+}
+
+/* Mobile bottom tab bar — hidden on desktop, shown ≤820px. */
+.bottom-nav {
   display: none;
 }
 
@@ -267,10 +300,9 @@ body[data-view="brief"] .topbar-search-wrap {
   padding: 38px 0 86px;
 }
 
-body[data-view="welcome"] .app-shell {
+body[data-view="home"] .app-shell {
   width: min(1480px, calc(100% - 56px));
-  padding-top: clamp(44px, 8vh, 96px);
-  padding-bottom: 24px;
+  padding-top: clamp(32px, 5vh, 64px);
 }
 
 body[data-view="quiz"] .app-shell {
@@ -411,6 +443,58 @@ body[data-view="quiz"] .app-shell {
 .primary-btn svg {
   width: 18px;
   height: 18px;
+}
+
+/* Home: "Find me a style" CTA stacked above the doomscroll feed. */
+.home-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.home-cta {
+  width: min(100%, 720px);
+  min-height: auto;
+  margin: 8px 0 40px;
+}
+
+.home-feed {
+  width: 100%;
+}
+
+/* In-page search bar on the Search view (the topbar search box moved here). */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  margin-bottom: 28px;
+  padding: 0 16px;
+  background: var(--surface);
+  border: 1px solid #d8cbb9;
+  border-radius: 999px;
+  color: var(--muted);
+}
+
+.search-bar svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.search-bar input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 16px;
 }
 
 .quiz-screen {
@@ -1878,7 +1962,7 @@ body[data-view="quiz"] .app-shell {
 }
 
 @media (min-width: 821px) and (max-height: 760px) {
-  body[data-view="welcome"] .app-shell {
+  body[data-view="home"] .app-shell {
     padding-top: 34px;
   }
 
@@ -2827,33 +2911,73 @@ body[data-view="quiz"] .app-shell {
     grid-template-columns: 1fr;
   }
 
+  /* Mobile: top bar is replaced by the bottom tab bar. */
   .topbar {
-    gap: 10px;
-    padding: 0 16px;
+    display: none;
   }
 
-  .brand-btn {
-    font-size: 23px;
+  .bottom-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    display: flex;
+    justify-content: space-around;
+    align-items: stretch;
+    padding: 6px 4px max(6px, env(safe-area-inset-bottom));
+    background: rgba(246, 241, 234, 0.96);
+    border-top: 1px solid var(--line);
+    backdrop-filter: blur(16px);
   }
 
-  .topbar-search-wrap {
-    max-width: none;
-    margin: 0;
+  .bottom-nav-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  .top-actions {
-    margin-left: 0;
-    align-self: flex-start;
+  .bottom-nav-btn svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .bottom-nav-btn.is-active {
+    color: var(--accent);
+  }
+
+  /* Icons only on mobile. */
+  .bottom-nav-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  /* Quiz is a full-screen flow with no bottom nav. */
+  body[data-view="quiz"] .bottom-nav,
+  body[data-view="shared"] .bottom-nav {
+    display: none;
   }
 
   .app-shell {
     width: min(100% - 24px, 1120px);
     padding-top: 18px;
+    padding-bottom: 90px;
   }
 
-  body[data-view="welcome"] .app-shell {
+  body[data-view="home"] .app-shell {
     width: min(100% - 40px, 1120px);
-    padding-top: 58px;
+    padding-top: 28px;
   }
 
   body[data-view="quiz"] .app-shell {

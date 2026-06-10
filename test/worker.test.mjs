@@ -699,7 +699,8 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(app.includes('const haystack = styleHaystack(style);'));
   assert.ok(app.includes('hairColours.has(hairColourKey(style.hairColour))'));
   assert.ok(app.includes('style.hairThickness === thickness'));
-  assert.ok(app.includes('const results = scoredStyles(refined);'));
+  assert.ok(app.includes('function computeResults()'));
+  assert.ok(app.includes('return scoredStyles(refined);'));
   assert.ok(app.includes('toggleFavourite'));
   assert.ok(index.includes('data-filter="gender"'));
   assert.ok(index.includes('id="results-grid"'));
