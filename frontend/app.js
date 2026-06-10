@@ -2534,8 +2534,14 @@ function briefShareLink() {
   return `${window.location.origin}/?brief=${encodeURIComponent(state.briefId)}`;
 }
 
+function prefersNativeBriefShare() {
+  const uaDataMobile = navigator.userAgentData?.mobile;
+  if (typeof uaDataMobile === "boolean") return uaDataMobile;
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || "");
+}
+
 async function handleBriefShare() {
-  setShareStatus("Saving…");
+  setShareStatus("Preparing share options...");
   let id = state.briefId;
   try {
     id = await flushBriefSync();
@@ -2547,7 +2553,7 @@ async function handleBriefShare() {
     return;
   }
   const link = briefShareLink();
-  if (typeof navigator.share === "function") {
+  if (prefersNativeBriefShare() && typeof navigator.share === "function") {
     try {
       await navigator.share({
         title: "HairMatch style brief",
@@ -2565,12 +2571,12 @@ async function handleBriefShare() {
   }
   let copied = false;
   try {
-    await navigator.clipboard.writeText(link);
+    await navigator.clipboard?.writeText(link);
     copied = true;
   } catch {
     copied = false;
   }
-  setShareStatus(copied ? "Your browser shared the link by copying it to the clipboard." : link, link);
+  setShareStatus(copied ? "Link copied to clipboard. You can now send it to your stylist." : `Copy this brief link: ${link}`, link);
 }
 
 function setShareStatus(message, link = "") {
