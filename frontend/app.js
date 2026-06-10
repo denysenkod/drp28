@@ -1037,6 +1037,13 @@ function setView(view) {
     writeStored(PREV_VIEW_KEY, state.previousView);
   }
 
+  if (view !== "brief") {
+    state.briefPickerOpen = false;
+    if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden) {
+      document.body.style.overflow = "";
+    }
+  }
+
   state.view = view;
   if (view === "quiz") {
     window.history.pushState({ view: "quiz", quizStep: state.quizStep, previousView: state.previousView }, "", `?quiz=${state.quizStep}`);
@@ -2540,6 +2547,22 @@ async function handleBriefShare() {
     return;
   }
   const link = briefShareLink();
+  if (typeof navigator.share === "function") {
+    try {
+      await navigator.share({
+        title: "HairMatch style brief",
+        text: "Here's my HairMatch style brief for our appointment.",
+        url: link
+      });
+      setShareStatus("");
+      return;
+    } catch (error) {
+      if (error?.name === "AbortError") {
+        setShareStatus("");
+        return;
+      }
+    }
+  }
   let copied = false;
   try {
     await navigator.clipboard.writeText(link);
@@ -2547,7 +2570,7 @@ async function handleBriefShare() {
   } catch {
     copied = false;
   }
-  setShareStatus(copied ? "Link copied to clipboard." : link, link);
+  setShareStatus(copied ? "Your browser shared the link by copying it to the clipboard." : link, link);
 }
 
 function setShareStatus(message, link = "") {
@@ -2557,6 +2580,7 @@ function setShareStatus(message, link = "") {
     node.textContent = message;
     node.hidden = !message;
     if (link) node.dataset.link = link;
+    else delete node.dataset.link;
   }
 }
 
@@ -2879,6 +2903,21 @@ function briefItemsFor(partition) {
   return state.brief.filter((item) => itemPartition(item) === partition);
 }
 
+function openBriefPicker() {
+  state.briefPickerOpen = true;
+  document.body.style.overflow = "hidden";
+  renderBrief();
+}
+
+function closeBriefPicker() {
+  if (!state.briefPickerOpen) return;
+  state.briefPickerOpen = false;
+  if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden) {
+    document.body.style.overflow = "";
+  }
+  if (state.view === "brief") renderBrief();
+}
+
 function renderBrief() {
   const savedStyles = state.styles.filter((style) => state.favourites.has(style.id));
   const pickerOpen = state.briefPickerOpen;
@@ -2900,8 +2939,6 @@ function renderBrief() {
           <p class="brief-share-status" id="brief-share-status" ${state.shareStatus ? "" : "hidden"}>${escapeHtml(state.shareStatus)}</p>
         </div>
       </div>
-
-      ${pickerOpen ? renderBriefPicker(savedStyles) : ""}
 
       <div class="brief-partitions">
         <section class="brief-partition brief-partition--me">
@@ -2929,6 +2966,8 @@ function renderBrief() {
 
       ${renderBriefDetails()}
     </section>
+
+    ${pickerOpen ? renderBriefPicker(savedStyles) : ""}
   `;
 
   wireBrief();
@@ -3005,33 +3044,41 @@ function renderBriefAddRef() {
 function renderBriefPicker(savedStyles) {
   const inBrief = new Set(state.brief.map((item) => item.styleId).filter(Boolean));
   return `
-    <div class="brief-picker">
-      <div class="brief-picker-head">
-        <p>Add from your saved styles</p>
-        <button class="text-btn" id="brief-picker-close" type="button">Done</button>
-      </div>
-      ${savedStyles.length ? `
-        <div class="brief-picker-grid">
-          ${savedStyles.map((style) => {
-            const added = inBrief.has(style.id);
-            return `
-              <button
-                class="brief-picker-item ${added ? "is-added" : ""}"
-                type="button"
-                data-brief-add-saved="${escapeAttr(style.id)}"
-                ${added ? "disabled" : ""}
-                aria-label="${added ? "Already in brief" : "Add to brief"}: ${escapeAttr(style.name)}"
-              >
-                <span class="brief-picker-thumb">
-                  ${style.imageUrl ? `<img src="${escapeAttr(style.imageUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ""}
-                </span>
-                <span class="brief-picker-name">${escapeHtml(style.name)}</span>
-                <span class="brief-picker-flag">${added ? "Added" : "Add"}</span>
-              </button>
-            `;
-          }).join("")}
+    <div class="overlay brief-picker-overlay" id="brief-picker-overlay" role="dialog" aria-modal="true" aria-labelledby="brief-picker-title">
+      <div class="overlay-card brief-picker-card">
+        <button class="close-btn" id="brief-picker-close" type="button" aria-label="Close">&times;</button>
+        <div class="brief-picker-head">
+          <div class="overlay-heading">
+            <p class="eyebrow">References</p>
+            <h2 id="brief-picker-title">Add from saved</h2>
+          </div>
+          <p class="brief-picker-copy">Choose from your favourites and add them into your reference board.</p>
         </div>
-      ` : `<p class="brief-picker-empty">No saved styles yet. Save styles from search or results and they'll show up here.</p>`}
+        <div class="brief-picker-body">
+          ${savedStyles.length ? `
+            <div class="brief-picker-grid">
+              ${savedStyles.map((style) => {
+                const added = inBrief.has(style.id);
+                return `
+                  <button
+                    class="brief-picker-item ${added ? "is-added" : ""}"
+                    type="button"
+                    data-brief-add-saved="${escapeAttr(style.id)}"
+                    ${added ? "disabled" : ""}
+                    aria-label="${added ? "Already in brief" : "Add to brief"}: ${escapeAttr(style.name)}"
+                  >
+                    <span class="brief-picker-thumb">
+                      ${style.imageUrl ? `<img src="${escapeAttr(style.imageUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ""}
+                    </span>
+                    <span class="brief-picker-name">${escapeHtml(style.name)}</span>
+                    <span class="brief-picker-flag">${added ? "Added" : "Add"}</span>
+                  </button>
+                `;
+              }).join("")}
+            </div>
+          ` : `<p class="brief-picker-empty">No saved styles yet. Save styles from search or results and they'll show up here.</p>`}
+        </div>
+      </div>
     </div>
   `;
 }
@@ -3128,16 +3175,18 @@ function wireBrief() {
   const refSaved = $("#brief-ref-saved");
   if (refSaved) {
     refSaved.addEventListener("click", () => {
-      state.briefPickerOpen = true;
-      renderBrief();
+      openBriefPicker();
+    });
+  }
+  const pickerOverlay = $("#brief-picker-overlay");
+  if (pickerOverlay) {
+    pickerOverlay.addEventListener("click", (event) => {
+      if (event.target === pickerOverlay) closeBriefPicker();
     });
   }
   const pickerClose = $("#brief-picker-close");
   if (pickerClose) {
-    pickerClose.addEventListener("click", () => {
-      state.briefPickerOpen = false;
-      renderBrief();
-    });
+    pickerClose.addEventListener("click", closeBriefPicker);
   }
   document.querySelectorAll("[data-brief-add-saved]").forEach((button) => {
     button.addEventListener("click", () => addSavedToBrief(button.dataset.briefAddSaved));
@@ -3509,9 +3558,16 @@ function init() {
       els.favouritesOverlay.hidden = true;
       document.body.style.overflow = "";
     }
+    else if (state.briefPickerOpen) closeBriefPicker();
   });
 
   window.addEventListener("popstate", (event) => {
+    if (state.briefPickerOpen) {
+      state.briefPickerOpen = false;
+      if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden) {
+        document.body.style.overflow = "";
+      }
+    }
     // Handle navigation back through history
     if (event.state?.view === "quiz") {
       state.view = "quiz";

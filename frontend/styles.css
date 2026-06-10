@@ -2222,23 +2222,50 @@ body[data-view="quiz"] .app-shell {
   box-shadow: var(--shadow);
 }
 
-.brief-picker-head {
-  display: flex;
+.brief-picker-overlay {
+  z-index: 108;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
 }
 
-.brief-picker-head p {
+.brief-picker-card {
+  width: min(920px, 100%);
+  max-height: min(86vh, 920px);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 28px 26px 24px;
+  overflow: hidden;
+}
+
+.brief-picker-head {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 42px;
+}
+
+.brief-picker-head .overlay-heading {
+  display: grid;
+  gap: 8px;
+}
+
+.brief-picker-copy {
   margin: 0;
-  font-weight: 800;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.brief-picker-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .brief-picker-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px;
 }
 
 .brief-picker-item {
@@ -2302,6 +2329,8 @@ body[data-view="quiz"] .app-shell {
 .brief-picker-empty {
   margin: 0;
   color: var(--muted);
+  padding: 18px 0 8px;
+  text-align: center;
 }
 
 .brief-card {
@@ -3182,6 +3211,20 @@ body[data-view="quiz"] .app-shell {
 
   .brief-details-panel {
     padding: 14px 18px 18px;
+  }
+
+  .brief-picker-overlay {
+    padding: 18px 12px;
+  }
+
+  .brief-picker-card {
+    max-height: min(88vh, 920px);
+    padding: 22px 18px 18px;
+  }
+
+  .brief-picker-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
   }
 
   .welcome-screen h1,
