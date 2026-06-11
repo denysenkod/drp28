@@ -3916,6 +3916,22 @@ async function saveTryOnSelfieToProfile() {
   );
 }
 
+function addTryOnResultToReferences(style, imageData) {
+  if (!style || !imageData) return null;
+  const item = {
+    id: briefItemId(),
+    source: "try-on",
+    referenceStyleId: style.id,
+    imageUrl: imageData,
+    name: `Try-on: ${style.name}`,
+    partition: "references",
+    firstChoice: false,
+    annotation: `Generated try-on based on ${style.name}.`
+  };
+  setBrief([item, ...state.brief]);
+  return item;
+}
+
 async function applyTryOn() {
   const style = state.styles.find((item) => item.id === String(state.tryOn.styleId));
   if (!style || !state.tryOn.userImageData || !style.imageUrl || state.tryOn.askProfileUpdate) return;
@@ -3938,7 +3954,12 @@ async function applyTryOn() {
     });
     state.tryOn.resultImageData = data.imageData || "";
     state.tryOn.status = "done";
-    if (!state.tryOn.resultImageData) state.tryOn.error = "Try-on generation did not return an image.";
+    if (state.tryOn.resultImageData) {
+      addTryOnResultToReferences(style, state.tryOn.resultImageData);
+      flushBriefSync();
+    } else {
+      state.tryOn.error = "Try-on generation did not return an image.";
+    }
   } catch (err) {
     state.tryOn.status = "idle";
     state.tryOn.error = err instanceof Error ? err.message : "Try-on generation failed.";
