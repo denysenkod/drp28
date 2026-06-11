@@ -764,6 +764,8 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(app.includes('tryOn: "/api/try-on"'));
   assert.ok(app.includes('function openTryOn()'));
   assert.ok(app.includes('function applyTryOn()'));
+  assert.ok(app.includes('function addTryOnResultToReferences'));
+  assert.ok(app.includes('source: "try-on"'));
   assert.ok(index.includes('id="detail-try-on"'));
   assert.ok(index.includes('id="try-on-overlay"'));
   assert.ok(app.includes('imageUrl'));
