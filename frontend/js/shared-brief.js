@@ -666,56 +666,61 @@ function renderMessages() {
   const hasBrief = Boolean(state.briefId || (state.ownerBriefs || []).length);
 
   els.app.innerHTML = `
-    <section class="messages-screen">
+    <section class="messages-screen" id="messages-screen">
       <header class="messages-head">
         <div>
           <p class="eyebrow">Messages</p>
           <h1>Stylist feedback</h1>
           <p>${hasBrief ? "Replies to your shared hairstyle brief appear here." : "Complete and share a hairstyle brief to receive feedback here."}</p>
         </div>
-        <button class="secondary-btn messages-refresh" id="messages-refresh" type="button" ${hasBrief ? "" : "disabled"}>
-          ${iconComment()}<span>Refresh</span>
-        </button>
       </header>
 
-      ${!hasBrief ? `
-        <section class="messages-empty">
-          <h2>No brief shared yet</h2>
-          <p>Create your hairstyle brief, add notes for your stylist, then share the link. Their feedback will land in this tab.</p>
-          <button class="primary-btn" id="messages-open-profile" type="button">${iconCheck()}<span>Complete profile</span></button>
-        </section>
-      ` : comments.length ? `
-        <ul class="messages-list">
-          ${comments.map((entry) => {
-            const date = formatFeedbackDate(entry.createdAt);
-            const briefId = String(entry.briefId || "");
-            const briefHref = briefId ? `?brief=${encodeURIComponent(briefId)}&client=1` : "?brief";
-            return `
-              <li class="message-card">
-                <div class="message-card-head">
-                  <span class="message-author">${escapeHtml(entry.author || "Stylist")}</span>
-                  ${date ? `<time>${escapeHtml(date)}</time>` : ""}
-                </div>
-                ${entry.note ? `<p>${escapeHtml(entry.note)}</p>` : `<p class="message-muted">No written note was included.</p>`}
-                <div class="message-card-actions">
-                  <a class="message-brief-link" href="${escapeAttr(briefHref)}" data-message-brief-link data-brief-id="${escapeAttr(briefId)}">View style brief</a>
-                </div>
-              </li>
-            `;
-          }).join("")}
-        </ul>
-      ` : `
-        <section class="messages-empty">
-          <h2>No feedback yet</h2>
-          <p>Your brief is ready for feedback. Once your stylist opens the link and responds, their message will show here.</p>
-          <button class="secondary-btn" id="messages-open-profile" type="button">${iconShare()}<span>Share brief</span></button>
-        </section>
-      `}
+      ${hasBrief ? `
+        <div class="messages-pull" id="messages-pull" aria-live="polite">
+          <span class="messages-pull-icon" aria-hidden="true">${iconComment()}</span>
+          <span id="messages-pull-label">Pull down to refresh</span>
+        </div>
+      ` : ""}
+
+      <div class="messages-pull-content" id="messages-pull-content">
+        ${!hasBrief ? `
+          <section class="messages-empty">
+            <h2>No brief shared yet</h2>
+            <p>Create your hairstyle brief, add notes for your stylist, then share the link. Their feedback will land in this tab.</p>
+            <button class="primary-btn" id="messages-open-profile" type="button">${iconCheck()}<span>Complete profile</span></button>
+          </section>
+        ` : comments.length ? `
+          <ul class="messages-list">
+            ${comments.map((entry) => {
+              const date = formatFeedbackDate(entry.createdAt);
+              const briefId = String(entry.briefId || "");
+              const briefHref = briefId ? `?brief=${encodeURIComponent(briefId)}&client=1` : "?brief";
+              return `
+                <li class="message-card">
+                  <div class="message-card-head">
+                    <span class="message-author">${escapeHtml(entry.author || "Stylist")}</span>
+                    ${date ? `<time>${escapeHtml(date)}</time>` : ""}
+                  </div>
+                  ${entry.note ? `<p>${escapeHtml(entry.note)}</p>` : `<p class="message-muted">No written note was included.</p>`}
+                  <div class="message-card-actions">
+                    <a class="message-brief-link" href="${escapeAttr(briefHref)}" data-message-brief-link data-brief-id="${escapeAttr(briefId)}">View style brief</a>
+                  </div>
+                </li>
+              `;
+            }).join("")}
+          </ul>
+        ` : `
+          <section class="messages-empty">
+            <h2>No feedback yet</h2>
+            <p>Your brief is ready for feedback. Once your stylist opens the link and responds, their message will show here.</p>
+            <button class="secondary-btn" id="messages-open-profile" type="button">${iconShare()}<span>Share brief</span></button>
+          </section>
+        `}
+      </div>
     </section>
   `;
 
-  const refresh = $("#messages-refresh");
-  if (refresh) refresh.addEventListener("click", loadOwnerFeedback);
+  wireMessagesPullRefresh(hasBrief);
   const openProfile = $("#messages-open-profile");
   if (openProfile) openProfile.addEventListener("click", () => setView("brief"));
   document.querySelectorAll("[data-message-brief-link]").forEach((link) => {
@@ -733,6 +738,87 @@ function renderMessages() {
       loadSharedBrief(briefId);
     });
   });
+}
+
+function wireMessagesPullRefresh(enabled) {
+  const screen = $("#messages-screen");
+  const indicator = $("#messages-pull");
+  const content = $("#messages-pull-content");
+  const label = $("#messages-pull-label");
+  if (!enabled || !screen || !indicator || !content) return;
+
+  const threshold = 72;
+  const maxPull = 104;
+  let startY = 0;
+  let distance = 0;
+  let pulling = false;
+  let refreshing = false;
+
+  const setPullState = () => {
+    indicator.style.setProperty("--pull-distance", `${distance}px`);
+    content.style.transform = `translateY(${distance}px)`;
+    indicator.classList.toggle("is-pulling", distance > 0);
+    indicator.classList.toggle("is-ready", distance >= threshold);
+    if (label) label.textContent = distance >= threshold ? "Release to refresh" : "Pull down to refresh";
+  };
+
+  const resetPullState = () => {
+    distance = 0;
+    indicator.style.setProperty("--pull-distance", "0px");
+    content.style.transition = "";
+    content.style.transform = "";
+    indicator.classList.remove("is-pulling", "is-ready", "is-refreshing");
+    if (label) label.textContent = "Pull down to refresh";
+  };
+
+  screen.addEventListener("touchstart", (event) => {
+    if (refreshing || window.scrollY > 0 || event.touches.length !== 1) return;
+    startY = event.touches[0].clientY;
+    pulling = true;
+    distance = 0;
+    content.style.transition = "none";
+  }, { passive: true });
+
+  screen.addEventListener("touchmove", (event) => {
+    if (!pulling || refreshing || event.touches.length !== 1) return;
+    if (window.scrollY > 0) {
+      pulling = false;
+      resetPullState();
+      return;
+    }
+
+    const delta = event.touches[0].clientY - startY;
+    if (delta <= 0) {
+      resetPullState();
+      return;
+    }
+
+    distance = Math.min(maxPull, Math.round(delta * 0.55));
+    setPullState();
+    if (distance > 8) event.preventDefault();
+  }, { passive: false });
+
+  screen.addEventListener("touchend", async () => {
+    if (!pulling || refreshing) return;
+    pulling = false;
+    if (distance < threshold) {
+      resetPullState();
+      return;
+    }
+
+    refreshing = true;
+    content.style.transition = "";
+    content.style.transform = "translateY(64px)";
+    indicator.classList.add("is-refreshing");
+    indicator.classList.remove("is-ready");
+    indicator.style.setProperty("--pull-distance", "64px");
+    if (label) label.textContent = "Refreshing...";
+    await loadOwnerFeedback();
+  });
+
+  screen.addEventListener("touchcancel", () => {
+    if (!refreshing) resetPullState();
+  }, { passive: true });
 }
 
 function renderProfileBriefListItem(label, count, done) {

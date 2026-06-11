@@ -1305,6 +1305,7 @@ body[data-view="brief"] .app-shell {
   width: min(920px, 100%);
   margin: 0 auto;
   padding: 34px 0 64px;
+  overscroll-behavior-y: contain;
 }
 
 .messages-head {
@@ -1331,14 +1332,63 @@ body[data-view="brief"] .app-shell {
   font-size: 16px;
 }
 
-.messages-refresh {
-  flex: 0 0 auto;
-}
-
-.messages-refresh svg,
 .messages-empty svg {
   width: 16px;
   height: 16px;
+}
+
+.messages-pull {
+  --pull-distance: 0px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(calc((var(--pull-distance) * 0.42) - 18px));
+  transition: opacity 160ms ease, transform 160ms ease, color 160ms ease;
+}
+
+.messages-pull.is-pulling,
+.messages-pull.is-refreshing {
+  opacity: 1;
+}
+
+.messages-pull.is-ready {
+  color: var(--accent-strong);
+}
+
+.messages-pull-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.messages-pull-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.messages-pull.is-refreshing .messages-pull-icon {
+  animation: messages-refresh-spin 850ms linear infinite;
+}
+
+.messages-pull-content {
+  transition: transform 180ms ease;
+  will-change: transform;
+}
+
+@keyframes messages-refresh-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .messages-list {
@@ -2069,10 +2119,6 @@ body[data-view="brief"] .app-shell {
   .messages-head {
     align-items: flex-start;
     flex-direction: column;
-  }
-
-  .messages-refresh {
-    width: 100%;
   }
 
   .message-card-head {
