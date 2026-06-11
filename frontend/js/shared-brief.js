@@ -490,6 +490,7 @@ function closeBriefRefAdd() {
 
 function openBriefCompletePrompt() {
   state.briefCompletePromptOpen = true;
+  state.shareStatus = "";
   state.briefPickerOpen = false;
   state.briefRefAddOpen = false;
   document.body.style.overflow = "hidden";
@@ -505,10 +506,11 @@ function closeBriefCompletePrompt() {
   if (state.view === "brief") renderBrief();
 }
 
-async function completeBriefFromPrompt(useNotes = true) {
-  const notes = useNotes ? ($("#brief-complete-notes")?.value || "") : "";
+async function completeBriefFromPrompt(action = "share") {
+  const notes = $("#brief-complete-notes")?.value || "";
   setBriefDetails({ ...state.briefDetails, notes });
-  await handleBriefComplete();
+  if (action === "copy") await handleBriefCopyLink();
+  else await handleBriefUrlShare();
 }
 
 function renderBrief() {
@@ -560,8 +562,6 @@ function renderBrief() {
             </section>
 
             ${renderBriefDetails()}
-
-            ${renderBriefNotes()}
           </div>
 
           ${renderProfileBriefAside(counts)}
@@ -597,7 +597,6 @@ function profileBriefCounts(meItems = briefItemsFor("me"), refItems = briefItems
 }
 
 function renderProfileBriefAside(counts) {
-  const link = state.shareLink || briefShareLink() || "Complete profile to create a link";
   const canShare = briefHasContent();
   return `
     <aside class="profile-brief-card">
@@ -619,20 +618,14 @@ function renderProfileBriefAside(counts) {
       </ul>
 
       <div class="profile-share-block">
-        <p>Shareable link</p>
-        <div class="profile-link-field">
-          <span>${escapeHtml(link)}</span>
-          <button class="profile-link-copy" id="brief-url-share-btn" type="button" ${canShare ? "" : "disabled"}>
-            ${iconCheck()}<span>Copy</span>
-          </button>
-        </div>
+        <p>Ready for your stylist</p>
         <button class="profile-share-btn" id="brief-share-btn" data-brief-share-direct type="button" ${canShare ? "" : "disabled"}>
-          ${iconShare()}<span>Share with stylist</span>
+          ${iconCheck()}<span>Complete profile</span>
         </button>
         <div class="profile-share-status" id="brief-share-status" ${state.shareStatus ? "" : "hidden"}>
           <span>${escapeHtml(state.shareStatus)}</span>
         </div>
-        <p class="profile-share-note">${iconCheck()}Anyone with the link can view your brief - no account needed.</p>
+        <p class="profile-share-note">${iconCheck()}Review your notes, then copy or share one link.</p>
       </div>
     </aside>
   `;
@@ -657,14 +650,14 @@ function renderProfileMobileShare(counts) {
         <div class="profile-mobile-sub">${counts.hair} ${counts.hair === 1 ? "photo" : "photos"} - ${counts.references} ${counts.references === 1 ? "reference" : "references"}</div>
       </div>
       <button class="profile-share-btn" id="profile-mobile-share-btn" data-brief-share-direct type="button" ${canShare ? "" : "disabled"}>
-        ${iconShare()}<span>Share</span>
+        ${iconCheck()}<span>Complete</span>
       </button>
     </div>
   `;
 }
 
 function handleProfileShareDirect() {
-  handleBriefUrlShare();
+  openBriefCompletePrompt();
 }
 
 // Collapsible hair-colour section: the user can open it if they want to note
@@ -869,17 +862,20 @@ function renderBriefCompletePrompt() {
         <button class="close-btn close-btn--text" id="brief-complete-close" type="button" aria-label="Close">Close</button>
         <div class="brief-picker-head">
           <div class="overlay-heading">
-            <p class="eyebrow">Profile</p>
-            <h2 id="brief-complete-title">Is there anything else you would like to tell your barber?</h2>
+            <p class="eyebrow">Complete profile</p>
+            <h2 id="brief-complete-title">Anything else to tell the stylist?</h2>
           </div>
         </div>
         <label class="brief-field brief-field--wide">
-          <span>Optional notes</span>
-          <textarea id="brief-complete-notes" rows="5" placeholder="Anything else you'd like your barber to know">${escapeHtml(d.notes || "")}</textarea>
+          <span>Anything else to tell the stylist</span>
+          <textarea id="brief-complete-notes" rows="6" placeholder="Timing, budget, hair history, concerns, or what you definitely do not want...">${escapeHtml(d.notes || "")}</textarea>
         </label>
+        <div class="brief-share-status brief-complete-status" id="brief-complete-share-status" ${state.shareStatus ? "" : "hidden"}>
+          <span>${escapeHtml(state.shareStatus)}</span>
+        </div>
         <div class="brief-complete-actions">
-          <button class="secondary-btn" id="brief-complete-skip" type="button">Skip</button>
-          <button class="primary-btn" id="brief-complete-confirm" type="button">${iconCheck()}<span>Complete profile</span></button>
+          <button class="secondary-btn" id="brief-complete-copy" type="button">${iconCheck()}<span>Copy link</span></button>
+          <button class="primary-btn" id="brief-complete-share" type="button">${iconShare()}<span>Share with stylist</span></button>
         </div>
       </div>
     </div>
@@ -1121,6 +1117,14 @@ function wireBrief() {
   const completeConfirm = $("#brief-complete-confirm");
   if (completeConfirm) {
     completeConfirm.addEventListener("click", () => completeBriefFromPrompt(true));
+  }
+  const completeCopy = $("#brief-complete-copy");
+  if (completeCopy) {
+    completeCopy.addEventListener("click", () => completeBriefFromPrompt("copy"));
+  }
+  const completeShare = $("#brief-complete-share");
+  if (completeShare) {
+    completeShare.addEventListener("click", () => completeBriefFromPrompt("share"));
   }
   // Hair-colour fields update state silently (no re-render) so the current
   // input keeps focus while the user types.

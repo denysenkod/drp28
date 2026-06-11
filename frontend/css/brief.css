@@ -686,11 +686,21 @@
   margin-top: 18px;
 }
 
+.brief-complete-status {
+  margin-top: 14px;
+}
+
 .brief-complete-actions {
   display: flex;
   justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 10px;
   margin-top: 18px;
+}
+
+.brief-complete-actions .secondary-btn,
+.brief-complete-actions .primary-btn {
+  min-height: 44px;
 }
 
 /* ----- Reviewer (read-only) brief ----- */

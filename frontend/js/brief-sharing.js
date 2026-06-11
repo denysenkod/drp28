@@ -227,6 +227,14 @@ function setShareStatus(message, link = "") {
     else delete node.dataset.link;
   }
 
+  const completeNode = $("#brief-complete-share-status");
+  if (completeNode) {
+    const label = completeNode.querySelector("span");
+    if (label) label.textContent = message;
+    else completeNode.textContent = message;
+    completeNode.hidden = !message;
+  }
+
   if (link) {
     const field = document.querySelector(".profile-link-field > span");
     if (field) field.textContent = link;
