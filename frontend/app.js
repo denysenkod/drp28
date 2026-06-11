@@ -3736,18 +3736,15 @@ function renderTryOn() {
         </figure>
 
         <figure class="try-on-frame">
-          <div class="try-on-image">
+          <label class="try-on-image try-on-selfie-target" title="${hasSelfie ? "Use a different selfie" : "Upload selfie"}">
             ${hasSelfie ? `<img src="${escapeAttr(state.tryOn.userImageData)}" alt="Your selfie">` : `<span>Add a selfie</span>`}
-          </div>
+            <input class="brief-file-input try-on-selfie-input" type="file" accept="image/*">
+          </label>
           <figcaption>${hasSelfie ? escapeHtml(state.tryOn.userImageName || "Your selfie") : "Your selfie"}</figcaption>
         </figure>
       </div>
 
       <div class="try-on-controls">
-        <label class="secondary-btn try-on-upload">
-          ${hasSelfie ? "Use a different selfie" : "Upload selfie"}
-          <input class="brief-file-input" id="try-on-selfie-input" type="file" accept="image/*">
-        </label>
         <button class="primary-btn" id="try-on-apply" type="button" ${canApply ? "" : "disabled"}>
           ${isGenerating ? "Applying..." : "Apply haircut"}
         </button>
@@ -3780,13 +3777,12 @@ function renderTryOn() {
 }
 
 function wireTryOn() {
-  const input = $("#try-on-selfie-input");
-  if (input) {
+  document.querySelectorAll(".try-on-selfie-input").forEach((input) => {
     input.addEventListener("change", (event) => {
       handleTryOnSelfieUpload(event.target.files);
       event.target.value = "";
     });
-  }
+  });
 
   const apply = $("#try-on-apply");
   if (apply) {
