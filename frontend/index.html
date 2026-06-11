@@ -7,13 +7,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/styles.css?v=2026-06-11-complete-profile" />
+  <link rel="stylesheet" href="/styles.css?v=2026-06-11-messages-tab" />
 </head>
 <body>
   <header class="topbar">
     <button class="brand-btn" id="home-btn" data-nav="home" type="button">HairMatch</button>
     <nav class="top-nav" aria-label="Primary">
       <button class="nav-link" data-nav="results" type="button">Search</button>
+      <button class="nav-link" data-nav="messages" type="button">Messages</button>
       <button class="nav-link" data-nav="brief" type="button">Profile</button>
     </nav>
   </header>
@@ -122,12 +123,16 @@
       <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M16 16l4 4"></path></svg>
       <span class="bottom-nav-label">Search</span>
     </button>
+    <button class="bottom-nav-btn" data-nav="messages" type="button" aria-label="Messages">
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h14a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 19 16H9l-4 4v-4H5a1.5 1.5 0 0 1-1.5-1.5v-8A1.5 1.5 0 0 1 5 5z"></path></svg>
+      <span class="bottom-nav-label">Messages</span>
+    </button>
     <button class="bottom-nav-btn" data-nav="brief" type="button" aria-label="Profile">
       <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7"></path></svg>
       <span class="bottom-nav-label">Profile</span>
     </button>
   </nav>
 
-  <script src="/app.js?v=2026-06-11-complete-profile"></script>
+  <script src="/app.js?v=2026-06-11-messages-tab"></script>
 </body>
 </html>

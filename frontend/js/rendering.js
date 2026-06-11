@@ -9,6 +9,7 @@ function render() {
   if (state.view === "quiz") renderQuiz();
   else if (state.view === "results") renderResultsPage();
   else if (state.view === "brief") renderBrief();
+  else if (state.view === "messages") renderMessages();
   else if (state.view === "shared") renderSharedBrief();
   else renderHome();
 }

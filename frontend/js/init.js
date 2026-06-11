@@ -78,6 +78,12 @@ function init() {
       writeStored(PREV_VIEW_KEY, state.previousView);
       render();
       loadOwnerFeedback();
+    } else if (event.state?.view === "messages") {
+      state.view = "messages";
+      state.previousView = event.state.previousView ?? "welcome";
+      writeStored(PREV_VIEW_KEY, state.previousView);
+      render();
+      loadOwnerFeedback();
     } else if (event.state?.view === "home" || event.state?.view === "welcome") {
       state.view = "home";
       state.previousView = event.state.previousView ?? "home";
@@ -110,6 +116,9 @@ function init() {
   } else if (urlParams.has("brief")) {
     state.view = "brief";
     writeStored(VIEW_KEY, "brief");
+  } else if (urlParams.has("messages")) {
+    state.view = "messages";
+    writeStored(VIEW_KEY, "messages");
   } else {
     state.view = "home";
     writeStored(VIEW_KEY, "home");
@@ -119,7 +128,7 @@ function init() {
   loadGallery();
   loadFavourites();
   if (state.view === "shared") loadSharedBrief(state.sharedBriefId);
-  if (state.view === "brief") loadOwnerFeedback();
+  if (state.view === "brief" || state.view === "messages") loadOwnerFeedback();
 }
 
 init();

@@ -22,6 +22,7 @@ async function loadSharedBrief(id) {
 async function loadOwnerFeedback() {
   if (!state.briefId) {
     state.ownerFeedback = [];
+    if (state.view === "messages") renderMessages();
     return;
   }
   try {
@@ -31,6 +32,14 @@ async function loadOwnerFeedback() {
     // Leave whatever we had; a failed refresh shouldn't blank the profile.
   }
   if (state.view === "brief") renderBrief();
+  if (state.view === "messages") renderMessages();
+}
+
+function formatFeedbackDate(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 }
 
 // Read-only feedback panel shown at the top of the owner's profile, just under
@@ -629,6 +638,61 @@ function renderProfileBriefAside(counts) {
       </div>
     </aside>
   `;
+}
+
+function renderMessages() {
+  const comments = [...(state.ownerFeedback || [])]
+    .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+  const hasBrief = Boolean(state.briefId);
+
+  els.app.innerHTML = `
+    <section class="messages-screen">
+      <header class="messages-head">
+        <div>
+          <p class="eyebrow">Messages</p>
+          <h1>Stylist feedback</h1>
+          <p>${hasBrief ? "Replies to your shared hairstyle brief appear here." : "Complete and share a hairstyle brief to receive feedback here."}</p>
+        </div>
+        <button class="secondary-btn messages-refresh" id="messages-refresh" type="button" ${hasBrief ? "" : "disabled"}>
+          ${iconComment()}<span>Refresh</span>
+        </button>
+      </header>
+
+      ${!hasBrief ? `
+        <section class="messages-empty">
+          <h2>No brief shared yet</h2>
+          <p>Create your hairstyle brief, add notes for your stylist, then share the link. Their feedback will land in this tab.</p>
+          <button class="primary-btn" id="messages-open-profile" type="button">${iconCheck()}<span>Complete profile</span></button>
+        </section>
+      ` : comments.length ? `
+        <ul class="messages-list">
+          ${comments.map((entry) => {
+            const date = formatFeedbackDate(entry.createdAt);
+            return `
+              <li class="message-card">
+                <div class="message-card-head">
+                  <span class="message-author">${escapeHtml(entry.author || "Stylist")}</span>
+                  ${date ? `<time>${escapeHtml(date)}</time>` : ""}
+                </div>
+                ${entry.note ? `<p>${escapeHtml(entry.note)}</p>` : `<p class="message-muted">No written note was included.</p>`}
+              </li>
+            `;
+          }).join("")}
+        </ul>
+      ` : `
+        <section class="messages-empty">
+          <h2>No feedback yet</h2>
+          <p>Your brief is ready for feedback. Once your stylist opens the link and responds, their message will show here.</p>
+          <button class="secondary-btn" id="messages-open-profile" type="button">${iconShare()}<span>Share brief</span></button>
+        </section>
+      `}
+    </section>
+  `;
+
+  const refresh = $("#messages-refresh");
+  if (refresh) refresh.addEventListener("click", loadOwnerFeedback);
+  const openProfile = $("#messages-open-profile");
+  if (openProfile) openProfile.addEventListener("click", () => setView("brief"));
 }
 
 function renderProfileBriefListItem(label, count, done) {

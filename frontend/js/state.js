@@ -113,6 +113,10 @@ function setView(view) {
     window.history.pushState({ view: "brief", previousView: state.previousView }, "", "?brief");
     loadOwnerFeedback();
   }
+  if (view === "messages") {
+    window.history.pushState({ view: "messages", previousView: state.previousView }, "", "?messages");
+    loadOwnerFeedback();
+  }
   if (view === "home") {
     window.history.pushState({ view: "home", previousView: state.previousView }, "", "/");
   }
