@@ -3516,11 +3516,11 @@ function renderBriefPicker(savedStyles) {
 // A reference's controls: a "Favourite" toggle and a comment icon that reveals
 // a notes textarea. The note panel is collapsed by default; the icon shows an
 // active dot whenever a note exists so it's discoverable while hidden.
-function renderBriefReferenceControls(item) {
+// The note toggle is overlaid on the reference image (like the remove button),
+// so the card carries no body and leaves no empty padding behind.
+function renderBriefNoteToggle(item) {
   const hasNote = Boolean(String(item.annotation || "").trim());
-  const notePlaceholder = "Leave a note for your stylist";
   return `
-    <div class="brief-ref-controls">
       <button
         class="brief-note-toggle ${hasNote ? "has-note" : ""}"
         type="button"
@@ -3528,8 +3528,14 @@ function renderBriefReferenceControls(item) {
         aria-expanded="false"
         aria-label="Add a note"
         title="Add a note"
-      >${iconComment()}</button>
-    </div>
+      >${iconComment()}</button>`;
+}
+
+// The note panel lives directly under the image and collapses fully (display:
+// none) until the overlay toggle opens it, so there's no whitespace by default.
+function renderBriefNotePanel(item) {
+  const notePlaceholder = "Leave a note for your stylist";
+  return `
     <label class="brief-annotation-label" data-brief-note-panel="${escapeAttr(item.id)}" hidden>
       <span>Notes</span>
       <textarea
@@ -3538,13 +3544,11 @@ function renderBriefReferenceControls(item) {
         rows="2"
         placeholder="${escapeAttr(notePlaceholder)}"
       >${escapeHtml(item.annotation || "")}</textarea>
-    </label>
-  `;
+    </label>`;
 }
 
 function renderBriefItem(item) {
   const isOwnHair = itemPartition(item) === "me";
-  const bodyHtml = isOwnHair ? "" : renderBriefReferenceControls(item);
   return `
     <article class="brief-card" data-brief-id="${escapeAttr(item.id)}">
       <div class="brief-card-image">
@@ -3552,8 +3556,9 @@ function renderBriefItem(item) {
           ? `<img src="${escapeAttr(item.imageUrl)}" alt="${escapeAttr(item.name || "Reference image")}" loading="lazy" referrerpolicy="no-referrer">`
           : `<span>${escapeHtml(item.name || "Reference")}</span>`}
         <button class="brief-remove-btn" type="button" data-brief-remove="${escapeAttr(item.id)}" aria-label="Remove from brief">&times;</button>
+        ${isOwnHair ? "" : renderBriefNoteToggle(item)}
       </div>
-      ${bodyHtml ? `<div class="brief-card-body">${bodyHtml}</div>` : ""}
+      ${isOwnHair ? "" : renderBriefNotePanel(item)}
     </article>
   `;
 }

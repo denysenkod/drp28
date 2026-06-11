@@ -2818,24 +2818,26 @@ body[data-view="brief"] .app-shell {
   opacity: 1;
 }
 
+/* Note toggle is overlaid on the image, bottom-left (remove button is top-right). */
 .brief-note-toggle {
-  position: relative;
-  flex: 0 0 auto;
-  width: 42px;
-  height: 42px;
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  width: 32px;
+  height: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0;
-  border: 1px solid var(--line);
+  border: 0;
   border-radius: 999px;
-  background: var(--bg);
-  color: var(--muted);
+  background: rgba(28, 24, 20, 0.72);
+  color: #fff;
 }
 
 .brief-note-toggle svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 
 .brief-note-toggle:focus {
@@ -2843,33 +2845,20 @@ body[data-view="brief"] .app-shell {
 }
 
 .brief-note-toggle:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid #fff;
   outline-offset: 2px;
 }
 
 .brief-note-toggle.has-note {
-  color: var(--accent-2);
-  border-color: rgba(143, 107, 13, 0.45);
-  background: var(--accent-soft);
-}
-
-/* A dot signals there's a note even while the panel is collapsed. */
-.brief-note-toggle.has-note::after {
-  content: "";
-  position: absolute;
-  top: 7px;
-  right: 7px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
   background: var(--accent);
-  border: 1.5px solid var(--surface);
+  color: #fff;
 }
 
 .brief-annotation-label {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  padding: 12px;
 }
 
 /* The note panel collapses via the [hidden] attribute; the class's own
