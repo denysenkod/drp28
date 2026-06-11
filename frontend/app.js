@@ -574,8 +574,7 @@ const QUIZ = [
   },
   {
     id: "texture",
-    title: "What are your desired hair textures?",
-    sub: "Your actual texture will be factored in during our hair maintanence plans.",
+    title: "What hair texture do you like?",
     layout: "icon",
     options: [
       { value: "straight", label: "Straight", icon: textureIcon("straight"), hairType: "Straight Hair", image: "/Images/LongHair.webp", images: { 
@@ -599,9 +598,7 @@ const QUIZ = [
     // Options and helper copy depend on whether the survey targets one gender or
     // both, so they are computed on access rather than fixed up front.
     get sub() {
-      return selectedSurveyGender() === "both"
-        ? "Pick a male and/or female lengths - you can mix and match across genders."
-        : "Pick the options which best resembles your desired length.";
+      return ""
     },
     get options() {
       return buildLengthOptions();
@@ -611,7 +608,6 @@ const QUIZ = [
     id: "vibe",
     title: "Which words best describe the look you are going for?",
     layout: "collage",
-    sub: "Feel free to pick multiple options. This will help inform your recommendations.",
     options: [
       { value: "classic", label: "Classic", vibe: "classic", keywords: ["classic", "side part", "centre part"], images: {
         masculine: "https://cdn.thecoolist.com/wp-content/uploads/2017/05/Slicked-Back-classic-mens-hairstyle-762x999.jpg", 
@@ -642,7 +638,6 @@ const QUIZ = [
   {
     id: "ethnicity",
     title: "Would you like photos featuring people of a specific ethnicity for inspiration?",
-    sub: "This only affects reference inspiration. You can skip it.",
     layout: "text",
     options: [
       { value: "black", label: "Black / African descent"},
