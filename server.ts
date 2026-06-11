@@ -671,7 +671,8 @@ async function saveBrief(request: Request, db: any): Promise<Response> {
   const sessionId = body.sessionId.trim();
   const itemsJson = JSON.stringify(body.items);
   const detailsJson = JSON.stringify(parseRecord(body.details));
-  const id = crypto.randomUUID();
+  const requestedId = typeof body.id === 'string' ? body.id.trim() : '';
+  const id = requestedId || crypto.randomUUID();
 
   await db
     .prepare(

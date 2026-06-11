@@ -24,6 +24,67 @@ function setBrief(next) {
   scheduleBriefSync();
 }
 
+function savedReferenceId(styleId) {
+  return `saved-${String(styleId)}`;
+}
+
+function savedReferenceItem(style) {
+  return {
+    id: savedReferenceId(style.id),
+    source: "saved",
+    styleId: style.id,
+    imageUrl: style.imageUrl,
+    name: style.name,
+    partition: "references",
+    firstChoice: true,
+    annotation: ""
+  };
+}
+
+function syncFavouriteReferencesToBrief() {
+  const favouriteIds = new Set([...state.favourites].map(String));
+  const favouriteStyles = state.styles.filter((style) => favouriteIds.has(style.id));
+  if (!favouriteStyles.length && !state.brief.some((item) => item.source === "saved" && item.styleId)) return;
+
+  const byStyleId = new Map(favouriteStyles.map((style) => [style.id, style]));
+  const existing = new Set();
+  const next = [];
+  let changed = false;
+
+  for (const item of state.brief) {
+    if (item.source === "saved" && item.styleId) {
+      const style = byStyleId.get(String(item.styleId));
+      if (!style) {
+        changed = true;
+        continue;
+      }
+      existing.add(style.id);
+      const updated = {
+        ...item,
+        id: item.id || savedReferenceId(style.id),
+        source: "saved",
+        styleId: style.id,
+        imageUrl: style.imageUrl,
+        name: style.name,
+        partition: "references",
+        firstChoice: Boolean(item.firstChoice)
+      };
+      if (JSON.stringify(updated) !== JSON.stringify(item)) changed = true;
+      next.push(updated);
+    } else {
+      next.push(item);
+    }
+  }
+
+  for (const style of favouriteStyles) {
+    if (existing.has(style.id)) continue;
+    next.push(savedReferenceItem(style));
+    changed = true;
+  }
+
+  if (changed) setBrief(next);
+}
+
 // Optional hair-colour details. Persisted alongside the brief items and synced
 // so they reach the stylist who opens the share link.
 function setBriefDetails(next) {

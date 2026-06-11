@@ -7,6 +7,7 @@ async function loadGallery() {
       state.galleryLoaded = true;
       state.galleryLoadError = false;
       syncStylesForCurrentRoute();
+      syncFavouriteReferencesToBrief();
       render();
       if (!els.favouritesOverlay.hidden) renderFavourites();
     }
@@ -28,6 +29,7 @@ async function loadFavourites() {
         else serverSet.delete(imageId);
       }
       state.favourites = serverSet;
+      syncFavouriteReferencesToBrief();
     }
   } catch {
     // The local memory fallback and D1 both support this, but do not block UI if it fails.

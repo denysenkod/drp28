@@ -381,6 +381,7 @@ async function completeBriefFromPrompt(useNotes = true) {
 }
 
 function renderBrief() {
+  syncFavouriteReferencesToBrief();
   const normalizedBrief = normalizeBriefItems(state.brief);
   if (JSON.stringify(normalizedBrief) !== JSON.stringify(state.brief)) {
     setBrief(normalizedBrief);
@@ -391,53 +392,150 @@ function renderBrief() {
   const completePromptOpen = state.briefCompletePromptOpen;
   const meItems = briefItemsFor("me");
   const refItems = sortReferencesForDisplay(briefItemsFor("references"));
+  const counts = profileBriefCounts(meItems, refItems);
 
   els.app.innerHTML = `
-    <section class="brief-screen">
-      <div class="screen-heading">
-        <div>
-          <p class="eyebrow">Design</p>
-          <h1>Profile</h1>
-          <p>Gather photos of your own hair and references on other people, pull in styles you've saved, then mark your favourites and add notes.</p>
+    <section class="profile-screen">
+      <div class="profile-wrap">
+        <div class="profile-page">
+          <header class="profile-hero">
+            <p class="eyebrow">Your profile</p>
+            <h1 class="profile-title">Your hair <em>brief</em></h1>
+            <p class="profile-lede">Gather photos of your hair today and the looks you're after, add the colour you have in mind and a few notes, then share one link with your stylist.</p>
+          </header>
+
+          <div class="profile-work">
+            <section class="profile-section">
+              <div class="profile-section-head">
+                <h2>Your hair</h2>
+                <p>Photos of your hair right now.</p>
+              </div>
+              <div class="profile-photo-grid profile-photo-grid--hair" id="brief-me-grid">
+                ${renderBriefAddSelf()}
+                ${meItems.map(renderBriefItem).join("")}
+              </div>
+            </section>
+
+            <section class="profile-section">
+              <div class="profile-section-head">
+                <h2>References</h2>
+                <p>Looks on other people you'd like to take cues from. Haircuts you save appear here automatically.</p>
+              </div>
+              <div class="profile-photo-grid profile-photo-grid--references" id="brief-ref-grid">
+                ${renderBriefAddRef()}
+                ${refItems.map(renderBriefItem).join("")}
+              </div>
+            </section>
+
+            ${renderBriefDetails()}
+
+            ${renderBriefNotes()}
+          </div>
+
+          ${renderProfileBriefAside(counts)}
         </div>
       </div>
-
-      <div class="brief-partitions">
-        <section class="brief-partition brief-partition--me">
-          <div class="brief-partition-head">
-            <h2>Your current hair</h2>
-            <p class="brief-partition-copy">Upload photos of your hair as it is now.</p>
-          </div>
-          <div class="brief-grid" id="brief-me-grid">
-            ${renderBriefAddSelf()}
-            ${meItems.map(renderBriefItem).join("")}
-          </div>
-        </section>
-
-        <section class="brief-partition brief-partition--references">
-          <div class="brief-partition-head">
-            <p class="eyebrow">Inspiration</p>
-            <h2>References</h2>
-            <p class="brief-partition-copy">Looks on other people you'd like to take cues from - or maybe even yourself!</p>
-          </div>
-          <div class="brief-grid" id="brief-ref-grid">
-            ${refItems.map(renderBriefItem).join("")}
-            ${renderBriefAddRef()}
-          </div>
-        </section>
-      </div>
-
-      ${renderBriefDetails()}
-
-      ${renderBriefCompletePanel()}
+      ${renderProfileMobileShare(counts)}
     </section>
 
     ${completePromptOpen ? renderBriefCompletePrompt() : ""}
-    ${refAddOpen ? renderBriefRefAddPopup() : ""}
     ${pickerOpen ? renderBriefPicker(savedStyles) : ""}
   `;
 
   wireBrief();
+}
+
+function profileBriefCounts(meItems = briefItemsFor("me"), refItems = briefItemsFor("references")) {
+  const colourAdded = briefDetailsHasContent(state.briefDetails);
+  const notesAdded = Boolean(briefNotesValue());
+  const completed = [
+    meItems.length > 0,
+    refItems.length > 0,
+    colourAdded,
+    notesAdded
+  ].filter(Boolean).length;
+  return {
+    hair: meItems.length,
+    references: refItems.length,
+    referenceFavourites: refItems.filter((item) => item.firstChoice).length,
+    colourAdded,
+    notesAdded,
+    percent: Math.round((completed / 4) * 100)
+  };
+}
+
+function renderProfileBriefAside(counts) {
+  const link = state.shareLink || briefShareLink() || "Complete profile to create a link";
+  return `
+    <aside class="profile-brief-card">
+      <div class="profile-brief-top">
+        <span class="profile-brief-kicker">Your brief</span>
+        <span class="profile-brief-ref">${state.briefId ? `REF ${escapeHtml(String(state.briefId).slice(0, 4).toUpperCase())}` : "Draft"}</span>
+      </div>
+      <h2>${counts.percent >= 75 ? "Almost ready" : "In progress"}</h2>
+
+      <div class="profile-meter">
+        <div class="profile-meter-head"><span>Completeness</span><b>${counts.percent}%</b></div>
+        <div class="profile-meter-bar"><div style="width:${counts.percent}%"></div></div>
+      </div>
+
+      <ul class="profile-brief-list">
+        ${renderProfileBriefListItem("Your hair", `${counts.hair} ${counts.hair === 1 ? "photo" : "photos"}`, counts.hair > 0)}
+        ${renderProfileBriefListItem("References", `${counts.references} ${counts.references === 1 ? "reference" : "references"}`, counts.references > 0)}
+        ${renderProfileBriefListItem("Colour & treatment", counts.colourAdded ? "Added" : "Optional", counts.colourAdded)}
+        ${renderProfileBriefListItem("General notes", counts.notesAdded ? "Added" : "Optional", counts.notesAdded)}
+      </ul>
+
+      <div class="profile-share-block">
+        <p>Shareable link</p>
+        <div class="profile-link-field">
+          <span>${escapeHtml(link)}</span>
+          <button class="profile-link-copy" id="brief-url-share-btn" type="button" ${state.shareLink || state.briefId ? "" : "disabled"}>
+            ${iconCheck()}<span>Copy</span>
+          </button>
+        </div>
+        <button class="profile-share-btn" id="brief-share-btn" data-brief-share-direct type="button">
+          ${iconShare()}<span>Share with stylist</span>
+        </button>
+        <div class="profile-share-status" id="brief-share-status" ${state.shareStatus ? "" : "hidden"}>
+          <span>${escapeHtml(state.shareStatus)}</span>
+        </div>
+        <p class="profile-share-note">${iconCheck()}Anyone with the link can view your brief - no account needed.</p>
+      </div>
+    </aside>
+  `;
+}
+
+function renderProfileBriefListItem(label, count, done) {
+  return `
+    <li>
+      <span class="profile-brief-check ${done ? "is-done" : "is-todo"}">${done ? iconCheck() : ""}</span>
+      <span class="profile-brief-label">${escapeHtml(label)}</span>
+      <span class="profile-brief-count">${escapeHtml(count)}</span>
+    </li>
+  `;
+}
+
+function renderProfileMobileShare(counts) {
+  return `
+    <div class="profile-mobile-share">
+      <div>
+        <div class="profile-mobile-title">Brief ${counts.percent}% ready</div>
+        <div class="profile-mobile-sub">${counts.hair} ${counts.hair === 1 ? "photo" : "photos"} - ${counts.references} ${counts.references === 1 ? "reference" : "references"}</div>
+      </div>
+      <button class="profile-share-btn" id="profile-mobile-share-btn" data-brief-share-direct type="button">
+        ${iconShare()}<span>Share</span>
+      </button>
+    </div>
+  `;
+}
+
+function handleProfileShareDirect() {
+  ensureBriefShareId();
+  const link = briefShareLink();
+  copyBriefShareLink(link);
+  syncBrief();
+  renderBrief();
 }
 
 // Collapsible hair-colour section: the user can open it if they want to note
@@ -446,40 +544,54 @@ function renderBrief() {
 // focus is preserved.
 function renderBriefDetails() {
   const d = state.briefDetails || defaultBriefDetails();
-  const isOpen = briefDetailsIsOpen();
-  return renderColourCareTab(`
-      <div class="brief-details-grid">
-        <label class="brief-field brief-field--wide" for="brief-colour">
-          <span id="brief-colour-label">Hair colour treatment</span>
-          <div class="hair-colour-select" id="brief-colour-select">
-            <div class="hair-colour-input-wrap">
-              <span class="hair-colour-swatch-slot" id="brief-colour-swatch">${hairColourSwatch(d.colour || "")}</span>
-              <input type="text" id="brief-colour" class="hair-colour-input" role="combobox" autocomplete="off" aria-expanded="false" aria-controls="brief-colour-menu" placeholder="Type or pick a hair colour, or leave blank" value="${escapeAttr(d.colour || "")}">
-              <svg class="hair-colour-caret" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </div>
-            <ul class="hair-colour-menu" id="brief-colour-menu" role="listbox" aria-labelledby="brief-colour-label" hidden>
-              ${HAIR_COLOUR_OPTIONS.map((c) => `
-              <li class="hair-colour-option" role="option" data-value="${escapeAttr(c.name)}" aria-selected="${d.colour === c.name ? "true" : "false"}">
-                ${hairColourSwatch(c.name)}
-                <span class="hair-colour-option-label">${escapeHtml(c.name)}</span>
-              </li>`).join("")}
-            </ul>
-          </div>
-        </label>
-        <label class="brief-field">
-          <span>Allergies or sensitivities</span>
-          <textarea id="brief-allergies" rows="2" placeholder="e.g. PPD allergy, sensitive scalp - or none">${escapeHtml(d.allergies || "")}</textarea>
-        </label>
-        <label class="brief-field">
-          <span>Previous colour treatments</span>
-          <textarea id="brief-previous" rows="2" placeholder="e.g. box dye 3 months ago, balayage last year">${escapeHtml(d.previousTreatments || "")}</textarea>
-        </label>
-        <label class="brief-field">
-          <span>Damage or breakage</span>
-          <textarea id="brief-damage" rows="2" placeholder="e.g. dry ends, breakage from bleach, heat damage">${escapeHtml(d.damage || "")}</textarea>
-        </label>
+  const colourValue = String(d.colour || "");
+  const knownColour = HAIR_COLOUR_OPTIONS.some((c) => c.name === colourValue);
+  const selectedColour = colourValue && knownColour ? colourValue : (colourValue ? "Other" : "");
+  const otherColour = colourValue && !knownColour ? colourValue : "";
+  return `
+    <section class="profile-section">
+      <div class="profile-section-head">
+        <h2>Colour &amp; treatment</h2>
+        <p>What you've got now and where you'd like it to go.</p>
       </div>
-  `, d, { isOpen, showGhostAdd: true, removable: true });
+      <div class="profile-colour-card">
+        <div class="profile-colour-grid">
+          <label class="profile-colour-row profile-colour-row--wide" for="brief-colour">
+            <span class="profile-colour-key" id="brief-colour-label">Hair colour treatment</span>
+              <span class="profile-colour-value">
+                <span class="hair-colour-swatch-slot" id="brief-colour-swatch">${hairColourSwatch(d.colour || "")}</span>
+                <span class="hair-colour-select" id="brief-colour-select">
+                  <button class="hair-colour-input-wrap profile-colour-trigger" id="brief-colour" type="button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="brief-colour-label brief-colour-value">
+                    <span class="profile-colour-trigger-text" id="brief-colour-value">${escapeHtml(colourValue || "Pick a colour")}</span>
+                    <svg class="hair-colour-caret" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                  <ul class="hair-colour-menu profile-colour-menu" id="brief-colour-menu" role="listbox" aria-labelledby="brief-colour-label" hidden>
+                    ${HAIR_COLOUR_OPTIONS.map((c) => `
+                    <li class="hair-colour-option" role="option" data-value="${escapeAttr(c.name)}" aria-selected="${selectedColour === c.name ? "true" : "false"}">
+                      ${hairColourSwatch(c.name)}
+                      <span class="hair-colour-option-label">${escapeHtml(c.name)}</span>
+                    </li>`).join("")}
+                  </ul>
+                  <input class="profile-colour-other-input" id="brief-colour-other" type="text" placeholder="Type colour" value="${escapeAttr(otherColour)}" ${selectedColour === "Other" ? "" : "hidden"}>
+              </span>
+            </span>
+          </label>
+          ${renderProfileTextRow("Allergies or sensitivities", "brief-allergies", d.allergies, "e.g. PPD allergy, sensitive scalp - or none")}
+          ${renderProfileTextRow("Previous colour treatments", "brief-previous", d.previousTreatments, "e.g. box dye 3 months ago")}
+          ${renderProfileTextRow("Damage or breakage", "brief-damage", d.damage, "e.g. dry ends, breakage from bleach")}
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderProfileTextRow(label, id, value, placeholder) {
+  return `
+    <label class="profile-colour-row" for="${escapeAttr(id)}">
+      <span class="profile-colour-key">${escapeHtml(label)}</span>
+      <textarea class="profile-row-input" id="${escapeAttr(id)}" rows="1" placeholder="${escapeAttr(placeholder)}">${escapeHtml(value || "")}</textarea>
+    </label>
+  `;
 }
 
 // Wire the hair-colour combobox. The input stays free-text (type anything),
@@ -490,22 +602,24 @@ function renderBriefDetails() {
 function wireHairColourSelect() {
   const select = $("#brief-colour-select");
   if (!select) return;
-  const input = $("#brief-colour");
-  const menu = $("#brief-colour-menu");
+  const trigger = $("#brief-colour");
   const swatchSlot = $("#brief-colour-swatch");
-  if (!input || !menu || !swatchSlot) return;
+  const menu = $("#brief-colour-menu");
+  const valueLabel = $("#brief-colour-value");
+  const otherInput = $("#brief-colour-other");
+  if (!trigger || !swatchSlot || !menu || !valueLabel || !otherInput) return;
   const options = Array.from(menu.querySelectorAll(".hair-colour-option"));
 
   const closeMenu = () => {
     if (menu.hidden) return;
     menu.hidden = true;
-    input.setAttribute("aria-expanded", "false");
+    trigger.setAttribute("aria-expanded", "false");
     document.removeEventListener("click", onDocClick, true);
   };
   const openMenu = () => {
     if (menu.hidden) {
       menu.hidden = false;
-      input.setAttribute("aria-expanded", "true");
+      trigger.setAttribute("aria-expanded", "true");
       document.addEventListener("click", onDocClick, true);
     }
   };
@@ -513,64 +627,53 @@ function wireHairColourSelect() {
     if (!select.contains(event.target)) closeMenu();
   }
 
-  // Show only options whose name contains the typed text; reveal everything
-  // when the field is empty. Mark the exact match as selected.
-  const filterOptions = () => {
-    const query = input.value.trim().toLowerCase();
-    let anyVisible = false;
-    options.forEach((option) => {
-      const value = option.getAttribute("data-value") || "";
-      const visible = !query || value.toLowerCase().includes(query);
-      option.hidden = !visible;
-      if (visible) anyVisible = true;
-      option.setAttribute("aria-selected", value.toLowerCase() === query ? "true" : "false");
-    });
-    if (anyVisible) openMenu();
-    else closeMenu();
-  };
-
   const setSwatch = (value) => {
     swatchSlot.innerHTML = hairColourSwatch(value);
   };
 
-  // Commit a colour: fill the input, sync state and swatch, close the menu.
   const selectValue = (value) => {
-    input.value = value;
-    updateBriefDetail("colour", value);
-    setSwatch(value);
+    const isOther = value === "Other";
+    const next = isOther ? (otherInput.value.trim() || "Other") : value;
+    updateBriefDetail("colour", next);
+    valueLabel.textContent = next || "Pick a colour";
+    setSwatch(next);
+    otherInput.hidden = !isOther;
     options.forEach((option) => {
       option.setAttribute("aria-selected", option.getAttribute("data-value") === value ? "true" : "false");
     });
     closeMenu();
+    if (isOther) otherInput.focus();
   };
 
-  input.addEventListener("focus", filterOptions);
-  input.addEventListener("input", () => {
-    updateBriefDetail("colour", input.value);
-    setSwatch(input.value);
-    filterOptions();
+  trigger.addEventListener("click", () => {
+    if (menu.hidden) openMenu();
+    else closeMenu();
   });
-  input.addEventListener("keydown", (event) => {
+  trigger.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       closeMenu();
-      input.blur();
-    } else if (event.key === "Enter") {
-      // Enter takes the top filtered result (if the menu is showing one).
-      const top = options.find((option) => !option.hidden);
-      if (!menu.hidden && top) {
-        event.preventDefault();
-        selectValue(top.getAttribute("data-value") || "");
-      }
+    } else if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      if (menu.hidden) openMenu();
+      else closeMenu();
     }
   });
 
   options.forEach((option) => {
-    // Use mousedown so the selection lands before the input's blur fires.
     option.addEventListener("mousedown", (event) => {
       event.preventDefault();
-      selectValue(option.getAttribute("data-value") || "");
-      input.focus();
+      const value = option.getAttribute("data-value") || "";
+      selectValue(value);
+      if (value !== "Other") trigger.focus();
     });
+  });
+
+  otherInput.addEventListener("input", () => {
+    const value = otherInput.value.trim();
+    updateBriefDetail("colour", value || "Other");
+    valueLabel.textContent = value || "Other";
+    setSwatch(value || "Other");
+    refreshShareButton();
   });
 }
 
@@ -580,14 +683,13 @@ function wireHairColourSelect() {
 function renderBriefNotes() {
   const d = state.briefDetails || defaultBriefDetails();
   return `
-    <section class="brief-details brief-details--notes">
-      <div class="brief-details-summary brief-details-summary--static">
-        <span class="brief-details-summary-title">General notes</span>
+    <section class="profile-section">
+      <div class="profile-section-head">
+        <h2>General notes</h2>
+        <p>Anything else you'd like your stylist to know.</p>
       </div>
-      <div class="brief-details-panel">
-        <div class="brief-field brief-field--wide">
-          <textarea id="brief-notes" rows="3" aria-label="General notes" placeholder="Anything else you'd like your stylist to know">${escapeHtml(d.notes || "")}</textarea>
-        </div>
+      <div class="profile-notes-card">
+        <textarea id="brief-notes" class="profile-notes-field" rows="5" aria-label="General notes" placeholder="Anything else you'd like your stylist to know...">${escapeHtml(d.notes || "")}</textarea>
       </div>
     </section>
   `;
@@ -637,10 +739,10 @@ function renderBriefCompletePrompt() {
 // here go straight into the Me partition.
 function renderBriefAddSelf() {
   return `
-    <label class="brief-add-self brief-add-self--upload" title="Upload current hair photos">
-      <span class="brief-add-self-icon" aria-hidden="true">${iconPlus()}</span>
-      <span class="brief-add-self-text">Add current hair</span>
-      <span class="brief-add-self-sub">Upload from device</span>
+    <label class="profile-add-card brief-add-self brief-add-self--upload" title="Upload current hair photos">
+      <span class="profile-add-plus" aria-hidden="true">${iconPlus()}</span>
+      <span class="profile-add-title">Add a photo of you</span>
+      <span class="profile-add-hint">Upload from device</span>
       <input class="brief-file-input" type="file" id="brief-self-input" accept="image/*" multiple>
     </label>
   `;
@@ -650,11 +752,12 @@ function renderBriefAddSelf() {
 // upload controls never sit directly inside the grid card.
 function renderBriefAddRef() {
   return `
-    <button class="brief-add-self brief-add-ref" type="button" id="brief-ref-add" title="Add a reference">
-      <span class="brief-add-self-icon" aria-hidden="true">${iconPlus()}</span>
-      <span class="brief-add-self-text">Add a reference</span>
-      <span class="brief-add-self-sub">Upload or choose saved</span>
-    </button>
+    <label class="profile-add-card brief-add-ref" title="Add a reference">
+      <span class="profile-add-plus" aria-hidden="true">${iconPlus()}</span>
+      <span class="profile-add-title">Add a reference</span>
+      <span class="profile-add-hint">Upload from device</span>
+      <input class="brief-file-input" type="file" id="brief-ref-input" accept="image/*" multiple>
+    </label>
   `;
 }
 
@@ -675,10 +778,6 @@ function renderBriefRefAddPopup() {
             <span class="brief-ref-add-choice-copy">Choose an image from this device.</span>
             <input class="brief-file-input" type="file" id="brief-ref-input" accept="image/*" multiple>
           </label>
-          <button class="brief-ref-add-choice" type="button" id="brief-ref-saved">
-            <span class="brief-ref-add-choice-title">Add from saved</span>
-            <span class="brief-ref-add-choice-copy">Pick one of your favourited styles.</span>
-          </button>
         </div>
       </div>
     </div>
@@ -694,9 +793,9 @@ function renderBriefPicker(savedStyles) {
         <div class="brief-picker-head">
           <div class="overlay-heading">
             <p class="eyebrow">References</p>
-            <h2 id="brief-picker-title">Add from saved</h2>
+            <h2 id="brief-picker-title">Saved references</h2>
           </div>
-          <p class="brief-picker-copy">Choose from your favourites and add them into your reference board.</p>
+          <p class="brief-picker-copy">Favourites are added to your reference board automatically.</p>
         </div>
         <div class="brief-picker-body">
           ${savedStyles.length ? `
@@ -733,16 +832,7 @@ function renderBriefPicker(savedStyles) {
 // The note toggle is overlaid on the reference image (like the remove button),
 // so the card carries no body and leaves no empty padding behind.
 function renderBriefNoteToggle(item) {
-  const hasNote = Boolean(String(item.annotation || "").trim());
-  return `
-      <button
-        class="brief-note-toggle ${hasNote ? "has-note" : ""}"
-        type="button"
-        data-brief-note-toggle="${escapeAttr(item.id)}"
-        aria-expanded="false"
-        aria-label="Add a note"
-        title="Add a note"
-      >${iconComment()}</button>`;
+  return "";
 }
 
 // The note panel lives directly under the image and collapses fully (display:
@@ -764,16 +854,31 @@ function renderBriefNotePanel(item) {
 function renderBriefItem(item) {
   const isOwnHair = itemPartition(item) === "me";
   return `
-    <article class="brief-card" data-brief-id="${escapeAttr(item.id)}">
-      <div class="brief-card-image">
+    <article class="profile-photo-card brief-card" data-brief-id="${escapeAttr(item.id)}">
+      <div class="profile-photo-frame brief-card-image">
         ${item.imageUrl
           ? `<img src="${escapeAttr(item.imageUrl)}" alt="${escapeAttr(item.name || "Reference image")}" loading="lazy" referrerpolicy="no-referrer">`
           : `<span>${escapeHtml(item.name || "Reference")}</span>`}
-        <button class="brief-remove-btn" type="button" data-brief-remove="${escapeAttr(item.id)}" aria-label="Remove from brief">&times;</button>
-        ${isOwnHair ? "" : renderBriefNoteToggle(item)}
+        <button class="profile-photo-remove brief-remove-btn" type="button" data-brief-remove="${escapeAttr(item.id)}" aria-label="Remove from brief">&times;</button>
       </div>
-      ${isOwnHair ? "" : renderBriefNotePanel(item)}
+      ${isOwnHair ? "" : renderReferenceCaption(item)}
     </article>
+  `;
+}
+
+function profileHeartIcon(filled = false) {
+  return filled
+    ? `<svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 21s-7.5-4.9-10-9.4C.4 8.3 1.9 4.8 5.3 4.8c2 0 3.4 1.2 4.2 2.5C10.3 6 11.7 4.8 13.7 4.8c3.4 0 4.9 3.5 3.3 6.8C16.5 16.1 12 21 12 21z"/></svg>`
+    : `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7.5-4.9-10-9.4C.4 8.3 1.9 4.8 5.3 4.8c2 0 3.4 1.2 4.2 2.5C10.3 6 11.7 4.8 13.7 4.8c3.4 0 4.9 3.5 3.3 6.8C16.5 16.1 12 21 12 21z"/></svg>`;
+}
+
+function renderReferenceCaption(item) {
+  const isSaved = item.source === "saved";
+  const title = isSaved ? (item.name || "Saved haircut") : "Uploaded";
+  return `
+    <div class="profile-ref-caption">
+      <b>${escapeHtml(title)}</b>
+    </div>
   `;
 }
 
@@ -834,7 +939,14 @@ function insertBriefItemCard(item) {
 function wireBrief() {
   const shareBtn = $("#brief-share-btn");
   if (shareBtn) {
-    shareBtn.addEventListener("click", openBriefCompletePrompt);
+    shareBtn.addEventListener("click", () => {
+      if (shareBtn.dataset.briefShareDirect !== undefined) handleProfileShareDirect();
+      else openBriefCompletePrompt();
+    });
+  }
+  const mobileShareBtn = $("#profile-mobile-share-btn");
+  if (mobileShareBtn) {
+    mobileShareBtn.addEventListener("click", handleProfileShareDirect);
   }
   const shareUrlBtn = $("#brief-url-share-btn");
   if (shareUrlBtn) {
@@ -903,10 +1015,6 @@ function wireBrief() {
       closeBriefRefAdd();
     });
   }
-  const refAdd = $("#brief-ref-add");
-  if (refAdd) {
-    refAdd.addEventListener("click", openBriefRefAdd);
-  }
   const refAddOverlay = $("#brief-ref-add-overlay");
   if (refAddOverlay) {
     refAddOverlay.addEventListener("click", (event) => {
@@ -916,12 +1024,6 @@ function wireBrief() {
   const refAddClose = $("#brief-ref-add-close");
   if (refAddClose) {
     refAddClose.addEventListener("click", closeBriefRefAdd);
-  }
-  const refSaved = $("#brief-ref-saved");
-  if (refSaved) {
-    refSaved.addEventListener("click", () => {
-      openBriefPicker();
-    });
   }
   const pickerOverlay = $("#brief-picker-overlay");
   if (pickerOverlay) {
@@ -945,16 +1047,7 @@ function addSavedToBrief(styleId, button = null) {
   const style = state.styles.find((item) => item.id === String(styleId));
   if (!style) return;
   if (state.brief.some((item) => item.styleId === style.id)) return;
-  const item = {
-    id: briefItemId(),
-    source: "saved",
-    styleId: style.id,
-    imageUrl: style.imageUrl,
-    name: style.name,
-    partition: "references",
-    firstChoice: false,
-    annotation: ""
-  };
+  const item = savedReferenceItem(style);
   setBrief([item, ...state.brief]);
   refreshShareButton();
 
@@ -1003,6 +1096,17 @@ async function handleBriefUpload(fileList, partition) {
 }
 
 function removeBriefItem(id) {
+  const item = state.brief.find((entry) => entry.id === id);
+  if (item?.source === "saved" && item.styleId) {
+    const imageId = String(item.styleId);
+    state.favourites.delete(imageId);
+    pendingFavouriteOps.set(imageId, "delete");
+    updateFavouriteCount();
+    apiJson(API.favorites, {
+      method: "DELETE",
+      body: JSON.stringify({ sessionId: state.sessionId, imageId })
+    }).catch(() => {}).finally(() => pendingFavouriteOps.delete(imageId));
+  }
   setBrief(state.brief.filter((item) => item.id !== id));
   renderBrief();
 }

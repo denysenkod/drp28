@@ -5,6 +5,7 @@ async function toggleFavourite(id) {
 
   if (shouldSave) state.favourites.add(imageId);
   else state.favourites.delete(imageId);
+  syncFavouriteReferencesToBrief();
   pendingFavouriteOps.set(imageId, shouldSave ? "add" : "delete");
 
   updateFavouriteCount();
@@ -22,6 +23,7 @@ async function toggleFavourite(id) {
     pendingFavouriteOps.delete(imageId);
     if (shouldSave) state.favourites.delete(imageId);
     else state.favourites.add(imageId);
+    syncFavouriteReferencesToBrief();
     updateFavouriteCount();
     render();
     if (!els.favouritesOverlay.hidden) renderFavourites();

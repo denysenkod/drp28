@@ -2,24 +2,24 @@
 // sequentially so the classic-script globals keep the same execution order as
 // the previous single-file app.
 const FRONTEND_SCRIPT_FILES = [
-  "/js/storage.js?v=2026-06-11-home-feed-fallback",
-  "/js/icons.js?v=2026-06-11-home-feed-fallback",
-  "/js/fallback-styles.js?v=2026-06-11-home-feed-fallback",
-  "/js/products-and-normalizers.js?v=2026-06-11-home-feed-fallback",
-  "/js/state.js?v=2026-06-11-home-feed-fallback",
-  "/js/data-loading.js?v=2026-06-11-home-feed-fallback",
-  "/js/quiz-filters.js?v=2026-06-11-home-feed-fallback",
-  "/js/rendering.js?v=2026-06-11-home-feed-fallback",
-  "/js/favourites.js?v=2026-06-11-home-feed-fallback",
-  "/js/brief.js?v=2026-06-11-home-feed-fallback",
-  "/js/brief-sharing.js?v=2026-06-11-home-feed-fallback",
-  "/js/shared-brief.js?v=2026-06-11-home-feed-fallback",
-  "/js/try-on.js?v=2026-06-11-home-feed-fallback",
-  "/js/detail-overlay.js?v=2026-06-11-home-feed-fallback",
-  "/js/product-overlay.js?v=2026-06-11-home-feed-fallback",
-  "/js/uploads.js?v=2026-06-11-home-feed-fallback",
-  "/js/utilities.js?v=2026-06-11-home-feed-fallback",
-  "/js/init.js?v=2026-06-11-home-feed-fallback"
+  "/js/storage.js?v=2026-06-11-brief-card-bottom",
+  "/js/icons.js?v=2026-06-11-brief-card-bottom",
+  "/js/fallback-styles.js?v=2026-06-11-brief-card-bottom",
+  "/js/products-and-normalizers.js?v=2026-06-11-brief-card-bottom",
+  "/js/state.js?v=2026-06-11-brief-card-bottom",
+  "/js/data-loading.js?v=2026-06-11-brief-card-bottom",
+  "/js/quiz-filters.js?v=2026-06-11-brief-card-bottom",
+  "/js/rendering.js?v=2026-06-11-brief-card-bottom",
+  "/js/favourites.js?v=2026-06-11-brief-card-bottom",
+  "/js/brief.js?v=2026-06-11-brief-card-bottom",
+  "/js/brief-sharing.js?v=2026-06-11-brief-card-bottom",
+  "/js/shared-brief.js?v=2026-06-11-brief-card-bottom",
+  "/js/try-on.js?v=2026-06-11-brief-card-bottom",
+  "/js/detail-overlay.js?v=2026-06-11-brief-card-bottom",
+  "/js/product-overlay.js?v=2026-06-11-brief-card-bottom",
+  "/js/uploads.js?v=2026-06-11-brief-card-bottom",
+  "/js/utilities.js?v=2026-06-11-brief-card-bottom",
+  "/js/init.js?v=2026-06-11-brief-card-bottom"
 ];
 
 function loadScript(src) {

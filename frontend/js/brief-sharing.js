@@ -24,7 +24,7 @@ async function syncBrief() {
   try {
     const data = await apiJson(API.briefs, {
       method: "POST",
-      body: JSON.stringify({ sessionId: state.sessionId, items: state.brief, details: briefDetailsPayload() })
+      body: JSON.stringify({ id: state.briefId || undefined, sessionId: state.sessionId, items: state.brief, details: briefDetailsPayload() })
     });
     if (data.item?.id && data.item.id !== state.briefId) {
       state.briefId = data.item.id;
@@ -85,15 +85,48 @@ async function handleBriefComplete() {
   renderBrief();
 }
 
-async function copyBriefShareLink(link) {
+function copyBriefShareLink(link) {
   let copied = false;
+  const textarea = document.createElement("textarea");
+  textarea.value = link;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  textarea.style.top = "0";
+  document.body.appendChild(textarea);
+  textarea.focus();
+  textarea.select();
   try {
-    await navigator.clipboard?.writeText(link);
-    copied = true;
+    copied = document.execCommand("copy");
   } catch {
     copied = false;
   }
-  setShareStatus(copied ? "Style complete. URL copied to clipboard." : `Style complete. Copy this URL: ${link}`, link);
+  textarea.remove();
+
+  if (copied) {
+    setShareStatus("Share URL copied to clipboard.", link);
+    return true;
+  }
+
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(link)
+      .then(() => setShareStatus("Share URL copied to clipboard.", link))
+      .catch(() => setShareStatus(`Share URL ready. Copy this URL: ${link}`, link));
+    setShareStatus("Copying share URL...", link);
+    return false;
+  }
+
+  setShareStatus(`Share URL ready. Copy this URL: ${link}`, link);
+  return false;
+}
+
+function ensureBriefShareId() {
+  if (state.briefId) return state.briefId;
+  state.briefId = window.crypto?.randomUUID
+    ? window.crypto.randomUUID()
+    : `brief-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  writeStored(BRIEF_ID_KEY, state.briefId);
+  return state.briefId;
 }
 
 async function handleBriefUrlShare() {
