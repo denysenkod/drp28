@@ -530,6 +530,25 @@ test('stores quiz responses and user photos in D1', async () => {
   assert.equal(list.items[0].id, photo.item.id);
 });
 
+test('try-on route requires the OpenAI API key', async () => {
+  const { default: worker } = await loadWorker();
+  const env = await createAssetEnv();
+
+  const response = await worker.fetch(new Request('https://example.com/api/try-on', {
+    method: 'POST',
+    body: JSON.stringify({
+      sessionId: 'session-1',
+      styleName: 'Layered Haircut',
+      userImageData: 'data:image/png;base64,aaa',
+      referenceImageUrl: 'https://example.com/reference.png'
+    })
+  }), env);
+  const body = await response.json();
+
+  assert.equal(response.status, 503);
+  assert.equal(body.error, 'OpenAI API key is not configured.');
+});
+
 test('stores and removes favorite images in D1', async () => {
   const { default: worker } = await loadWorker();
   const env = await createAssetEnv();
@@ -668,6 +687,11 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(app.includes('gallery: "/api/gallery"'));
   assert.ok(app.includes('favorites: "/api/favorites"'));
   assert.ok(app.includes('userPhotos: "/api/user-photos"'));
+  assert.ok(app.includes('tryOn: "/api/try-on"'));
+  assert.ok(app.includes('function openTryOn()'));
+  assert.ok(app.includes('function applyTryOn()'));
+  assert.ok(index.includes('id="detail-try-on"'));
+  assert.ok(index.includes('id="try-on-overlay"'));
   assert.ok(app.includes('imageUrl'));
   assert.ok(app.includes('syncStylesForCurrentRoute'));
   assert.ok(!app.includes('isAdminContext'));

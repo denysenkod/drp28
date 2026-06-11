@@ -6,6 +6,7 @@ interface Env {
     fetch(request: Request): Promise<Response>;
   };
   DB?: any;
+  OPENAI_API_KEY?: string;
 }
 
 function json(data: unknown, init: ResponseInit = {}): Response {
@@ -178,6 +179,139 @@ function rowToFavoriteImage(row: any): Record<string, unknown> {
     imageId: row.image_id,
     createdAt: row.created_at
   };
+}
+
+function imageExtensionFromType(type: string): string {
+  const normalized = type.toLowerCase();
+  if (normalized.includes('png')) return 'png';
+  if (normalized.includes('webp')) return 'webp';
+  if (normalized.includes('gif')) return 'gif';
+  return 'jpg';
+}
+
+function dataUrlToBlob(value: string) {
+  const match = /^data:([^;,]+);base64,(.+)$/i.exec(value.trim());
+  if (!match) {
+    throw new Error('Invalid image data URL.');
+  }
+
+  const binary = atob(match[2]);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+
+  return new Blob([bytes], { type: match[1] });
+}
+
+async function imageBlobFromInput(value: string, label: string) {
+  const source = value.trim();
+  if (!source) {
+    throw new Error(`${label} image is required.`);
+  }
+
+  if (source.startsWith('data:')) {
+    return dataUrlToBlob(source);
+  }
+
+  const url = new URL(source);
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+    throw new Error(`${label} image URL must be HTTP or HTTPS.`);
+  }
+
+  const response = await fetch(url.toString(), {
+    headers: { accept: 'image/*' }
+  });
+  if (!response.ok) {
+    throw new Error(`Could not fetch ${label.toLowerCase()} image.`);
+  }
+
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.toLowerCase().startsWith('image/')) {
+    throw new Error(`${label} URL did not return an image.`);
+  }
+
+  return response.blob();
+}
+
+function tryOnPrompt(styleName: unknown): string {
+  const name = typeof styleName === 'string' && styleName.trim() ? styleName.trim() : 'the reference haircut';
+  return [
+    'Edit the first image, which is the user selfie. Use the second image only as the hairstyle reference.',
+    `Apply ${name} from the reference to the user as a realistic salon try-on.`,
+    'Change only the hair: haircut silhouette, length, layers, fringe, texture, volume, parting, hairline styling, and visible hair color where necessary to match the reference.',
+    'Preserve the user identity exactly. Do not change face shape, facial features, skin tone, expression, age, body, pose, clothing, background, lighting, camera angle, or image composition.',
+    'Keep the result photorealistic and honest, as if the user genuinely had this haircut today.'
+  ].join(' ');
+}
+
+async function createTryOnImage(request: Request, env: Env): Promise<Response> {
+  if (!env.OPENAI_API_KEY) {
+    return error('OpenAI API key is not configured.', 503);
+  }
+
+  const body = await readJson(request);
+  const userImage = typeof body?.userImageData === 'string' ? body.userImageData : '';
+  const referenceImage = typeof body?.referenceImageData === 'string'
+    ? body.referenceImageData
+    : typeof body?.referenceImageUrl === 'string'
+      ? body.referenceImageUrl
+      : '';
+
+  if (!userImage.trim()) {
+    return error('A selfie image is required.');
+  }
+
+  if (!referenceImage.trim()) {
+    return error('A reference hairstyle image is required.');
+  }
+
+  let userBlob;
+  let referenceBlob;
+
+  try {
+    [userBlob, referenceBlob] = await Promise.all([
+      imageBlobFromInput(userImage, 'Selfie'),
+      imageBlobFromInput(referenceImage, 'Reference')
+    ]);
+  } catch (err) {
+    return error(err instanceof Error ? err.message : 'Invalid try-on images.');
+  }
+
+  const form = new FormData();
+  form.append('model', 'gpt-image-2');
+  form.append('prompt', tryOnPrompt(body?.styleName));
+  form.append('quality', 'medium');
+  form.append('size', '1024x1536');
+  form.append('image[]', userBlob, `selfie.${imageExtensionFromType(userBlob.type || 'image/jpeg')}`);
+  form.append('image[]', referenceBlob, `reference.${imageExtensionFromType(referenceBlob.type || 'image/jpeg')}`);
+
+  const response = await fetch('https://api.openai.com/v1/images/edits', {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${env.OPENAI_API_KEY}`
+    },
+    body: form
+  });
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const message = typeof data?.error?.message === 'string'
+      ? data.error.message
+      : 'Try-on generation failed.';
+    return error(message, response.status);
+  }
+
+  const b64 = data?.data?.[0]?.b64_json;
+  if (typeof b64 !== 'string' || !b64) {
+    return error('Try-on generation did not return an image.', 502);
+  }
+
+  return json({
+    ok: true,
+    model: 'gpt-image-2',
+    imageData: `data:image/png;base64,${b64}`
+  });
 }
 
 function rowToBriefFeedback(row: any): Record<string, unknown> {
@@ -597,6 +731,10 @@ async function handleApi(request: Request, env: Env, url: URL): Promise<Response
 
   if (!url.pathname.startsWith('/api/')) {
     return null;
+  }
+
+  if (url.pathname === '/api/try-on') {
+    if (request.method === 'POST') return createTryOnImage(request, env);
   }
 
   let db: any;

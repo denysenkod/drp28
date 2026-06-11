@@ -3,7 +3,8 @@ const API = {
   gallery: "/api/gallery",
   favorites: "/api/favorites",
   userPhotos: "/api/user-photos",
-  briefs: "/api/briefs"
+  briefs: "/api/briefs",
+  tryOn: "/api/try-on"
 };
 
 const SESSION_KEY = "drp28.frontend.sessionId";
@@ -1023,6 +1024,16 @@ const state = {
   sharedBriefId: null,
   sharedBrief: null,
   sharedBriefError: false,
+  tryOn: {
+    styleId: null,
+    userImageData: "",
+    userImageName: "",
+    sourceBriefItemId: null,
+    resultImageData: "",
+    status: "idle",
+    error: "",
+    askProfileUpdate: false
+  },
   reviewerName: readStored(REVIEWER_NAME_KEY, ""),
   uploadedPhotoName: null,
   filterPanelOpen: false,
@@ -1050,6 +1061,7 @@ const els = {
   detailMeta: $("#detail-meta"),
   detailName: $("#detail-name"),
   detailLike: $("#detail-like"),
+  detailTryOn: $("#detail-try-on"),
   detailMaintenance: $("#detail-maintenance"),
   detailProductsSection: $("#detail-products-section"),
   detailProducts: $("#detail-products"),
@@ -1066,7 +1078,10 @@ const els = {
   productHowtoSection: $("#product-howto-section"),
   productHowto: $("#product-howto"),
   productTransition: $("#product-transition"),
-  closeProduct: $("#close-product")
+  closeProduct: $("#close-product"),
+  tryOnOverlay: $("#try-on-overlay"),
+  tryOnBody: $("#try-on-body"),
+  closeTryOn: $("#close-try-on")
 };
 
 function setView(view) {
@@ -1079,7 +1094,7 @@ function setView(view) {
   if (view !== "brief") {
     state.briefPickerOpen = false;
     state.briefRefAddOpen = false;
-    if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden) {
+    if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden && els.tryOnOverlay.hidden) {
       document.body.style.overflow = "";
     }
   }
@@ -3102,7 +3117,7 @@ function openBriefPicker() {
 function closeBriefPicker() {
   if (!state.briefPickerOpen) return;
   state.briefPickerOpen = false;
-  if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden) {
+  if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden && els.tryOnOverlay.hidden) {
     document.body.style.overflow = "";
   }
   if (state.view === "brief") renderBrief();
@@ -3117,7 +3132,7 @@ function openBriefRefAdd() {
 function closeBriefRefAdd() {
   if (!state.briefRefAddOpen) return;
   state.briefRefAddOpen = false;
-  if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden && !state.briefPickerOpen) {
+  if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden && els.tryOnOverlay.hidden && !state.briefPickerOpen) {
     document.body.style.overflow = "";
   }
   if (state.view === "brief") renderBrief();
@@ -3570,6 +3585,7 @@ function addBriefImage(imageUrl, name, partition) {
   };
   setBrief([item, ...state.brief]);
   if (state.view === "brief") renderBrief();
+  return item;
 }
 
 // Reads the uploaded files and files each one into the given partition ("me" or
@@ -3580,6 +3596,9 @@ async function handleBriefUpload(fileList, partition) {
     try {
       const imageData = await imageFileToDataUrl(file);
       addBriefImage(imageData, file.name, partition);
+      if (partition === "me") {
+        mirrorSelfPhotoToApi(imageData, file.name || "Profile selfie", "Profile selfie");
+      }
     } catch {
       // Skip files that can't be read as an image.
     }
@@ -3638,6 +3657,246 @@ function updateBriefNote(id, value) {
   setBrief(state.brief.map((item) => (item.id === id ? { ...item, annotation: value } : item)));
 }
 
+async function mirrorSelfPhotoToApi(imageData, label, description) {
+  try {
+    await apiJson(API.userPhotos, {
+      method: "POST",
+      body: JSON.stringify({
+        sessionId: state.sessionId,
+        label,
+        imageData,
+        description,
+        features: ["profile-selfie"]
+      })
+    });
+  } catch {
+    // Profile is local-first; API mirroring should not block the visible card.
+  }
+}
+
+// ---------- Hair try-on ----------
+function latestProfileSelfPhoto() {
+  return briefItemsFor("me").find((item) => item.imageUrl) || null;
+}
+
+function openTryOn() {
+  const style = state.styles.find((item) => item.id === String(currentDetailId));
+  if (!style) return;
+
+  const profilePhoto = latestProfileSelfPhoto();
+  state.tryOn = {
+    styleId: style.id,
+    userImageData: profilePhoto?.imageUrl || "",
+    userImageName: profilePhoto?.name || "Profile selfie",
+    sourceBriefItemId: profilePhoto?.id || null,
+    resultImageData: "",
+    status: "idle",
+    error: "",
+    askProfileUpdate: false
+  };
+
+  renderTryOn();
+  els.tryOnOverlay.hidden = false;
+  document.body.style.overflow = "hidden";
+}
+
+function closeTryOn() {
+  els.tryOnOverlay.hidden = true;
+  state.tryOn.status = "idle";
+  state.tryOn.error = "";
+  if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden) {
+    document.body.style.overflow = "";
+  }
+}
+
+function renderTryOn() {
+  const style = state.styles.find((item) => item.id === String(state.tryOn.styleId));
+  if (!style) {
+    els.tryOnBody.innerHTML = "";
+    return;
+  }
+
+  const hasSelfie = Boolean(state.tryOn.userImageData);
+  const isGenerating = state.tryOn.status === "generating";
+  const canApply = hasSelfie && style.imageUrl && !isGenerating && !state.tryOn.askProfileUpdate;
+
+  els.tryOnBody.innerHTML = `
+    <div class="try-on-popup">
+      <div class="overlay-heading">
+        <p class="eyebrow">Try on</p>
+        <h2>${escapeHtml(style.name)}</h2>
+      </div>
+
+      <div class="try-on-frames">
+        <figure class="try-on-frame">
+          <div class="try-on-image">
+            ${style.imageUrl ? `<img src="${escapeAttr(style.imageUrl)}" alt="${escapeAttr(style.name)}" referrerpolicy="no-referrer">` : `<span>No reference image</span>`}
+          </div>
+          <figcaption>Reference haircut</figcaption>
+        </figure>
+
+        <figure class="try-on-frame">
+          <div class="try-on-image">
+            ${hasSelfie ? `<img src="${escapeAttr(state.tryOn.userImageData)}" alt="Your selfie">` : `<span>Add a selfie</span>`}
+          </div>
+          <figcaption>${hasSelfie ? escapeHtml(state.tryOn.userImageName || "Your selfie") : "Your selfie"}</figcaption>
+        </figure>
+      </div>
+
+      <div class="try-on-controls">
+        <label class="secondary-btn try-on-upload">
+          ${hasSelfie ? "Use a different selfie" : "Upload selfie"}
+          <input class="brief-file-input" id="try-on-selfie-input" type="file" accept="image/*">
+        </label>
+        <button class="primary-btn" id="try-on-apply" type="button" ${canApply ? "" : "disabled"}>
+          ${isGenerating ? "Applying..." : "Apply haircut"}
+        </button>
+      </div>
+
+      ${state.tryOn.askProfileUpdate ? `
+        <div class="try-on-profile-choice">
+          <p>Use this selfie in Profile too?</p>
+          <div>
+            <button class="primary-btn" type="button" data-try-on-profile="yes">Yes, update Profile</button>
+            <button class="secondary-btn" type="button" data-try-on-profile="no">No, just try on</button>
+          </div>
+        </div>
+      ` : ""}
+
+      ${state.tryOn.error ? `<p class="try-on-error">${escapeHtml(state.tryOn.error)}</p>` : ""}
+
+      ${state.tryOn.resultImageData ? `
+        <figure class="try-on-result">
+          <div class="try-on-result-image">
+            <img src="${escapeAttr(state.tryOn.resultImageData)}" alt="Generated haircut try-on">
+          </div>
+          <figcaption>Your realistic try-on</figcaption>
+        </figure>
+      ` : ""}
+    </div>
+  `;
+
+  wireTryOn();
+}
+
+function wireTryOn() {
+  const input = $("#try-on-selfie-input");
+  if (input) {
+    input.addEventListener("change", (event) => {
+      handleTryOnSelfieUpload(event.target.files);
+      event.target.value = "";
+    });
+  }
+
+  const apply = $("#try-on-apply");
+  if (apply) {
+    apply.addEventListener("click", applyTryOn);
+  }
+
+  document.querySelectorAll("[data-try-on-profile]").forEach((button) => {
+    button.addEventListener("click", () => answerTryOnProfileUpdate(button.dataset.tryOnProfile === "yes"));
+  });
+}
+
+async function handleTryOnSelfieUpload(fileList) {
+  const file = Array.from(fileList || []).find((item) => item.type.startsWith("image/"));
+  if (!file) return;
+
+  try {
+    const imageData = await imageFileToDataUrl(file);
+    state.tryOn.userImageData = imageData;
+    state.tryOn.userImageName = file.name || "Try-on selfie";
+    state.tryOn.resultImageData = "";
+    state.tryOn.status = "idle";
+    state.tryOn.error = "";
+    state.tryOn.askProfileUpdate = true;
+  } catch (err) {
+    state.tryOn.error = err instanceof Error ? err.message : "Could not read that image.";
+  }
+
+  renderTryOn();
+}
+
+async function answerTryOnProfileUpdate(shouldSave) {
+  if (shouldSave) {
+    await saveTryOnSelfieToProfile();
+  }
+  state.tryOn.askProfileUpdate = false;
+  renderTryOn();
+}
+
+async function saveTryOnSelfieToProfile() {
+  if (!state.tryOn.userImageData) return;
+
+  const existingId = state.tryOn.sourceBriefItemId;
+  let savedId = existingId;
+  let found = false;
+  const next = state.brief.map((item) => {
+    if (item.id !== existingId || itemPartition(item) !== "me") return item;
+    found = true;
+    return {
+      ...item,
+      source: "upload",
+      imageUrl: state.tryOn.userImageData,
+      name: state.tryOn.userImageName || item.name || "Try-on selfie"
+    };
+  });
+
+  if (!found) {
+    savedId = briefItemId();
+    next.unshift({
+      id: savedId,
+      source: "upload",
+      imageUrl: state.tryOn.userImageData,
+      name: state.tryOn.userImageName || "Try-on selfie",
+      partition: "me",
+      firstChoice: false,
+      annotation: "",
+      hairstyleStatus: "current"
+    });
+  }
+
+  state.tryOn.sourceBriefItemId = savedId;
+  setBrief(next);
+
+  await mirrorSelfPhotoToApi(
+    state.tryOn.userImageData,
+    state.tryOn.userImageName || "Try-on selfie",
+    "Selfie used for haircut try-on"
+  );
+}
+
+async function applyTryOn() {
+  const style = state.styles.find((item) => item.id === String(state.tryOn.styleId));
+  if (!style || !state.tryOn.userImageData || !style.imageUrl || state.tryOn.askProfileUpdate) return;
+
+  state.tryOn.status = "generating";
+  state.tryOn.error = "";
+  state.tryOn.resultImageData = "";
+  renderTryOn();
+
+  try {
+    const data = await apiJson(API.tryOn, {
+      method: "POST",
+      body: JSON.stringify({
+        sessionId: state.sessionId,
+        styleId: style.id,
+        styleName: style.name,
+        userImageData: state.tryOn.userImageData,
+        referenceImageUrl: style.imageUrl
+      })
+    });
+    state.tryOn.resultImageData = data.imageData || "";
+    state.tryOn.status = "done";
+    if (!state.tryOn.resultImageData) state.tryOn.error = "Try-on generation did not return an image.";
+  } catch (err) {
+    state.tryOn.status = "idle";
+    state.tryOn.error = err instanceof Error ? err.message : "Try-on generation failed.";
+  }
+
+  renderTryOn();
+}
+
 // ---------- Detail overlay ----------
 function appendImage(frame, style) {
   frame.innerHTML = style.imageUrl
@@ -3686,6 +3945,7 @@ function openDetail(id) {
 
 function closeDetail() {
   els.detailOverlay.hidden = true;
+  if (!els.tryOnOverlay.hidden) closeTryOn();
   currentDetailId = null;
   if (els.favouritesOverlay.hidden) document.body.style.overflow = "";
 }
@@ -3784,7 +4044,7 @@ function closeProduct() {
   els.productOverlay.hidden = true;
   currentProductId = null;
   // The hairstyle or favourites popup may still be open underneath.
-  if (els.detailOverlay.hidden && els.favouritesOverlay.hidden) document.body.style.overflow = "";
+  if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.tryOnOverlay.hidden) document.body.style.overflow = "";
 }
 
 // Wires product links inside a given scope to open the product popup instead of
@@ -3866,15 +4126,16 @@ function init() {
   els.detailLike.addEventListener("click", () => {
     if (currentDetailId) toggleFavourite(currentDetailId);
   });
+  els.detailTryOn.addEventListener("click", openTryOn);
 
   els.closeFavourites.addEventListener("click", () => {
     els.favouritesOverlay.hidden = true;
-    if (els.detailOverlay.hidden) document.body.style.overflow = "";
+    if (els.detailOverlay.hidden && els.tryOnOverlay.hidden) document.body.style.overflow = "";
   });
   els.favouritesOverlay.addEventListener("click", (event) => {
     if (event.target === els.favouritesOverlay) {
       els.favouritesOverlay.hidden = true;
-      if (els.detailOverlay.hidden) document.body.style.overflow = "";
+      if (els.detailOverlay.hidden && els.tryOnOverlay.hidden) document.body.style.overflow = "";
     }
   });
 
@@ -3882,11 +4143,16 @@ function init() {
   els.productOverlay.addEventListener("click", (event) => {
     if (event.target === els.productOverlay) closeProduct();
   });
+  els.closeTryOn.addEventListener("click", closeTryOn);
+  els.tryOnOverlay.addEventListener("click", (event) => {
+    if (event.target === els.tryOnOverlay) closeTryOn();
+  });
 
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
-    // The product popup can sit on top of the others, so close it first.
-    if (!els.productOverlay.hidden) closeProduct();
+    // Stacked popups close from the highest layer down.
+    if (!els.tryOnOverlay.hidden) closeTryOn();
+    else if (!els.productOverlay.hidden) closeProduct();
     else if (!els.detailOverlay.hidden) closeDetail();
     else if (!els.favouritesOverlay.hidden) {
       els.favouritesOverlay.hidden = true;
@@ -3900,7 +4166,7 @@ function init() {
     if (state.briefPickerOpen || state.briefRefAddOpen) {
       state.briefPickerOpen = false;
       state.briefRefAddOpen = false;
-      if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden) {
+      if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden && els.tryOnOverlay.hidden) {
         document.body.style.overflow = "";
       }
     }
