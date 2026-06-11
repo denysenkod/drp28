@@ -3204,7 +3204,7 @@ function renderBrief() {
           <div class="brief-partition-head">
             <p class="eyebrow">Inspiration</p>
             <h2>References</h2>
-            <p class="brief-partition-copy">Looks on other people you'd like to take cues from.</p>
+            <p class="brief-partition-copy">Looks on other people you'd like to take cues from - or maybe even yourself!</p>
           </div>
           <div class="brief-grid" id="brief-ref-grid">
             ${refItems.map(renderBriefItem).join("")}
