@@ -544,7 +544,6 @@ function renderBrief() {
             <p class="eyebrow">Your profile</p>
             <h1 class="profile-title">Your hair <em>brief</em></h1>
             <p class="profile-lede">Gather photos of your hair today and the looks you're after, add the colour you have in mind and a few notes, then share one link with your stylist.</p>
-            ${renderOwnerFeedback()}
           </header>
 
           <div class="profile-work">
@@ -668,6 +667,7 @@ function renderMessages() {
         <ul class="messages-list">
           ${comments.map((entry) => {
             const date = formatFeedbackDate(entry.createdAt);
+            const briefHref = entry.briefId ? `?brief=${encodeURIComponent(entry.briefId)}` : "?brief";
             return `
               <li class="message-card">
                 <div class="message-card-head">
@@ -675,6 +675,9 @@ function renderMessages() {
                   ${date ? `<time>${escapeHtml(date)}</time>` : ""}
                 </div>
                 ${entry.note ? `<p>${escapeHtml(entry.note)}</p>` : `<p class="message-muted">No written note was included.</p>`}
+                <div class="message-card-actions">
+                  <a class="message-brief-link" href="${escapeAttr(briefHref)}" data-message-brief-link>View style brief</a>
+                </div>
               </li>
             `;
           }).join("")}
@@ -693,6 +696,12 @@ function renderMessages() {
   if (refresh) refresh.addEventListener("click", loadOwnerFeedback);
   const openProfile = $("#messages-open-profile");
   if (openProfile) openProfile.addEventListener("click", () => setView("brief"));
+  document.querySelectorAll("[data-message-brief-link]").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      setView("brief");
+    });
+  });
 }
 
 function renderProfileBriefListItem(label, count, done) {
