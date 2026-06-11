@@ -2729,6 +2729,7 @@ body[data-view="brief"] .app-shell {
 .brief-ref-controls {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 8px;
 }
 
@@ -2883,16 +2884,62 @@ body[data-view="brief"] .app-shell {
   margin-top: 16px;
 }
 
+.brief-share--bottom {
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 22px;
+  margin-top: 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
 .brief-share-btn[disabled] {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
 .brief-share-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
   margin: 0;
   font-size: 13px;
   color: var(--muted);
   word-break: break-all;
+}
+
+.brief-share-status > span {
+  font-weight: 800;
+  color: var(--ink);
+  word-break: normal;
+}
+
+.brief-url-share-btn {
+  min-height: 42px;
+  gap: 8px;
+}
+
+.brief-url-share-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.brief-complete-card {
+  width: min(560px, 100%);
+}
+
+.brief-complete-card .brief-field {
+  margin-top: 18px;
+}
+
+.brief-complete-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
 }
 
 /* ----- Reviewer (read-only) brief ----- */
@@ -3649,6 +3696,15 @@ body[data-view="brief"] .app-shell {
   .brief-picker-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
+  }
+
+  .brief-complete-actions {
+    flex-direction: column-reverse;
+  }
+
+  .brief-complete-actions .primary-btn,
+  .brief-complete-actions .secondary-btn {
+    width: 100%;
   }
 
   .brief-ref-add-actions {

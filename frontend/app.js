@@ -1019,7 +1019,9 @@ const state = {
   briefDetailsOpen: readStored(BRIEF_DETAILS_OPEN_KEY, null),
   briefPickerOpen: false,
   briefRefAddOpen: false,
+  briefCompletePromptOpen: false,
   shareStatus: "",
+  shareLink: "",
   sharedBriefId: null,
   sharedBrief: null,
   sharedBriefError: false,
@@ -1079,6 +1081,7 @@ function setView(view) {
   if (view !== "brief") {
     state.briefPickerOpen = false;
     state.briefRefAddOpen = false;
+    state.briefCompletePromptOpen = false;
     if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden) {
       document.body.style.overflow = "";
     }
@@ -2559,9 +2562,18 @@ function renderFavourites() {
 // tile, so the source of the upload decides where it lands.
 // The brief lives in localStorage so it survives reloads, and is mirrored to the
 // backend (debounced) so the owner can share a link that a stylist can review.
+function normalizeBriefItems(items = []) {
+  return (items || []).map((item) => (
+    itemPartition(item) === "me"
+      ? { ...item, partition: "me", hairstyleStatus: "current" }
+      : { ...item, firstChoice: false }
+  ));
+}
+
 function setBrief(next) {
-  state.brief = next;
-  writeStored(BRIEF_KEY, next);
+  const normalized = normalizeBriefItems(next);
+  state.brief = normalized;
+  writeStored(BRIEF_KEY, normalized);
   updateBriefCount();
   scheduleBriefSync();
 }
@@ -2665,32 +2677,8 @@ function prefersNativeBriefShare() {
   return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || "");
 }
 
-async function handleBriefShare() {
-  const nativeShare = prefersNativeBriefShare() && typeof navigator.share === "function";
-
-  // Mobile share sheets need to open directly from the tap handler. Once we
-  // already have a stable brief id, we can share that link immediately and let
-  // the latest edits finish syncing in the background.
-  if (nativeShare && state.briefId) {
-    const link = briefShareLink();
-    void flushBriefSync().catch(() => null);
-    try {
-      await navigator.share({
-        title: "HairMatch style brief",
-        text: "Here's my HairMatch style brief for our appointment.",
-        url: link
-      });
-      setShareStatus("");
-      return;
-    } catch (error) {
-      if (error?.name === "AbortError") {
-        setShareStatus("");
-        return;
-      }
-    }
-  }
-
-  setShareStatus(nativeShare ? "Getting your share link ready..." : "Preparing share options...");
+async function handleBriefComplete() {
+  setShareStatus("Completing your profile...");
   let id = state.briefId;
   try {
     id = await flushBriefSync();
@@ -2698,16 +2686,19 @@ async function handleBriefShare() {
     id = state.briefId;
   }
   if (!id) {
-    setShareStatus("Couldn't create a link. Check your connection and try again.");
+    setShareStatus("Couldn't complete your profile. Check your connection and try again.");
     return;
   }
   const link = briefShareLink();
-
-  if (nativeShare) {
-    setShareStatus("Your share link is ready. Tap Share with stylist once more to open your phone's share options.", link);
-    return;
+  state.briefCompletePromptOpen = false;
+  if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden && !state.briefPickerOpen && !state.briefRefAddOpen) {
+    document.body.style.overflow = "";
   }
+  setShareStatus("Style complete", link);
+  renderBrief();
+}
 
+async function copyBriefShareLink(link) {
   let copied = false;
   try {
     await navigator.clipboard?.writeText(link);
@@ -2715,14 +2706,41 @@ async function handleBriefShare() {
   } catch {
     copied = false;
   }
-  setShareStatus(copied ? "Link copied to clipboard. You can now send it to your stylist." : `Copy this brief link: ${link}`, link);
+  setShareStatus(copied ? "Style complete. URL copied to clipboard." : `Style complete. Copy this URL: ${link}`, link);
+}
+
+async function handleBriefUrlShare() {
+  const link = state.shareLink || briefShareLink();
+  if (!link) {
+    setShareStatus("Complete your profile first to create a share URL.");
+    return;
+  }
+
+  if (prefersNativeBriefShare() && typeof navigator.share === "function") {
+    try {
+      await navigator.share({
+        title: "HairMatch style profile",
+        text: "Here's my HairMatch style profile.",
+        url: link
+      });
+      setShareStatus("Style complete", link);
+      return;
+    } catch (error) {
+      if (error?.name === "AbortError") return;
+    }
+  }
+
+  await copyBriefShareLink(link);
 }
 
 function setShareStatus(message, link = "") {
   state.shareStatus = message;
+  state.shareLink = link;
   const node = $("#brief-share-status");
   if (node) {
-    node.textContent = message;
+    const label = node.querySelector("span");
+    if (label) label.textContent = message;
+    else node.textContent = message;
     node.hidden = !message;
     if (link) node.dataset.link = link;
     else delete node.dataset.link;
@@ -2748,13 +2766,7 @@ async function loadSharedBrief(id) {
 }
 
 function renderFirstChoicePill(item) {
-  if (!item.firstChoice) return "";
-  return `
-    <p class="brief-first-choice-pill" role="img" aria-label="Marked as a favourite">
-      <span class="brief-first-choice-check" aria-hidden="true">${iconCheck()}</span>
-      Favourite
-    </p>
-  `;
+  return "";
 }
 
 function renderColourCareTab(bodyHtml, details = state.briefDetails, options = {}) {
@@ -2843,49 +2855,20 @@ function renderBriefNotesReview(details) {
 // Read-only card: the client's photo with their favourite flag and note. The
 // stylist no longer comments per photo — feedback is a single high-level summary
 // below.
-// Helpers for the "Your hair" partition: each photo can be marked as a current
-// or past hairstyle, and that choice is reflected in the shared brief too.
+// Helpers for the "Your hair" partition: it is a single current-hair photo.
 function selfHairstyleStatus(item) {
   const value = String(item?.hairstyleStatus || "").trim().toLowerCase();
-  return value === "current" || value === "past" ? value : "";
+  return value === "current" || value === "past" ? value : "current";
 }
 
 function selfHairstyleLabel(status) {
-  return status === "current"
-    ? "Current hairstyle"
-    : status === "past"
-      ? "Past hairstyle"
-      : "";
+  return "Current hair";
 }
 
 function renderSelfHairstyleStatus(item, isReadOnly = false) {
-  const status = selfHairstyleStatus(item);
+  const status = "current";
 
-  if (isReadOnly) {
-    return status
-      ? `<p class="brief-self-style-pill brief-self-style-pill--${escapeAttr(status)}">${escapeHtml(selfHairstyleLabel(status))}</p>`
-      : `<p class="brief-owner-note brief-owner-note--empty">Current or past hairstyle not specified.</p>`;
-  }
-
-  return `
-    <div class="brief-self-style" role="group" aria-label="Mark whether this photo shows your current or past hairstyle">
-      <span class="brief-self-style-label">This photo shows</span>
-      <div class="brief-self-style-options">
-        ${[
-          ["current", "Current hairstyle"],
-          ["past", "Past hairstyle"]
-        ].map(([value, label]) => `
-          <button
-            class="brief-self-style-btn ${status === value ? "is-on" : ""}"
-            type="button"
-            data-brief-self-style="${escapeAttr(item.id)}"
-            data-self-style-value="${escapeAttr(value)}"
-            aria-pressed="${status === value}"
-          >${escapeHtml(label)}</button>
-        `).join("")}
-      </div>
-    </div>
-  `;
+  return `<p class="brief-self-style-pill brief-self-style-pill--${escapeAttr(status)}">${escapeHtml(selfHairstyleLabel(status))}</p>`;
 }
 
 function renderSharedItem(item) {
@@ -3123,10 +3106,38 @@ function closeBriefRefAdd() {
   if (state.view === "brief") renderBrief();
 }
 
+function openBriefCompletePrompt() {
+  state.briefCompletePromptOpen = true;
+  state.briefPickerOpen = false;
+  state.briefRefAddOpen = false;
+  document.body.style.overflow = "hidden";
+  renderBrief();
+}
+
+function closeBriefCompletePrompt() {
+  if (!state.briefCompletePromptOpen) return;
+  state.briefCompletePromptOpen = false;
+  if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden && !state.briefPickerOpen && !state.briefRefAddOpen) {
+    document.body.style.overflow = "";
+  }
+  if (state.view === "brief") renderBrief();
+}
+
+async function completeBriefFromPrompt(useNotes = true) {
+  const notes = useNotes ? ($("#brief-complete-notes")?.value || "") : "";
+  setBriefDetails({ ...state.briefDetails, notes });
+  await handleBriefComplete();
+}
+
 function renderBrief() {
+  const normalizedBrief = normalizeBriefItems(state.brief);
+  if (JSON.stringify(normalizedBrief) !== JSON.stringify(state.brief)) {
+    setBrief(normalizedBrief);
+  }
   const savedStyles = state.styles.filter((style) => state.favourites.has(style.id));
   const pickerOpen = state.briefPickerOpen;
   const refAddOpen = state.briefRefAddOpen;
+  const completePromptOpen = state.briefCompletePromptOpen;
   const meItems = briefItemsFor("me");
   const refItems = sortReferencesForDisplay(briefItemsFor("references"));
 
@@ -3138,22 +3149,17 @@ function renderBrief() {
           <h1>Profile</h1>
           <p>Gather photos of your own hair and references on other people, pull in styles you've saved, then mark your favourites and add notes.</p>
         </div>
-        <div class="brief-share">
-          <button class="primary-btn brief-share-btn" id="brief-share-btn" type="button" ${briefHasContent() ? "" : "disabled"}>
-            ${iconShare()}<span>Share with stylist</span>
-          </button>
-          <p class="brief-share-status" id="brief-share-status" ${state.shareStatus ? "" : "hidden"}>${escapeHtml(state.shareStatus)}</p>
-        </div>
       </div>
 
       <div class="brief-partitions">
         <section class="brief-partition brief-partition--me">
           <div class="brief-partition-head">
-            <h2>Your hair</h2>
+            <h2>Your current hair</h2>
+            <p class="brief-partition-copy">Upload photos of your hair as it is now.</p>
           </div>
           <div class="brief-grid" id="brief-me-grid">
-            ${meItems.map(renderBriefItem).join("")}
             ${renderBriefAddSelf()}
+            ${meItems.map(renderBriefItem).join("")}
           </div>
         </section>
 
@@ -3172,9 +3178,10 @@ function renderBrief() {
 
       ${renderBriefDetails()}
 
-      ${renderBriefNotes()}
+      ${renderBriefCompletePanel()}
     </section>
 
+    ${completePromptOpen ? renderBriefCompletePrompt() : ""}
     ${refAddOpen ? renderBriefRefAddPopup() : ""}
     ${pickerOpen ? renderBriefPicker(savedStyles) : ""}
   `;
@@ -3233,14 +3240,53 @@ function renderBriefNotes() {
   `;
 }
 
+function renderBriefCompletePanel() {
+  return `
+    <section class="brief-share brief-share--bottom">
+      <button class="primary-btn brief-share-btn" id="brief-share-btn" type="button">
+        ${iconCheck()}<span>Complete profile</span>
+      </button>
+      <div class="brief-share-status" id="brief-share-status" ${state.shareStatus ? "" : "hidden"}>
+        <span>${escapeHtml(state.shareStatus)}</span>
+        ${state.shareLink ? `<button class="secondary-btn brief-url-share-btn" id="brief-url-share-btn" type="button">${iconShare()}<span>Share URL</span></button>` : ""}
+      </div>
+    </section>
+  `;
+}
+
+function renderBriefCompletePrompt() {
+  const d = state.briefDetails || defaultBriefDetails();
+  return `
+    <div class="overlay brief-complete-overlay" id="brief-complete-overlay" role="dialog" aria-modal="true" aria-labelledby="brief-complete-title">
+      <div class="overlay-card brief-complete-card">
+        <button class="close-btn close-btn--text" id="brief-complete-close" type="button" aria-label="Close">Close</button>
+        <div class="brief-picker-head">
+          <div class="overlay-heading">
+            <p class="eyebrow">Profile</p>
+            <h2 id="brief-complete-title">Is there anything else you would like to tell your barber?</h2>
+          </div>
+        </div>
+        <label class="brief-field brief-field--wide">
+          <span>Optional notes</span>
+          <textarea id="brief-complete-notes" rows="5" placeholder="Anything else you'd like your barber to know">${escapeHtml(d.notes || "")}</textarea>
+        </label>
+        <div class="brief-complete-actions">
+          <button class="secondary-btn" id="brief-complete-skip" type="button">Skip</button>
+          <button class="primary-btn" id="brief-complete-confirm" type="button">${iconCheck()}<span>Complete profile</span></button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 // A placeholder tile that keeps the "Me" partition occupying at least one grid
 // space when empty and lets the user add more photos of themselves. Uploads from
 // here go straight into the Me partition.
 function renderBriefAddSelf() {
   return `
-    <label class="brief-add-self brief-add-self--upload" title="Add a photo of yourself">
+    <label class="brief-add-self brief-add-self--upload" title="Upload current hair photos">
       <span class="brief-add-self-icon" aria-hidden="true">${iconPlus()}</span>
-      <span class="brief-add-self-text">Add a photo of you</span>
+      <span class="brief-add-self-text">Add current hair</span>
       <span class="brief-add-self-sub">Upload from device</span>
       <input class="brief-file-input" type="file" id="brief-self-input" accept="image/*" multiple>
     </label>
@@ -3332,20 +3378,10 @@ function renderBriefPicker(savedStyles) {
 // a notes textarea. The note panel is collapsed by default; the icon shows an
 // active dot whenever a note exists so it's discoverable while hidden.
 function renderBriefReferenceControls(item) {
-  const isFavourite = Boolean(item.firstChoice);
   const hasNote = Boolean(String(item.annotation || "").trim());
   const notePlaceholder = "Leave a note for your stylist";
   return `
     <div class="brief-ref-controls">
-      <button
-        class="brief-first-choice ${isFavourite ? "is-on" : ""}"
-        type="button"
-        data-brief-first-choice="${escapeAttr(item.id)}"
-        aria-pressed="${isFavourite}"
-      >
-        <span class="brief-first-choice-check" aria-hidden="true">${iconCheck()}</span>
-        <span>Favourite</span>
-      </button>
       <button
         class="brief-note-toggle ${hasNote ? "has-note" : ""}"
         type="button"
@@ -3369,6 +3405,7 @@ function renderBriefReferenceControls(item) {
 
 function renderBriefItem(item) {
   const isOwnHair = itemPartition(item) === "me";
+  const bodyHtml = isOwnHair ? "" : renderBriefReferenceControls(item);
   return `
     <article class="brief-card" data-brief-id="${escapeAttr(item.id)}">
       <div class="brief-card-image">
@@ -3377,12 +3414,7 @@ function renderBriefItem(item) {
           : `<span>${escapeHtml(item.name || "Reference")}</span>`}
         <button class="brief-remove-btn" type="button" data-brief-remove="${escapeAttr(item.id)}" aria-label="Remove from brief">&times;</button>
       </div>
-      <div class="brief-card-body">
-        ${isOwnHair
-          ? renderSelfHairstyleStatus(item)
-          : renderBriefReferenceControls(item)
-        }
-      </div>
+      ${bodyHtml ? `<div class="brief-card-body">${bodyHtml}</div>` : ""}
     </article>
   `;
 }
@@ -3444,7 +3476,29 @@ function insertBriefItemCard(item) {
 function wireBrief() {
   const shareBtn = $("#brief-share-btn");
   if (shareBtn) {
-    shareBtn.addEventListener("click", handleBriefShare);
+    shareBtn.addEventListener("click", openBriefCompletePrompt);
+  }
+  const shareUrlBtn = $("#brief-url-share-btn");
+  if (shareUrlBtn) {
+    shareUrlBtn.addEventListener("click", handleBriefUrlShare);
+  }
+  const completeOverlay = $("#brief-complete-overlay");
+  if (completeOverlay) {
+    completeOverlay.addEventListener("click", (event) => {
+      if (event.target === completeOverlay) closeBriefCompletePrompt();
+    });
+  }
+  const completeClose = $("#brief-complete-close");
+  if (completeClose) {
+    completeClose.addEventListener("click", closeBriefCompletePrompt);
+  }
+  const completeSkip = $("#brief-complete-skip");
+  if (completeSkip) {
+    completeSkip.addEventListener("click", () => completeBriefFromPrompt(false));
+  }
+  const completeConfirm = $("#brief-complete-confirm");
+  if (completeConfirm) {
+    completeConfirm.addEventListener("click", () => completeBriefFromPrompt(true));
   }
   // Hair-colour fields update state silently (no re-render) so the current
   // input keeps focus while the user types.
@@ -3566,7 +3620,7 @@ function addBriefImage(imageUrl, name, partition) {
     partition,
     firstChoice: false,
     annotation: "",
-    hairstyleStatus: ""
+    hairstyleStatus: partition === "me" ? "current" : ""
   };
   setBrief([item, ...state.brief]);
   if (state.view === "brief") renderBrief();
@@ -3894,12 +3948,14 @@ function init() {
     }
     else if (state.briefPickerOpen) closeBriefPicker();
     else if (state.briefRefAddOpen) closeBriefRefAdd();
+    else if (state.briefCompletePromptOpen) closeBriefCompletePrompt();
   });
 
   window.addEventListener("popstate", (event) => {
-    if (state.briefPickerOpen || state.briefRefAddOpen) {
+    if (state.briefPickerOpen || state.briefRefAddOpen || state.briefCompletePromptOpen) {
       state.briefPickerOpen = false;
       state.briefRefAddOpen = false;
+      state.briefCompletePromptOpen = false;
       if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden) {
         document.body.style.overflow = "";
       }
