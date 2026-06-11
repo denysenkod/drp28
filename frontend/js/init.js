@@ -87,6 +87,7 @@ function init() {
     } else if (event.state?.view === "shared" && event.state.briefId) {
       state.view = "shared";
       state.sharedBriefId = event.state.briefId;
+      state.sharedBriefClientView = Boolean(event.state.clientView);
       state.previousView = event.state.previousView ?? "messages";
       writeStored(PREV_VIEW_KEY, state.previousView);
       render();
@@ -109,6 +110,7 @@ function init() {
   const urlParams = new URLSearchParams(window.location.search);
   const reviewBriefId = urlParams.get("brief");
   const forceReview = urlParams.get("review") === "1";
+  const clientView = urlParams.get("client") === "1";
   if (urlParams.has("quiz")) {
     const step = Math.max(0, Math.min(QUIZ.length - 1, parseInt(urlParams.get("quiz"), 10) || 0));
     state.view = "quiz";
@@ -118,11 +120,12 @@ function init() {
   } else if (urlParams.has("search") || urlParams.has("results")) {
     state.view = "results";
     writeStored(VIEW_KEY, "results");
-  } else if (reviewBriefId && (forceReview || reviewBriefId !== state.briefId)) {
-    // Shared links open the read-only stylist review page. The explicit
-    // review flag keeps this true even in the client's own browser.
+  } else if (reviewBriefId && (forceReview || clientView || reviewBriefId !== state.briefId)) {
+    // Shared links open a stored brief snapshot. review=1 is the stylist
+    // feedback page; client=1 is the client's read-only view from Messages.
     state.view = "shared";
     state.sharedBriefId = reviewBriefId;
+    state.sharedBriefClientView = clientView && !forceReview;
   } else if (urlParams.has("brief")) {
     state.view = "brief";
     writeStored(VIEW_KEY, "brief");

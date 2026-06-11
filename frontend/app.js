@@ -2,24 +2,24 @@
 // sequentially so the classic-script globals keep the same execution order as
 // the previous single-file app.
 const FRONTEND_SCRIPT_FILES = [
-  "/js/storage.js?v=2026-06-11-click-brief-cards",
-  "/js/icons.js?v=2026-06-11-click-brief-cards",
-  "/js/fallback-styles.js?v=2026-06-11-click-brief-cards",
-  "/js/products-and-normalizers.js?v=2026-06-11-click-brief-cards",
-  "/js/state.js?v=2026-06-11-click-brief-cards",
-  "/js/data-loading.js?v=2026-06-11-click-brief-cards",
-  "/js/quiz-filters.js?v=2026-06-11-click-brief-cards",
-  "/js/rendering.js?v=2026-06-11-click-brief-cards",
-  "/js/favourites.js?v=2026-06-11-click-brief-cards",
-  "/js/brief.js?v=2026-06-11-click-brief-cards",
-  "/js/brief-sharing.js?v=2026-06-11-click-brief-cards",
-  "/js/shared-brief.js?v=2026-06-11-click-brief-cards",
-  "/js/try-on.js?v=2026-06-11-click-brief-cards",
-  "/js/detail-overlay.js?v=2026-06-11-click-brief-cards",
-  "/js/product-overlay.js?v=2026-06-11-click-brief-cards",
-  "/js/uploads.js?v=2026-06-11-click-brief-cards",
-  "/js/utilities.js?v=2026-06-11-click-brief-cards",
-  "/js/init.js?v=2026-06-11-click-brief-cards"
+  "/js/storage.js?v=2026-06-11-client-brief-view",
+  "/js/icons.js?v=2026-06-11-client-brief-view",
+  "/js/fallback-styles.js?v=2026-06-11-client-brief-view",
+  "/js/products-and-normalizers.js?v=2026-06-11-client-brief-view",
+  "/js/state.js?v=2026-06-11-client-brief-view",
+  "/js/data-loading.js?v=2026-06-11-client-brief-view",
+  "/js/quiz-filters.js?v=2026-06-11-client-brief-view",
+  "/js/rendering.js?v=2026-06-11-client-brief-view",
+  "/js/favourites.js?v=2026-06-11-client-brief-view",
+  "/js/brief.js?v=2026-06-11-client-brief-view",
+  "/js/brief-sharing.js?v=2026-06-11-client-brief-view",
+  "/js/shared-brief.js?v=2026-06-11-client-brief-view",
+  "/js/try-on.js?v=2026-06-11-client-brief-view",
+  "/js/detail-overlay.js?v=2026-06-11-client-brief-view",
+  "/js/product-overlay.js?v=2026-06-11-client-brief-view",
+  "/js/uploads.js?v=2026-06-11-client-brief-view",
+  "/js/utilities.js?v=2026-06-11-client-brief-view",
+  "/js/init.js?v=2026-06-11-client-brief-view"
 ];
 
 function loadScript(src) {

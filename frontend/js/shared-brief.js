@@ -195,8 +195,8 @@ function renderSharedItem(item) {
 
 // One high-level summary for the whole brief: any previously-left comments,
 // plus a single box for the stylist to add their overall feedback.
-function renderFeedbackEntry(entry) {
-  if (state.editingFeedbackId === entry.id) {
+function renderFeedbackEntry(entry, readOnly = false) {
+  if (!readOnly && state.editingFeedbackId === entry.id) {
     return `
       <li class="brief-feedback-entry brief-feedback-entry--editing">
         <form class="brief-feedback-form brief-feedback-edit-form" data-feedback-edit-form="${escapeAttr(entry.id)}">
@@ -213,10 +213,10 @@ function renderFeedbackEntry(entry) {
     <li class="brief-feedback-entry">
       <div class="brief-feedback-meta">
         <span class="brief-feedback-author">${escapeHtml(entry.author || "Reviewer")}</span>
-        <span class="brief-feedback-actions">
+        ${readOnly ? "" : `<span class="brief-feedback-actions">
           <button class="brief-feedback-action" type="button" data-feedback-edit="${escapeAttr(entry.id)}">Edit</button>
           <button class="brief-feedback-action brief-feedback-action--danger" type="button" data-feedback-delete="${escapeAttr(entry.id)}">Delete</button>
-        </span>
+        </span>`}
       </div>
       ${entry.note ? `<p class="brief-feedback-note">${escapeHtml(entry.note)}</p>` : ""}
     </li>
@@ -225,23 +225,24 @@ function renderFeedbackEntry(entry) {
 
 function renderStylistSummary() {
   const comments = state.sharedBrief?.feedback || [];
+  const clientView = Boolean(state.sharedBriefClientView);
   const list = comments.length
     ? `<ul class="brief-feedback-list">
-        ${comments.map(renderFeedbackEntry).join("")}
+        ${comments.map((entry) => renderFeedbackEntry(entry, clientView)).join("")}
       </ul>`
     : "";
   return `
     <section class="brief-summary">
       <div class="brief-partition-head">
-        <p class="eyebrow">Stylist</p>
-        <h2>Review this brief</h2>
-        <p class="brief-partition-copy">Leave a high-level summary for the client. Your review is sent to their Messages tab.</p>
+        <p class="eyebrow">${clientView ? "Messages" : "Stylist"}</p>
+        <h2>${clientView ? "Feedback on this brief" : "Review this brief"}</h2>
+        <p class="brief-partition-copy">${clientView ? "Feedback is read-only here. Return to Messages to view other brief replies." : "Leave a high-level summary for the client. Your review is sent to their Messages tab."}</p>
       </div>
       ${list}
-      <form class="brief-feedback-form brief-summary-form" id="brief-summary-form">
+      ${clientView ? "" : `<form class="brief-feedback-form brief-summary-form" id="brief-summary-form">
         <textarea class="brief-annotation" id="brief-summary-note" rows="4" placeholder="Share your overall thoughts on their hair, references, colour plan, and what you would recommend..."></textarea>
         <button class="primary-btn brief-feedback-submit" type="submit">Send review</button>
-      </form>
+      </form>`}
     </section>
   `;
 }
@@ -275,19 +276,21 @@ function renderSharedBrief() {
   const items = Array.isArray(state.sharedBrief.items) ? state.sharedBrief.items : [];
   const meItems = items.filter((item) => itemPartition(item) === "me");
   const refItems = sortReferencesForDisplay(items.filter((item) => itemPartition(item) === "references"));
+  const clientView = Boolean(state.sharedBriefClientView);
 
   els.app.innerHTML = `
     <section class="brief-screen brief-screen--review">
+      ${clientView ? `<button class="shared-brief-leave" id="shared-brief-leave" type="button">${iconArrow()}<span>Leave brief</span></button>` : ""}
       <div class="screen-heading">
         <div>
-          <p class="eyebrow">Style brief - for review</p>
-          <h1>A client's style brief</h1>
-          <p>Review the client's uploaded hair photos, references, colour details, and notes. Your response will appear in their Messages tab.</p>
+          <p class="eyebrow">${clientView ? "Style brief" : "Style brief - for review"}</p>
+          <h1>${clientView ? "Your shared brief" : "A client's style brief"}</h1>
+          <p>${clientView ? "Review the brief snapshot your stylist commented on. Messages are read-only here." : "Review the client's uploaded hair photos, references, colour details, and notes. Your response will appear in their Messages tab."}</p>
         </div>
-        <label class="brief-reviewer-name">
+        ${clientView ? "" : `<label class="brief-reviewer-name">
           <span>Your name</span>
           <input type="text" id="reviewer-name" placeholder="e.g. Alex at the salon" value="${escapeAttr(state.reviewerName)}" maxlength="80">
-        </label>
+        </label>`}
       </div>
 
       ${renderBriefDetailsReview(state.sharedBrief.details)}
@@ -321,6 +324,11 @@ function renderSharedBrief() {
 }
 
 function wireSharedBrief() {
+  const leaveBtn = $("#shared-brief-leave");
+  if (leaveBtn) {
+    leaveBtn.addEventListener("click", () => setView("messages"));
+  }
+
   const nameInput = $("#reviewer-name");
   if (nameInput) {
     nameInput.addEventListener("input", () => {
@@ -681,7 +689,7 @@ function renderMessages() {
           ${comments.map((entry) => {
             const date = formatFeedbackDate(entry.createdAt);
             const briefId = String(entry.briefId || "");
-            const briefHref = briefId ? `?brief=${encodeURIComponent(briefId)}&review=1` : "?brief";
+            const briefHref = briefId ? `?brief=${encodeURIComponent(briefId)}&client=1` : "?brief";
             return `
               <li class="message-card">
                 <div class="message-card-head">
@@ -719,7 +727,8 @@ function renderMessages() {
       writeStored(PREV_VIEW_KEY, state.previousView);
       state.view = "shared";
       state.sharedBriefId = briefId;
-      window.history.pushState({ view: "shared", briefId, previousView: state.previousView }, "", link.getAttribute("href"));
+      state.sharedBriefClientView = true;
+      window.history.pushState({ view: "shared", briefId, clientView: true, previousView: state.previousView }, "", link.getAttribute("href"));
       render();
       loadSharedBrief(briefId);
     });
