@@ -168,12 +168,10 @@ function renderSharedItem(item) {
           ? `<img src="${escapeAttr(item.imageUrl)}" alt="${escapeAttr(item.name || "Reference image")}" loading="lazy" referrerpolicy="no-referrer">`
           : `<span>${escapeHtml(item.name || "Reference")}</span>`}
       </div>
-      <div class="brief-card-body">
-        ${isOwnHair
-          ? renderSelfHairstyleStatus(item, true)
-          : `${renderFirstChoicePill(item)}${item.annotation ? `<p class="brief-owner-note">${escapeHtml(item.annotation)}</p>` : `<p class="brief-owner-note brief-owner-note--empty">No notes from the client.</p>`}`
-        }
-      </div>
+      ${isOwnHair
+        ? ""
+        : `<div class="brief-card-body">${renderFirstChoicePill(item)}${item.annotation ? `<p class="brief-owner-note">${escapeHtml(item.annotation)}</p>` : `<p class="brief-owner-note brief-owner-note--empty">No notes from the client.</p>`}</div>`
+      }
     </article>
   `;
 }
