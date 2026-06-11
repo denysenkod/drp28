@@ -1645,9 +1645,8 @@ function renderHome() {
     <section class="home-screen">
       ${state.quizComplete ? "" : `
         <button class="home-cta choice-card" id="find-style-btn" type="button">
-          <span class="choice-icon">${iconCheck()}</span>
-          <span class="choice-title">Find me a style</span>
-          <span class="choice-copy">Answer a few quick questions. We'll narrow thousands of looks down to the ones that suit you.</span>
+          <span class="home-cta-close" id="home-cta-close" role="button" tabindex="0" aria-label="Hide survey prompt">&times;</span>
+          <span class="choice-title">Tell us about you</span>
           <span class="choice-action">${QUIZ.length} quick questions ${iconArrow()}</span>
         </button>
       `}
@@ -1658,6 +1657,7 @@ function renderHome() {
     </section>
   `;
   const findStyleBtn = $("#find-style-btn");
+  const homeCtaClose = $("#home-cta-close");
   if (findStyleBtn) {
     findStyleBtn.addEventListener("click", () => {
       setAnswers({});
@@ -1666,6 +1666,19 @@ function renderHome() {
       state.quizStep = 0;
       writeStored(STEP_KEY, state.quizStep);
       setView("quiz");
+    });
+  }
+  if (homeCtaClose) {
+    const hideHomeCta = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      state.quizComplete = true;
+      writeStored(QUIZ_COMPLETE_KEY, state.quizComplete);
+      renderHome();
+    };
+    homeCtaClose.addEventListener("click", hideHomeCta);
+    homeCtaClose.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") hideHomeCta(event);
     });
   }
   wireCards();

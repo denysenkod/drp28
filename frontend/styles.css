@@ -453,14 +453,45 @@ body[data-view="brief"] .app-shell {
   align-items: center;
 }
 
-.home-cta {
+.home-cta.choice-card {
   position: sticky;
   top: 78px;
   z-index: 12;
-  width: min(100%, 720px);
-  min-height: auto;
-  margin: 8px 0 40px;
+  width: min(100%, 520px);
+  min-height: 0;
+  gap: 2px;
+  padding: 16px 48px 12px 22px;
+  margin: 8px 0 20px;
+  border-radius: 20px;
   backdrop-filter: blur(14px);
+}
+
+.home-cta .choice-action {
+  margin-top: 0;
+}
+
+.home-cta-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.home-cta-close:hover,
+.home-cta-close:focus-visible {
+  background: var(--surface-2);
+  color: var(--ink);
+  outline: none;
 }
 
 .home-feed {
@@ -3211,9 +3242,11 @@ body[data-view="brief"] .app-shell {
     padding-top: 28px;
   }
 
-  .home-cta {
+  .home-cta.choice-card {
     top: 12px;
-    margin-bottom: 24px;
+    min-height: 0;
+    padding: 16px 48px 12px 20px;
+    margin-bottom: 18px;
   }
 
   body[data-view="quiz"] .app-shell {
