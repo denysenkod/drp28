@@ -1096,8 +1096,14 @@ function renderBriefNotePanel(item) {
 
 function renderBriefItem(item) {
   const isOwnHair = itemPartition(item) === "me";
+  const openStyleId = item.styleId || item.referenceStyleId || "";
+  const canOpenStyle = openStyleId && state.styles.some((style) => style.id === String(openStyleId));
   return `
-    <article class="profile-photo-card brief-card" data-brief-id="${escapeAttr(item.id)}">
+    <article
+      class="profile-photo-card brief-card ${canOpenStyle ? "brief-card--clickable" : ""}"
+      data-brief-id="${escapeAttr(item.id)}"
+      ${canOpenStyle ? `data-brief-open-style="${escapeAttr(openStyleId)}" role="button" tabindex="0" aria-label="Open ${escapeAttr(item.name || "hairstyle")}"` : ""}
+    >
       <div class="profile-photo-frame brief-card-image">
         ${item.imageUrl
           ? `<img src="${escapeAttr(item.imageUrl)}" alt="${escapeAttr(item.name || "Reference image")}" loading="lazy" referrerpolicy="no-referrer">`
@@ -1129,20 +1135,26 @@ function wireBriefItemCard(card) {
   if (!card) return;
 
   card.querySelectorAll("[data-brief-remove]").forEach((button) => {
-    button.addEventListener("click", () => removeBriefItem(button.dataset.briefRemove));
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      removeBriefItem(button.dataset.briefRemove);
+    });
   });
   card.querySelectorAll("[data-brief-self-style]").forEach((button) => {
-    button.addEventListener("click", () => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
       setBriefSelfStyle(button.dataset.briefSelfStyle, button.dataset.selfStyleValue);
     });
   });
   card.querySelectorAll("[data-brief-first-choice]").forEach((button) => {
-    button.addEventListener("click", () => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
       setBriefFirstChoice(button.dataset.briefFirstChoice);
     });
   });
   card.querySelectorAll("[data-brief-note-toggle]").forEach((button) => {
-    button.addEventListener("click", () => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
       const id = button.dataset.briefNoteToggle;
       const panel = card.querySelector(`[data-brief-note-panel="${CSS.escape(id)}"]`);
       if (!panel) return;
@@ -1153,6 +1165,7 @@ function wireBriefItemCard(card) {
     });
   });
   card.querySelectorAll("[data-brief-note]").forEach((area) => {
+    area.addEventListener("click", (event) => event.stopPropagation());
     area.addEventListener("input", () => {
       updateBriefNote(area.dataset.briefNote, area.value);
       // Keep the comment icon's active dot in sync without a re-render.
@@ -1160,6 +1173,20 @@ function wireBriefItemCard(card) {
       if (toggle) toggle.classList.toggle("has-note", Boolean(area.value.trim()));
     });
   });
+
+  const openStyleId = card.dataset.briefOpenStyle;
+  if (openStyleId) {
+    card.addEventListener("click", (event) => {
+      if (event.target.closest("button, input, textarea, label, a")) return;
+      openDetail(openStyleId);
+    });
+    card.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      if (event.target.closest("button, input, textarea, label, a")) return;
+      event.preventDefault();
+      openDetail(openStyleId);
+    });
+  }
 }
 
 function insertBriefItemCard(item) {

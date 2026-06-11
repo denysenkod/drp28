@@ -367,6 +367,23 @@
   box-shadow: 0 1px 0 rgba(70, 54, 34, 0.02);
 }
 
+.brief-card--clickable {
+  cursor: pointer;
+}
+
+.brief-card--clickable .brief-card-image {
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.brief-card--clickable:hover .brief-card-image {
+  opacity: 0.88;
+}
+
+.brief-card--clickable:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
 .brief-card-image {
   position: relative;
   width: 100%;
