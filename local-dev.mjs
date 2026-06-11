@@ -14,11 +14,13 @@ const API_STATUS = {
   message: 'Backend is running on Cloudflare Workers.',
   storage: 'memory'
 };
+const TRY_ON_GENERATION_LIMIT = 5;
 const store = {
   gallery: [],
   quizResponses: [],
   userPhotos: [],
   favorites: [],
+  tryOnGenerations: [],
   briefs: [],
   briefFeedback: []
 };
@@ -182,12 +184,30 @@ async function handleTryOn(req, res) {
   }
 
   const body = await readJson(req);
+  const sessionId = typeof body?.sessionId === 'string' ? body.sessionId.trim() : '';
   const userImage = typeof body?.userImageData === 'string' ? body.userImageData : '';
   const referenceImage = typeof body?.referenceImageData === 'string'
     ? body.referenceImageData
     : typeof body?.referenceImageUrl === 'string'
       ? body.referenceImageUrl
       : '';
+
+  if (!sessionId) {
+    sendJson(res, 400, { ok: false, error: 'Try-on sessionId is required.' });
+    return true;
+  }
+
+  const used = store.tryOnGenerations.filter((item) => item.sessionId === sessionId).length;
+  if (used >= TRY_ON_GENERATION_LIMIT) {
+    sendJson(res, 429, {
+      ok: false,
+      error: `Try-on generation limit reached. You have used all ${TRY_ON_GENERATION_LIMIT} generations.`,
+      limit: TRY_ON_GENERATION_LIMIT,
+      used,
+      remaining: 0
+    });
+    return true;
+  }
 
   if (!userImage.trim()) {
     sendJson(res, 400, { ok: false, error: 'A selfie image is required.' });
@@ -239,7 +259,20 @@ async function handleTryOn(req, res) {
     return true;
   }
 
-  sendJson(res, 200, { ok: true, model: 'gpt-image-2', imageData: `data:image/png;base64,${b64}` });
+  store.tryOnGenerations.unshift(createItem({
+    sessionId,
+    styleId: typeof body?.styleId === 'string' ? body.styleId.trim() : '',
+    model: 'gpt-image-2'
+  }));
+
+  sendJson(res, 200, {
+    ok: true,
+    model: 'gpt-image-2',
+    limit: TRY_ON_GENERATION_LIMIT,
+    used: used + 1,
+    remaining: Math.max(0, TRY_ON_GENERATION_LIMIT - used - 1),
+    imageData: `data:image/png;base64,${b64}`
+  });
   return true;
 }
 

@@ -1,5 +1,6 @@
 const APP_NAME = 'DRP28';
 const API_MESSAGE = 'Backend is running on Cloudflare Workers.';
+const TRY_ON_GENERATION_LIMIT = 5;
 
 interface Env {
   ASSETS: {
@@ -251,12 +252,37 @@ async function createTryOnImage(request: Request, env: Env): Promise<Response> {
   }
 
   const body = await readJson(request);
+  const sessionId = typeof body?.sessionId === 'string' ? body.sessionId.trim() : '';
   const userImage = typeof body?.userImageData === 'string' ? body.userImageData : '';
   const referenceImage = typeof body?.referenceImageData === 'string'
     ? body.referenceImageData
     : typeof body?.referenceImageUrl === 'string'
       ? body.referenceImageUrl
       : '';
+
+  if (!sessionId) {
+    return error('Try-on sessionId is required.');
+  }
+
+  if (!env.DB) {
+    return error('D1 database binding is not configured.', 503);
+  }
+
+  const usageRow = await env.DB
+    .prepare('SELECT COUNT(*) AS count FROM try_on_generations WHERE session_id = ?')
+    .bind(sessionId)
+    .first();
+  const used = Number(usageRow?.count || 0);
+
+  if (used >= TRY_ON_GENERATION_LIMIT) {
+    return json({
+      ok: false,
+      error: `Try-on generation limit reached. You have used all ${TRY_ON_GENERATION_LIMIT} generations.`,
+      limit: TRY_ON_GENERATION_LIMIT,
+      used,
+      remaining: 0
+    }, { status: 429 });
+  }
 
   if (!userImage.trim()) {
     return error('A selfie image is required.');
@@ -307,9 +333,20 @@ async function createTryOnImage(request: Request, env: Env): Promise<Response> {
     return error('Try-on generation did not return an image.', 502);
   }
 
+  await env.DB
+    .prepare(
+      `INSERT INTO try_on_generations (id, session_id, style_id, model)
+       VALUES (?, ?, ?, ?)`
+    )
+    .bind(crypto.randomUUID(), sessionId, typeof body?.styleId === 'string' ? body.styleId.trim() : '', 'gpt-image-2')
+    .run();
+
   return json({
     ok: true,
     model: 'gpt-image-2',
+    limit: TRY_ON_GENERATION_LIMIT,
+    used: used + 1,
+    remaining: Math.max(0, TRY_ON_GENERATION_LIMIT - used - 1),
     imageData: `data:image/png;base64,${b64}`
   });
 }

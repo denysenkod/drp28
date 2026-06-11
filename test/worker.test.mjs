@@ -39,6 +39,7 @@ function createMockD1() {
     quiz_responses: [],
     user_photos: [],
     favorite_images: [],
+    try_on_generations: [],
     style_briefs: [],
     brief_feedback: []
   };
@@ -105,6 +106,16 @@ function createMockD1() {
                 created_at: now()
               });
             }
+          }
+
+          if (sql.includes('INSERT INTO try_on_generations')) {
+            tables.try_on_generations.push({
+              id: values[0],
+              session_id: values[1],
+              style_id: values[2],
+              model: values[3],
+              created_at: now()
+            });
           }
 
           if (sql.includes('DELETE FROM favorite_images WHERE image_id = ?')) {
@@ -187,6 +198,12 @@ function createMockD1() {
             return clone(tables.favorite_images.find(
               (row) => row.session_id === values[0] && row.image_id === values[1]
             ));
+          }
+
+          if (sql.includes('COUNT(*) AS count FROM try_on_generations WHERE session_id = ?')) {
+            return {
+              count: tables.try_on_generations.filter((row) => row.session_id === values[0]).length
+            };
           }
 
           if (sql.includes('FROM style_briefs WHERE session_id = ?')) {
@@ -547,6 +564,63 @@ test('try-on route requires the OpenAI API key', async () => {
 
   assert.equal(response.status, 503);
   assert.equal(body.error, 'OpenAI API key is not configured.');
+});
+
+test('try-on route limits successful generations per session', async () => {
+  const { default: worker } = await loadWorker();
+  const env = { ...(await createAssetEnv()), OPENAI_API_KEY: 'test-key' };
+  const originalFetch = globalThis.fetch;
+  let openAiCalls = 0;
+
+  globalThis.fetch = async (url) => {
+    assert.equal(url, 'https://api.openai.com/v1/images/edits');
+    openAiCalls += 1;
+    return new Response(JSON.stringify({ data: [{ b64_json: 'generated-image' }] }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' }
+    });
+  };
+
+  try {
+    for (let index = 1; index <= 5; index += 1) {
+      const response = await worker.fetch(new Request('https://example.com/api/try-on', {
+        method: 'POST',
+        body: JSON.stringify({
+          sessionId: 'session-limit',
+          styleId: 'style-1',
+          styleName: 'Layered Haircut',
+          userImageData: 'data:image/png;base64,aaa',
+          referenceImageData: 'data:image/png;base64,bbb'
+        })
+      }), env);
+      const body = await response.json();
+
+      assert.equal(response.status, 200);
+      assert.equal(body.used, index);
+      assert.equal(body.remaining, 5 - index);
+      assert.equal(body.imageData, 'data:image/png;base64,generated-image');
+    }
+
+    const blocked = await worker.fetch(new Request('https://example.com/api/try-on', {
+      method: 'POST',
+      body: JSON.stringify({
+        sessionId: 'session-limit',
+        styleId: 'style-1',
+        styleName: 'Layered Haircut',
+        userImageData: 'data:image/png;base64,aaa',
+        referenceImageData: 'data:image/png;base64,bbb'
+      })
+    }), env);
+    const blockedBody = await blocked.json();
+
+    assert.equal(blocked.status, 429);
+    assert.equal(blockedBody.used, 5);
+    assert.equal(blockedBody.remaining, 0);
+    assert.match(blockedBody.error, /all 5 generations/);
+    assert.equal(openAiCalls, 5);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
 
 test('stores and removes favorite images in D1', async () => {
