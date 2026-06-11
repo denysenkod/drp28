@@ -5,10 +5,56 @@ Minimal Cloudflare Worker backend serving the Salon frontend.
 ## What Runs
 
 - `server.ts` handles Worker backend routes.
-- `frontend/index.html`, `frontend/styles.css`, and `frontend/app.js` are the served frontend.
+- `frontend/index.html`, `frontend/styles.css`, and `frontend/app.js` are the public frontend entrypoints. The implementation is split under `frontend/js/` and `frontend/css/`.
 - `/api/status` is the backend health/status endpoint.
 - `/api/gallery`, `/api/quiz-responses`, `/api/user-photos`, and `/api/favorites` are D1-backed storage endpoints.
 - `local-dev.mjs` is a fallback local server for machines with `node` but no `npm` or `npx`.
+
+## Frontend Structure
+
+The frontend is still a static vanilla JavaScript app with no build step. `index.html` loads `/styles.css` and `/app.js`; those two files remain the public URLs so the Worker, Wrangler assets, and fallback local server keep serving the same interface.
+
+### Public Entry Files
+
+- `frontend/index.html` is the single-page app shell. It owns the permanent DOM anchors such as the top navigation, bottom navigation, results container, detail popup, favourites popup, product popup, and try-on popup. Runtime screens are rendered into `#app` by JavaScript.
+- `frontend/styles.css` is the public stylesheet entrypoint. It contains only `@import` statements for the feature-specific CSS files in `frontend/css/`, keeping the served URL stable while making styles easier to edit by area.
+- `frontend/app.js` is the public JavaScript entrypoint. It loads the files in `frontend/js/` sequentially as classic scripts, preserving the same global execution order the old single `app.js` had.
+
+### JavaScript Files
+
+- `frontend/js/storage.js` defines API endpoint constants, local-storage keys, session helpers, JSON fetch handling, hair-colour option metadata, and brief-detail defaults. It is loaded first because most other files need session, API, or persistence helpers.
+- `frontend/js/icons.js` contains small inline SVG helper functions for search, gender, action, texture, face-shape, and length icons used throughout rendered markup.
+- `frontend/js/fallback-styles.js` contains bundled fallback hairstyle records. These are shown while the gallery API is loading or when the API is unavailable.
+- `frontend/js/products-and-normalizers.js` contains styling product metadata and the functions that normalize raw gallery API rows into the frontend style shape. This includes gender, face-shape, hair-colour, hair-thickness, length, maintenance, and product-related enrichment.
+- `frontend/js/state.js` owns the main `state` object, cached DOM lookups, current overlay IDs, route/view switching, fallback style syncing, quiz-step movement, answer persistence, and start-over behavior.
+- `frontend/js/data-loading.js` loads gallery images and favourites from the backend APIs, merges optimistic favourite changes, and refreshes the current render once data arrives.
+- `frontend/js/quiz-filters.js` owns quiz-answer helpers, answer-derived filters, search normalization, scoring, preference options, and the final `computeResults()` pipeline.
+- `frontend/js/rendering.js` renders the home feed, quiz flow, results/search screen, result cards, filter controls, carousel dots, upload previews, and the event wiring for those screens.
+- `frontend/js/favourites.js` owns favourite toggling, optimistic favourite API writes, saved-count updates, detail save-state updates, and the saved styles overlay.
+- `frontend/js/brief.js` manages the editable style brief collection, including item IDs, partition updates, annotations, first-choice flags, removing items, and mirroring uploaded self photos to the API.
+- `frontend/js/brief-sharing.js` handles brief syncing, share payload construction, complete-profile prompts, share link creation, clipboard/native share integration, and share status messages.
+- `frontend/js/shared-brief.js` renders shared briefs in read-only review mode, loads shared brief data, submits reviewer feedback, renders feedback lists, and manages stylist summary review state.
+- `frontend/js/try-on.js` owns the haircut try-on popup, selfie upload handling, optional profile update prompt, try-on generation API call, error state, generated result rendering, and adding try-on results back into references.
+- `frontend/js/detail-overlay.js` renders the hairstyle detail popup, detail image, maintenance copy, product chips, similar results, and detail save-state text.
+- `frontend/js/product-overlay.js` turns product mentions into popup links and renders product descriptions, product photos, how-to-use steps, and result examples.
+- `frontend/js/uploads.js` contains browser file helpers for reading and compressing image uploads plus selected-feature collection used by the profile/search flow.
+- `frontend/js/utilities.js` contains shared HTML and attribute escaping helpers.
+- `frontend/js/init.js` performs one-time startup: top/bottom navigation binding, overlay close handlers, Escape-key handling, browser history handling, URL parameter bootstrapping, initial render, gallery load, favourites load, and shared-brief loading.
+- `frontend/js/manifest.json` documents the JavaScript load list and each file's purpose. Tests use it to inspect the split source set as one logical app.
+
+### CSS Files
+
+- `frontend/css/base.css` defines design tokens, global reset rules, typography defaults, navigation, app shell spacing, shared buttons, and other base primitives.
+- `frontend/css/home.css` styles the welcome/home screen, HairMatch wordmark, survey CTA, home feed, and in-page search bar.
+- `frontend/css/quiz.css` styles the quiz layout, progress bar, option cards, image/card grids, mobile carousel-ready quiz pieces, sliders, maintenance product choices, and quiz footer.
+- `frontend/css/results.css` styles the search/results screen, upload/profile preview strips, filter and refine controls, result cards, gallery grid, base overlay layout, detail popup, and similar-results area.
+- `frontend/css/short-laptop.css` contains the `min-width: 821px and max-height: 760px` overrides for short laptop screens. Keep quiz card aspect-ratio changes mirrored here.
+- `frontend/css/brief.css` styles the profile/style brief, self/reference partitions, brief picker, reference add flow, annotations, first-choice controls, sharing controls, shared review UI, feedback, consultation details, and hair-colour combobox.
+- `frontend/css/responsive.css` contains tablet and phone breakpoints, the mobile bottom tab bar, mobile quiz carousel behavior, carousel dots, compact result cards, and very small phone adjustments.
+- `frontend/css/products-tryon.css` styles product links and chips, product popup content, overlay z-index layering, try-on popup frames, selfie target, generation controls, errors, and generated result display.
+- `frontend/css/manifest.json` documents the CSS import list and each file's purpose. Tests use it to inspect the split source set as one logical stylesheet.
+
+When changing frontend code, update the cache-busting version in `frontend/index.html`, `frontend/app.js`, and `frontend/styles.css` so browsers request the changed entrypoints and split assets.
 
 ## Local Start Without npm
 

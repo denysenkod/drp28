@@ -3,6 +3,46 @@ import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
 
+const FRONTEND_TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8'
+};
+
+function frontendUrl(path) {
+  return new URL(`../frontend/${path.replace(/^\/+/, '')}`, import.meta.url);
+}
+
+async function readFrontendText(path) {
+  return readFile(frontendUrl(path), 'utf8');
+}
+
+async function readFrontendSources() {
+  const [app, styles, jsManifestRaw, cssManifestRaw] = await Promise.all([
+    readFrontendText('app.js'),
+    readFrontendText('styles.css'),
+    readFrontendText('js/manifest.json'),
+    readFrontendText('css/manifest.json')
+  ]);
+  const jsManifest = JSON.parse(jsManifestRaw);
+  const cssManifest = JSON.parse(cssManifestRaw);
+  const [jsFiles, cssFiles] = await Promise.all([
+    Promise.all(jsManifest.map((item) => readFrontendText(item.file))),
+    Promise.all(cssManifest.map((item) => readFrontendText(item.file)))
+  ]);
+
+  return {
+    app: [app, ...jsFiles].join('\n'),
+    styles: [styles, ...cssFiles].join('\n')
+  };
+}
+
+function frontendContentType(path) {
+  const match = /\.[^.]+$/.exec(path);
+  return FRONTEND_TYPES[match?.[0]] || 'text/plain; charset=utf-8';
+}
+
 async function loadWorker() {
   if (!globalThis.crypto) {
     globalThis.crypto = { randomUUID };
@@ -274,31 +314,35 @@ function createMockD1() {
 }
 
 async function createAssetEnv() {
-  const index = await readFile(new URL('../frontend/index.html', import.meta.url), 'utf8');
-  const app = await readFile(new URL('../frontend/app.js', import.meta.url), 'utf8');
-  const styles = await readFile(new URL('../frontend/styles.css', import.meta.url), 'utf8');
+  const assetPaths = [
+    'index.html',
+    'app.js',
+    'styles.css'
+  ];
+  const [jsManifestRaw, cssManifestRaw] = await Promise.all([
+    readFrontendText('js/manifest.json'),
+    readFrontendText('css/manifest.json')
+  ]);
+
+  for (const item of JSON.parse(jsManifestRaw)) assetPaths.push(item.file);
+  for (const item of JSON.parse(cssManifestRaw)) assetPaths.push(item.file);
+
+  const assets = new Map();
+  await Promise.all(assetPaths.map(async (assetPath) => {
+    const normalized = assetPath.replace(/^\/+/, '');
+    assets.set(normalized, await readFrontendText(normalized));
+  }));
 
   return {
     DB: createMockD1(),
     ASSETS: {
       async fetch(request) {
         const pathname = new URL(request.url).pathname;
+        const assetPath = pathname === '/' ? 'index.html' : decodeURIComponent(pathname).replace(/^\/+/, '');
 
-        if (pathname === '/' || pathname === '/index.html') {
-          return new Response(index, {
-            headers: { 'content-type': 'text/html; charset=utf-8' }
-          });
-        }
-
-        if (pathname === '/app.js') {
-          return new Response(app, {
-            headers: { 'content-type': 'text/javascript; charset=utf-8' }
-          });
-        }
-
-        if (pathname === '/styles.css') {
-          return new Response(styles, {
-            headers: { 'content-type': 'text/css; charset=utf-8' }
+        if (assets.has(assetPath)) {
+          return new Response(assets.get(assetPath), {
+            headers: { 'content-type': frontendContentType(assetPath) }
           });
         }
 
@@ -754,9 +798,8 @@ test('returns 404 for unknown routes', async () => {
 });
 
 test('new static frontend is wired to image and database APIs', async () => {
-  const app = await readFile(new URL('../frontend/app.js', import.meta.url), 'utf8');
-  const index = await readFile(new URL('../frontend/index.html', import.meta.url), 'utf8');
-  const styles = await readFile(new URL('../frontend/styles.css', import.meta.url), 'utf8');
+  const { app, styles } = await readFrontendSources();
+  const index = await readFrontendText('index.html');
 
   assert.ok(app.includes('gallery: "/api/gallery"'));
   assert.ok(app.includes('favorites: "/api/favorites"'));

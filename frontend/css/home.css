@@ -1,0 +1,221 @@
+.eyebrow {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.welcome-screen {
+  min-height: calc(100vh - 150px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+}
+
+.welcome-logo {
+  font-family: var(--font-serif);
+  font-size: 56px;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1;
+  text-align: center;
+}
+
+.welcome-screen h1,
+.quiz-question h1,
+.screen-heading h1,
+.results-summary h1 {
+  margin: 0;
+  max-width: 980px;
+  font-size: 80px;
+  line-height: 0.98;
+  letter-spacing: 0;
+  font-weight: 800;
+}
+
+.welcome-screen h1 span,
+.welcome-screen h1 em {
+  display: block;
+}
+
+.welcome-screen h1 em {
+  color: var(--accent);
+  font-family: var(--font-serif);
+  font-size: 0.92em;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 0.9;
+}
+
+.welcome-copy,
+.screen-heading p,
+.results-summary p,
+.quiz-question p {
+  max-width: 620px;
+  margin: clamp(18px, 3vh, 30px) auto 0;
+  color: var(--muted);
+  font-size: 21px;
+  line-height: 1.55;
+}
+
+.welcome-options {
+  width: min(100%, 1320px);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: clamp(30px, 7vh, 64px);
+}
+
+.choice-card {
+  min-height: 235px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 10px;
+  padding: 28px 32px 26px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink);
+  transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.choice-card:hover {
+  transform: translateY(-2px);
+  border-color: #d5c6b2;
+  box-shadow: var(--shadow);
+}
+
+.choice-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--accent);
+  font-size: 30px;
+  margin-bottom: 10px;
+}
+
+.choice-title {
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.choice-copy {
+  color: var(--muted);
+  max-width: 39ch;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.choice-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.choice-action svg,
+.primary-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Home: "Find me a style" CTA stacked above the doomscroll feed. */
+.home-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.home-cta.choice-card {
+  position: sticky;
+  top: 78px;
+  z-index: 12;
+  width: min(100%, 520px);
+  min-height: 0;
+  gap: 2px;
+  padding: 16px 48px 12px 22px;
+  margin: 8px 0 20px;
+  border-radius: 20px;
+  backdrop-filter: blur(14px);
+}
+
+.home-cta .choice-action {
+  margin-top: 0;
+}
+
+.home-cta-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.home-cta-close:hover,
+.home-cta-close:focus-visible {
+  background: var(--surface-2);
+  color: var(--ink);
+  outline: none;
+}
+
+.home-feed {
+  width: 100%;
+}
+
+/* In-page search bar on the Search view (the topbar search box moved here). */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+  background: var(--surface);
+  border: 1px solid #d8cbb9;
+  border-radius: 999px;
+  color: var(--muted);
+}
+
+.search-bar svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.search-bar input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 16px;
+}
+

@@ -1,0 +1,34 @@
+[
+    {
+        "file":  "/css/base.css",
+        "purpose":  "Design tokens, global reset, top/bottom navigation, shell spacing, and shared buttons."
+    },
+    {
+        "file":  "/css/home.css",
+        "purpose":  "Welcome/home screen, survey CTA, home feed, and in-page search bar."
+    },
+    {
+        "file":  "/css/quiz.css",
+        "purpose":  "Quiz layout, option cards, carousel behavior, sliders, progress, and quiz footer controls."
+    },
+    {
+        "file":  "/css/results.css",
+        "purpose":  "Search/results screen, upload preview, filters/refine controls, gallery cards, and detail overlay base styles."
+    },
+    {
+        "file":  "/css/short-laptop.css",
+        "purpose":  "Desktop short-height overrides for 1366x768-style laptop screens."
+    },
+    {
+        "file":  "/css/brief.css",
+        "purpose":  "Profile/style brief, photo partitions, sharing UI, shared-review feedback, consultation details, and hair-colour input."
+    },
+    {
+        "file":  "/css/responsive.css",
+        "purpose":  "Tablet and phone breakpoints, mobile bottom nav, carousel dots, and compact screen adjustments."
+    },
+    {
+        "file":  "/css/products-tryon.css",
+        "purpose":  "Product popup, product chips, stacked overlay z-indexes, and haircut try-on popup."
+    }
+]

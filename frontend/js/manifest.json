@@ -1,0 +1,74 @@
+[
+    {
+        "file":  "/js/storage.js",
+        "purpose":  "API endpoints, local-storage keys, session helpers, and brief detail defaults."
+    },
+    {
+        "file":  "/js/icons.js",
+        "purpose":  "Inline SVG icon helpers used by rendered controls and cards."
+    },
+    {
+        "file":  "/js/fallback-styles.js",
+        "purpose":  "Bundled fallback hairstyle data used before or instead of API gallery rows."
+    },
+    {
+        "file":  "/js/products-and-normalizers.js",
+        "purpose":  "Styling product metadata plus gallery item normalization and enrichment helpers."
+    },
+    {
+        "file":  "/js/state.js",
+        "purpose":  "Application state, cached DOM lookups, and top-level navigation state transitions."
+    },
+    {
+        "file":  "/js/data-loading.js",
+        "purpose":  "Initial gallery and favourites API loading."
+    },
+    {
+        "file":  "/js/quiz-filters.js",
+        "purpose":  "Quiz answer helpers, preference filters, result scoring, and search matching."
+    },
+    {
+        "file":  "/js/rendering.js",
+        "purpose":  "Main screen rendering and event wiring for home, quiz, search, cards, and filters."
+    },
+    {
+        "file":  "/js/favourites.js",
+        "purpose":  "Favourite style toggling, optimistic API sync, counts, and saved-style overlay rendering."
+    },
+    {
+        "file":  "/js/brief.js",
+        "purpose":  "Mutable style brief collection helpers and API mirroring for uploaded self photos."
+    },
+    {
+        "file":  "/js/brief-sharing.js",
+        "purpose":  "Brief persistence, share-link creation, clipboard/share APIs, and sync scheduling."
+    },
+    {
+        "file":  "/js/shared-brief.js",
+        "purpose":  "Read-only shared brief review UI, reviewer feedback, and stylist summary handling."
+    },
+    {
+        "file":  "/js/try-on.js",
+        "purpose":  "Haircut try-on popup state, selfie handling, generation API calls, and result saving."
+    },
+    {
+        "file":  "/js/detail-overlay.js",
+        "purpose":  "Hairstyle detail overlay rendering, similar results, and save-state updates."
+    },
+    {
+        "file":  "/js/product-overlay.js",
+        "purpose":  "Product linkification and product detail popup rendering."
+    },
+    {
+        "file":  "/js/uploads.js",
+        "purpose":  "Image file reading/compression and selected feature collection helpers."
+    },
+    {
+        "file":  "/js/utilities.js",
+        "purpose":  "HTML/attribute escaping utilities."
+    },
+    {
+        "file":  "/js/init.js",
+        "purpose":  "One-time DOM event binding, URL-state bootstrapping, and app startup."
+    }
+]

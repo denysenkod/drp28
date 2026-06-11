@@ -1,0 +1,507 @@
+@media (max-width: 820px) {
+  .brief-details-grid,
+  .brief-details-readout {
+    grid-template-columns: 1fr;
+  }
+
+  /* Mobile: top bar is replaced by the bottom tab bar. */
+  .topbar {
+    display: none;
+  }
+
+  .bottom-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    display: flex;
+    justify-content: space-around;
+    align-items: stretch;
+    padding: 6px 4px max(6px, env(safe-area-inset-bottom));
+    background: rgba(246, 241, 234, 0.96);
+    border-top: 1px solid var(--line);
+    backdrop-filter: blur(16px);
+  }
+
+  .bottom-nav-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .bottom-nav-btn svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .bottom-nav-btn.is-active {
+    color: var(--accent);
+  }
+
+  /* Icons only on mobile. */
+  .bottom-nav-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  /* Quiz is a full-screen flow with no bottom nav. */
+  body[data-view="quiz"] .bottom-nav,
+  body[data-view="shared"] .bottom-nav {
+    display: none;
+  }
+
+  .app-shell {
+    width: min(100% - 24px, 1120px);
+    padding-top: 18px;
+    padding-bottom: 90px;
+  }
+
+  body[data-view="home"] .app-shell {
+    width: min(100% - 40px, 1120px);
+    padding-top: 28px;
+  }
+
+  .home-cta.choice-card {
+    top: 12px;
+    min-height: 0;
+    padding: 16px 48px 12px 20px;
+    margin-bottom: 18px;
+  }
+
+  body[data-view="quiz"] .app-shell {
+    width: min(100% - 24px, 1120px);
+    padding-top: 10px;
+    padding-bottom: 12px;
+  }
+
+  .welcome-screen {
+    min-height: auto;
+    align-items: stretch;
+    text-align: left;
+    padding-top: 24px;
+  }
+
+  .welcome-logo-row {
+    align-self: center;
+    margin-bottom: 48px;
+  }
+
+  .welcome-logo {
+    font-size: 42px;
+  }
+
+  .welcome-screen h1,
+  .quiz-question h1,
+  .screen-heading h1,
+  .results-summary h1 {
+    font-size: 38px;
+  }
+
+  .welcome-copy,
+  .screen-heading p,
+  .results-summary p,
+  .quiz-question p {
+    margin-left: 0;
+    font-size: 16px;
+  }
+
+  .quiz-question h1 {
+    font-size: 32px;
+    line-height: 1.04;
+  }
+
+  .quiz-question p:not(.eyebrow) {
+    margin-top: 10px;
+    font-size: 15px;
+  }
+
+  .welcome-options,
+  .search-tools,
+  .detail-layout,
+  .results-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .similar-results {
+    display: flex;
+    flex-direction: row;
+    overflow-x: scroll;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 10px;
+    padding-bottom: 4px;
+  }
+
+  .similar-results::-webkit-scrollbar {
+    display: none;
+  }
+
+  .similar-results .style-card {
+    flex: 0 0 42vw;
+    scroll-snap-align: start;
+  }
+
+  .welcome-options {
+    margin-top: 28px;
+  }
+
+  .choice-card {
+    min-height: 220px;
+    padding: 22px;
+  }
+
+  .quiz-top {
+    gap: 8px;
+    margin-bottom: 14px;
+    align-items: flex-start;
+  }
+
+  .quiz-top-actions {
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 4px;
+  }
+  .progress-meta {
+    font-size: 11px;
+  }
+
+  .quiz-content {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .quiz-question {
+    position: static;
+  }
+
+  /* Phone / tablet: image-based quiz options become a swipeable carousel.
+     Text-row and collage options stay as a grid. */
+  .option-grid:not(.is-text):not(.is-collage) {
+    display: flex;
+    flex-direction: row;
+    overflow-x: scroll;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    gap: 12px;
+    padding-left: 4px;
+    padding-right: 10px;
+    padding-bottom: 4px;
+    /* hide scrollbar visually */
+    scrollbar-width: none;
+  }
+
+  .option-grid:not(.is-text):not(.is-collage)::-webkit-scrollbar {
+    display: none;
+  }
+
+  .option-grid:not(.is-text):not(.is-collage) .option-card {
+    flex: 0 0 clamp(220px, 82vw, 340px);
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .option-grid:not(.is-text):not(.is-collage) .option-media {
+    aspect-ratio: 1 / 1;
+  }
+
+  /* Refine filter pills: 3-stop swipeable carousel */
+  .refine-pill {
+    flex: 0 0 72vw;
+    scroll-snap-stop: always;
+  }
+
+  /* Trailing spacer so the last pill can scroll all the way to the start position */
+  .refine-row::after {
+    content: '';
+    flex: 0 0 28vw;
+  }
+
+  .option-grid.is-collage {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    overflow-x: unset;
+    scroll-snap-type: unset;
+    gap: 8px;
+    padding-right: 0;
+  }
+
+  .option-grid.is-collage .option-media {
+    aspect-ratio: 1 / 1;
+  }
+
+  .option-grid.is-text {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .results-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .style-card-footer {
+    min-height: 60px;
+    padding: 8px 9px;
+  }
+
+  .style-card-footer h2 {
+    font-size: 13px;
+  }
+
+  .style-card-footer p {
+    font-size: 11px;
+  }
+
+  /* Dot indicators rendered below the carousel by JS */
+  .carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 7px;
+    margin-top: 10px;
+  }
+
+  .carousel-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--line-strong);
+    opacity: 0.2;
+    transition: opacity 160ms ease, transform 160ms ease;
+    flex-shrink: 0;
+  }
+
+  .carousel-dot.is-active {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+
+  .quiz-footer {
+    flex-direction: row;
+    align-items: center;
+    padding-top: 6px;
+  }
+
+  .quiz-question-buttons {
+    flex-direction: row;
+    gap: 7px;
+    margin-top: 10px;
+  }
+
+  .screen-heading,
+  .results-summary {
+    display: block;
+  }
+
+  .results-actions {
+    margin-top: 16px;
+    align-items: center;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+  }
+
+  .refine-icon-group {
+    flex: 0 0 auto;
+    gap: 8px;
+  }
+
+  .refine-icon-btn {
+    width: 48px;
+    min-width: 48px;
+    padding: 0;
+  }
+
+  .refine-icon-title {
+    font-size: 9px;
+  }
+
+  .answer-filter-panel {
+    width: 100vw;
+    padding: 24px 20px 34px;
+  }
+
+  .detail-image {
+    min-height: 320px;
+  }
+
+  .detail-copy {
+    padding-right: 0;
+  }
+}
+
+@media (max-width: 820px) {
+  .welcome-logo-row {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  /* Phone: tighten the two-up quiz cards so the labels and images fit. */
+  .option-grid {
+    gap: 6px;
+  }
+
+  .option-body {
+    padding: 9px 10px 11px;
+    gap: 2px;
+  }
+
+  .option-card.is-text {
+    min-height: 58px;
+    padding: 10px;
+  }
+
+  .option-card.is-text .option-body {
+    padding-right: 20px;
+  }
+
+  .option-grid:not(.is-text):not(.is-collage) .option-card {
+    flex-basis: clamp(200px, 84vw, 300px);
+  }
+
+  .option-grid:not(.is-text):not(.is-collage) .option-media {
+    aspect-ratio: 9 / 10;
+  }
+
+  .option-label {
+    font-size: 14px;
+  }
+
+  .option-desc {
+    font-size: 12px;
+  }
+
+  .option-media svg {
+    width: 46px;
+    height: 46px;
+  }
+
+  .quiz-question h1,
+  .welcome-screen h1,
+  .screen-heading h1,
+  .results-summary h1 {
+    font-size: 30px;
+  }
+
+  .quiz-question p,
+  .welcome-copy,
+  .screen-heading p,
+  .results-summary p {
+    font-size: 14px;
+  }
+
+  .quiz-top {
+    margin-bottom: 10px;
+  }
+
+  .quiz-screen,
+  .welcome-screen {
+    padding-top: 10px;
+  }
+}
+
+@media (max-width: 440px) {
+  .top-actions {
+    gap: 4px;
+  }
+
+  .favourites-btn {
+    padding-inline: 10px;
+  }
+
+  .brief-btn {
+    gap: 8px;
+  }
+
+  .brief-btn-label {
+    font-size: 22px;
+  }
+
+  .brief-btn-sub {
+    font-size: 11px;
+  }
+
+  .brief-details-summary {
+    padding: 16px 18px;
+  }
+
+  .brief-details-summary-title {
+    font-size: 22px;
+  }
+
+  .brief-details-summary-add {
+    font-size: 13px;
+  }
+
+  .brief-details-summary-state {
+    min-width: 56px;
+    font-size: 10px;
+  }
+
+  .brief-details-panel {
+    padding: 14px 18px 18px;
+  }
+
+  .brief-picker-overlay {
+    padding: 18px 12px;
+  }
+
+  .brief-picker-card {
+    max-height: min(88vh, 920px);
+    padding: 22px 18px 18px;
+  }
+
+  .brief-picker-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .brief-complete-actions {
+    flex-direction: column-reverse;
+  }
+
+  .brief-complete-actions .primary-btn,
+  .brief-complete-actions .secondary-btn {
+    width: 100%;
+  }
+
+  .brief-ref-add-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .welcome-screen h1,
+  .quiz-question h1,
+  .screen-heading h1,
+  .results-summary h1 {
+    font-size: 28px;
+  }
+
+  .option-grid.is-text {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .quiz-question-buttons .primary-btn {
+    flex: 1 1 180px;
+  }
+
+  .overlay {
+    padding: 12px;
+  }
+
+  .overlay-card {
+    padding: 20px;
+  }
+}
+
