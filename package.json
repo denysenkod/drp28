@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "main": "server.ts",
   "scripts": {
-    "deploy": "npx wrangler d1 migrations apply DB --remote && npx wrangler deploy",
+    "dev": "next dev",
+    "build": "next build",
+    "worker:dev": "npm run build && npx wrangler dev",
+    "deploy": "npm run build && npx wrangler d1 migrations apply DB --remote && npx wrangler deploy",
     "db:list": "npx wrangler d1 list",
     "db:migrate:local": "npx wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "npx wrangler d1 migrations apply DB --remote",
@@ -14,8 +17,26 @@
     "analyze:hair-attributes:local": "node scripts/analyze-gallery-hair-attributes.mjs --local",
     "analyze:hair-attributes:remote": "node scripts/analyze-gallery-hair-attributes.mjs --remote",
     "dev:local": "node local-dev.mjs",
-    "start": "npx wrangler dev",
+    "start": "npm run worker:dev",
     "test": "node --test"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.17.0",
+    "next": "^16.2.9",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "tailwind-merge": "^3.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "autoprefixer": "^10.5.0",
+    "postcss": "^8.5.15",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^6.0.3"
+  }
 }

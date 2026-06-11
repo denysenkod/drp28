@@ -6,7 +6,8 @@ import { randomUUID } from 'node:crypto';
 
 const PORT = Number(process.env.PORT || 8787);
 const ROOT = fileURLToPath(new URL('.', import.meta.url));
-const PUBLIC_DIR = join(ROOT, 'frontend');
+const PUBLIC_DIR = join(ROOT, 'out');
+const LEGACY_PUBLIC_DIR = join(ROOT, 'frontend');
 const MIGRATIONS_DIR = join(ROOT, 'migrations');
 const API_STATUS = {
   ok: true,
@@ -745,17 +746,31 @@ async function handleApi(req, res, url) {
 async function serveAsset(pathname, res) {
   const assetPath = pathname === '/' || pathname === '/admin' || pathname === '/admin/' ? '/index.html' : pathname;
   const normalized = normalize(assetPath).replace(/^(\.\.[/\\])+/, '');
-  const filePath = join(PUBLIC_DIR, normalized);
+  const candidates = [
+    join(PUBLIC_DIR, normalized),
+    join(PUBLIC_DIR, normalized, 'index.html'),
+    join(LEGACY_PUBLIC_DIR, normalized)
+  ];
 
-  if (!filePath.startsWith(PUBLIC_DIR)) {
+  if (!candidates.every((filePath) => filePath.startsWith(PUBLIC_DIR) || filePath.startsWith(LEGACY_PUBLIC_DIR))) {
     send(res, 403, 'Forbidden', 'text/plain; charset=utf-8');
     return;
   }
 
+  for (const filePath of candidates) {
+    try {
+      const body = await readFile(filePath);
+      const contentType = MIME_TYPES[extname(filePath)] || 'application/octet-stream';
+      send(res, 200, body, contentType);
+      return;
+    } catch {
+      // Try the next static candidate.
+    }
+  }
+
   try {
-    const body = await readFile(filePath);
-    const contentType = MIME_TYPES[extname(filePath)] || 'application/octet-stream';
-    send(res, 200, body, contentType);
+    const body = await readFile(join(PUBLIC_DIR, 'index.html'));
+    send(res, 200, body, 'text/html; charset=utf-8');
   } catch {
     send(res, 404, 'Not found', 'text/plain; charset=utf-8');
   }

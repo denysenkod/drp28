@@ -1,18 +1,19 @@
 # DRP28
 
-Minimal Cloudflare Worker backend serving the Salon frontend.
+Cloudflare Worker backend serving the Salon frontend.
 
 ## What Runs
 
 - `server.ts` handles Worker backend routes.
-- `frontend/index.html`, `frontend/styles.css`, and `frontend/app.js` are the served frontend.
+- `app/`, `components/`, and `lib/` contain the Next.js, React, Tailwind CSS, and shadcn-style frontend.
+- `npm run build` exports the frontend to `out/`, which is the static directory served by the Worker.
 - `/api/status` is the backend health/status endpoint.
 - `/api/gallery`, `/api/quiz-responses`, `/api/user-photos`, and `/api/favorites` are D1-backed storage endpoints.
 - `local-dev.mjs` is a fallback local server for machines with `node` but no `npm` or `npx`.
 
 ## Local Start Without npm
 
-Use this on DoC/lab machines where `npm` and `npx` are unavailable:
+Use this on DoC/lab machines where `npm` and `npx` are unavailable after `out/` has already been built:
 
 ```bash
 node local-dev.mjs
@@ -30,7 +31,7 @@ Backend endpoint:
 http://localhost:8787/api/status
 ```
 
-The fallback server stores API data in memory only. Restarting it clears local gallery, quiz, photo, and favorites data.
+The fallback server serves `out/` when present and stores API data in memory only. Restarting it clears local gallery, quiz, photo, favorite, and brief data.
 
 To use a different port:
 
@@ -40,7 +41,13 @@ PORT=3000 node local-dev.mjs
 
 ## Local Start With npm
 
-If `npm`/`npx` are installed, use Wrangler for the Cloudflare-like local runtime:
+For frontend development:
+
+```bash
+npm run dev
+```
+
+For the Cloudflare-like local runtime:
 
 ```bash
 npm start
@@ -49,7 +56,7 @@ npm start
 Equivalent direct command:
 
 ```bash
-npx wrangler dev
+npm run build && npx wrangler dev
 ```
 
 Fallback local server via npm:
@@ -228,7 +235,7 @@ main = "server.ts"
 compatibility_date = "2026-05-27"
 
 [assets]
-directory = "./frontend"
+directory = "./out"
 binding = "ASSETS"
 
 [[d1_databases]]
