@@ -2,24 +2,24 @@
 // sequentially so the classic-script globals keep the same execution order as
 // the previous single-file app.
 const FRONTEND_SCRIPT_FILES = [
-  "/js/storage.js?v=2026-06-11-their-hair-pill",
-  "/js/icons.js?v=2026-06-11-their-hair-pill",
-  "/js/fallback-styles.js?v=2026-06-11-their-hair-pill",
-  "/js/products-and-normalizers.js?v=2026-06-11-their-hair-pill",
-  "/js/state.js?v=2026-06-11-their-hair-pill",
-  "/js/data-loading.js?v=2026-06-11-their-hair-pill",
-  "/js/quiz-filters.js?v=2026-06-11-their-hair-pill",
-  "/js/rendering.js?v=2026-06-11-their-hair-pill",
-  "/js/favourites.js?v=2026-06-11-their-hair-pill",
-  "/js/brief.js?v=2026-06-11-their-hair-pill",
-  "/js/brief-sharing.js?v=2026-06-11-their-hair-pill",
-  "/js/shared-brief.js?v=2026-06-11-their-hair-pill",
-  "/js/try-on.js?v=2026-06-11-their-hair-pill",
-  "/js/detail-overlay.js?v=2026-06-11-their-hair-pill",
-  "/js/product-overlay.js?v=2026-06-11-their-hair-pill",
-  "/js/uploads.js?v=2026-06-11-their-hair-pill",
-  "/js/utilities.js?v=2026-06-11-their-hair-pill",
-  "/js/init.js?v=2026-06-11-their-hair-pill"
+  "/js/storage.js?v=2026-06-11-share-copy",
+  "/js/icons.js?v=2026-06-11-share-copy",
+  "/js/fallback-styles.js?v=2026-06-11-share-copy",
+  "/js/products-and-normalizers.js?v=2026-06-11-share-copy",
+  "/js/state.js?v=2026-06-11-share-copy",
+  "/js/data-loading.js?v=2026-06-11-share-copy",
+  "/js/quiz-filters.js?v=2026-06-11-share-copy",
+  "/js/rendering.js?v=2026-06-11-share-copy",
+  "/js/favourites.js?v=2026-06-11-share-copy",
+  "/js/brief.js?v=2026-06-11-share-copy",
+  "/js/brief-sharing.js?v=2026-06-11-share-copy",
+  "/js/shared-brief.js?v=2026-06-11-share-copy",
+  "/js/try-on.js?v=2026-06-11-share-copy",
+  "/js/detail-overlay.js?v=2026-06-11-share-copy",
+  "/js/product-overlay.js?v=2026-06-11-share-copy",
+  "/js/uploads.js?v=2026-06-11-share-copy",
+  "/js/utilities.js?v=2026-06-11-share-copy",
+  "/js/init.js?v=2026-06-11-share-copy"
 ];
 
 function loadScript(src) {

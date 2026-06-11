@@ -52,8 +52,8 @@ async function flushBriefSync() {
     clearTimeout(briefSyncTimer);
     briefSyncTimer = null;
   }
-  await syncBrief();
-  return state.briefId;
+  const item = await syncBrief();
+  return item?.id || null;
 }
 
 function briefShareLink() {
@@ -88,35 +88,53 @@ async function handleBriefComplete() {
   renderBrief();
 }
 
-function copyBriefShareLink(link) {
-  let copied = false;
+function fallbackCopyText(text) {
   const textarea = document.createElement("textarea");
-  textarea.value = link;
+  textarea.value = text;
   textarea.setAttribute("readonly", "");
   textarea.style.position = "fixed";
-  textarea.style.left = "-9999px";
+  textarea.style.left = "0";
   textarea.style.top = "0";
+  textarea.style.opacity = "0";
+  textarea.style.pointerEvents = "none";
   document.body.appendChild(textarea);
   textarea.focus();
   textarea.select();
+  textarea.setSelectionRange(0, textarea.value.length);
+
+  let copied = false;
   try {
     copied = document.execCommand("copy");
   } catch {
     copied = false;
   }
   textarea.remove();
+  return copied;
+}
 
+async function writeClipboardText(text) {
+  if (navigator.clipboard?.writeText && window.isSecureContext !== false) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Fall through to the legacy selection-based copy path.
+    }
+  }
+  return fallbackCopyText(text);
+}
+
+async function copyBriefShareLink(link) {
+  if (!link) {
+    setShareStatus("Complete your profile first to create a share URL.");
+    return false;
+  }
+
+  setShareStatus("Copying share URL...", link);
+  const copied = await writeClipboardText(link);
   if (copied) {
     setShareStatus("Share URL copied to clipboard.", link);
     return true;
-  }
-
-  if (navigator.clipboard?.writeText) {
-    navigator.clipboard.writeText(link)
-      .then(() => setShareStatus("Share URL copied to clipboard.", link))
-      .catch(() => setShareStatus(`Share URL ready. Copy this URL: ${link}`, link));
-    setShareStatus("Copying share URL...", link);
-    return false;
   }
 
   setShareStatus(`Share URL ready. Copy this URL: ${link}`, link);
@@ -132,28 +150,68 @@ function ensureBriefShareId() {
   return state.briefId;
 }
 
+function ensureShareableBriefLink() {
+  if (!briefHasContent()) {
+    setShareStatus("Add a photo, reference, colour detail, or note before sharing.");
+    return "";
+  }
+  ensureBriefShareId();
+  const link = briefShareLink();
+  setShareStatus("Preparing share URL...", link);
+  return link;
+}
+
+async function persistShareableBrief(link) {
+  const id = await flushBriefSync();
+  if (!id) {
+    setShareStatus("Couldn't save your share URL. Check your connection and try again.", link);
+    return false;
+  }
+  state.shareLink = link;
+  return true;
+}
+
+async function handleBriefCopyLink() {
+  const link = ensureShareableBriefLink();
+  if (!link) return;
+
+  const savePromise = persistShareableBrief(link);
+  const copied = await copyBriefShareLink(link);
+  const saved = await savePromise;
+  if (copied && saved) setShareStatus("Share URL copied to clipboard.", link);
+}
+
 async function handleBriefUrlShare() {
-  const link = state.shareLink || briefShareLink();
+  const link = ensureShareableBriefLink();
   if (!link) {
-    setShareStatus("Complete your profile first to create a share URL.");
     return;
   }
 
+  const savePromise = persistShareableBrief(link);
   if (prefersNativeBriefShare() && typeof navigator.share === "function") {
+    const shareData = {
+      title: "HairMatch style profile",
+      text: "Here's my HairMatch style profile.",
+      url: link
+    };
     try {
-      await navigator.share({
-        title: "HairMatch style profile",
-        text: "Here's my HairMatch style profile.",
-        url: link
-      });
-      setShareStatus("Style complete", link);
+      if (typeof navigator.canShare === "function" && !navigator.canShare(shareData)) {
+        throw new Error("Share data is not supported.");
+      }
+      await navigator.share(shareData);
+      if (await savePromise) setShareStatus("Share URL ready.", link);
       return;
     } catch (error) {
-      if (error?.name === "AbortError") return;
+      if (error?.name === "AbortError") {
+        if (await savePromise) setShareStatus("Share URL ready.", link);
+        return;
+      }
     }
   }
 
-  await copyBriefShareLink(link);
+  const copied = await copyBriefShareLink(link);
+  const saved = await savePromise;
+  if (copied && saved) setShareStatus("Share URL copied to clipboard.", link);
 }
 
 function setShareStatus(message, link = "") {
@@ -167,6 +225,13 @@ function setShareStatus(message, link = "") {
     node.hidden = !message;
     if (link) node.dataset.link = link;
     else delete node.dataset.link;
+  }
+
+  if (link) {
+    const field = document.querySelector(".profile-link-field > span");
+    if (field) field.textContent = link;
+    const copyBtn = $("#brief-url-share-btn");
+    if (copyBtn) copyBtn.disabled = false;
   }
 }
 

@@ -114,7 +114,11 @@ function briefHasContent() {
 }
 
 function refreshShareButton() {
-  const btn = $("#brief-share-btn");
-  if (btn) btn.disabled = !briefHasContent();
+  const disabled = !briefHasContent();
+  document
+    .querySelectorAll("#brief-share-btn, #profile-mobile-share-btn, #brief-url-share-btn")
+    .forEach((btn) => {
+      btn.disabled = disabled;
+    });
 }
 

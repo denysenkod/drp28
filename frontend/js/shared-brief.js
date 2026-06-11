@@ -598,6 +598,7 @@ function profileBriefCounts(meItems = briefItemsFor("me"), refItems = briefItems
 
 function renderProfileBriefAside(counts) {
   const link = state.shareLink || briefShareLink() || "Complete profile to create a link";
+  const canShare = briefHasContent();
   return `
     <aside class="profile-brief-card">
       <div class="profile-brief-top">
@@ -622,11 +623,11 @@ function renderProfileBriefAside(counts) {
         <p>Shareable link</p>
         <div class="profile-link-field">
           <span>${escapeHtml(link)}</span>
-          <button class="profile-link-copy" id="brief-url-share-btn" type="button" ${state.shareLink || state.briefId ? "" : "disabled"}>
+          <button class="profile-link-copy" id="brief-url-share-btn" type="button" ${canShare ? "" : "disabled"}>
             ${iconCheck()}<span>Copy</span>
           </button>
         </div>
-        <button class="profile-share-btn" id="brief-share-btn" data-brief-share-direct type="button">
+        <button class="profile-share-btn" id="brief-share-btn" data-brief-share-direct type="button" ${canShare ? "" : "disabled"}>
           ${iconShare()}<span>Share with stylist</span>
         </button>
         <div class="profile-share-status" id="brief-share-status" ${state.shareStatus ? "" : "hidden"}>
@@ -649,13 +650,14 @@ function renderProfileBriefListItem(label, count, done) {
 }
 
 function renderProfileMobileShare(counts) {
+  const canShare = briefHasContent();
   return `
     <div class="profile-mobile-share">
       <div>
         <div class="profile-mobile-title">Brief ${counts.percent}% ready</div>
         <div class="profile-mobile-sub">${counts.hair} ${counts.hair === 1 ? "photo" : "photos"} - ${counts.references} ${counts.references === 1 ? "reference" : "references"}</div>
       </div>
-      <button class="profile-share-btn" id="profile-mobile-share-btn" data-brief-share-direct type="button">
+      <button class="profile-share-btn" id="profile-mobile-share-btn" data-brief-share-direct type="button" ${canShare ? "" : "disabled"}>
         ${iconShare()}<span>Share</span>
       </button>
     </div>
@@ -663,11 +665,7 @@ function renderProfileMobileShare(counts) {
 }
 
 function handleProfileShareDirect() {
-  ensureBriefShareId();
-  const link = briefShareLink();
-  copyBriefShareLink(link);
-  syncBrief();
-  renderBrief();
+  handleBriefUrlShare();
 }
 
 // Collapsible hair-colour section: the user can open it if they want to note
@@ -1082,7 +1080,7 @@ function wireBrief() {
   }
   const shareUrlBtn = $("#brief-url-share-btn");
   if (shareUrlBtn) {
-    shareUrlBtn.addEventListener("click", handleBriefUrlShare);
+    shareUrlBtn.addEventListener("click", handleBriefCopyLink);
   }
   const completeOverlay = $("#brief-complete-overlay");
   if (completeOverlay) {
