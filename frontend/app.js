@@ -10,6 +10,7 @@ const SESSION_KEY = "drp28.frontend.sessionId";
 const VIEW_KEY = "drp28.frontend.view";
 const ANSWERS_KEY = "drp28.frontend.answers";
 const STEP_KEY = "drp28.frontend.quizStep";
+const QUIZ_COMPLETE_KEY = "drp28.frontend.quizComplete";
 const PREV_VIEW_KEY = "drp28.frontend.prevView";
 const BRIEF_KEY = "drp28.frontend.brief";
 const BRIEF_ID_KEY = "drp28.frontend.briefId";
@@ -999,6 +1000,7 @@ const state = {
   view: ((v) => (v === "search" || v === "welcome" ? (v === "search" ? "results" : "home") : v))(readStored(VIEW_KEY, "home")),
   previousView: ((v) => (v === "welcome" ? "home" : v))(readStored(PREV_VIEW_KEY, "home")),
   quizStep: readStored(STEP_KEY, 0),
+  quizComplete: readStored(QUIZ_COMPLETE_KEY, false),
   answers: readStored(ANSWERS_KEY, {}),
   searchQuery: "",
   favourites: new Set(),
@@ -1627,24 +1629,31 @@ function renderHome() {
   const results = computeResults();
   els.app.innerHTML = `
     <section class="home-screen">
-      <button class="home-cta choice-card" id="find-style-btn" type="button">
-        <span class="choice-icon">${iconCheck()}</span>
-        <span class="choice-title">Find me a style</span>
-        <span class="choice-copy">Answer a few quick questions. We'll narrow thousands of looks down to the ones that suit you.</span>
-        <span class="choice-action">${QUIZ.length} quick questions ${iconArrow()}</span>
-      </button>
+      ${state.quizComplete ? "" : `
+        <button class="home-cta choice-card" id="find-style-btn" type="button">
+          <span class="choice-icon">${iconCheck()}</span>
+          <span class="choice-title">Find me a style</span>
+          <span class="choice-copy">Answer a few quick questions. We'll narrow thousands of looks down to the ones that suit you.</span>
+          <span class="choice-action">${QUIZ.length} quick questions ${iconArrow()}</span>
+        </button>
+      `}
 
       <section class="results-grid home-feed" id="results-grid">
         ${results.length ? results.map((style) => buildStyleCardHtml(style, false, { hideFooter: true })).join("") : `<p class="empty-state">Loading styles…</p>`}
       </section>
     </section>
   `;
-  $("#find-style-btn").addEventListener("click", () => {
-    setAnswers({});
-    state.quizStep = 0;
-    writeStored(STEP_KEY, state.quizStep);
-    setView("quiz");
-  });
+  const findStyleBtn = $("#find-style-btn");
+  if (findStyleBtn) {
+    findStyleBtn.addEventListener("click", () => {
+      setAnswers({});
+      state.quizComplete = false;
+      writeStored(QUIZ_COMPLETE_KEY, state.quizComplete);
+      state.quizStep = 0;
+      writeStored(STEP_KEY, state.quizStep);
+      setView("quiz");
+    });
+  }
   wireCards();
 }
 
@@ -1712,8 +1721,13 @@ function renderQuiz() {
   `;
 
   $("#quiz-next-btn").addEventListener("click", () => {
-    if (isLast) setView("results");
-    else setQuizStep(state.quizStep + 1);
+    if (isLast) {
+      state.quizComplete = true;
+      writeStored(QUIZ_COMPLETE_KEY, state.quizComplete);
+      setView("results");
+    } else {
+      setQuizStep(state.quizStep + 1);
+    }
   });
   const backBtn = $("#quiz-back-btn");
   if (backBtn) {

@@ -447,9 +447,13 @@ body[data-view="quiz"] .app-shell {
 }
 
 .home-cta {
+  position: sticky;
+  top: 78px;
+  z-index: 12;
   width: min(100%, 720px);
   min-height: auto;
   margin: 8px 0 40px;
+  backdrop-filter: blur(14px);
 }
 
 .home-feed {
@@ -3106,6 +3110,11 @@ body[data-view="quiz"] .app-shell {
   body[data-view="home"] .app-shell {
     width: min(100% - 40px, 1120px);
     padding-top: 28px;
+  }
+
+  .home-cta {
+    top: 12px;
+    margin-bottom: 24px;
   }
 
   body[data-view="quiz"] .app-shell {
