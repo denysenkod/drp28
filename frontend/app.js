@@ -2904,7 +2904,7 @@ function renderSharedBrief() {
 
   const items = Array.isArray(state.sharedBrief.items) ? state.sharedBrief.items : [];
   const meItems = items.filter((item) => itemPartition(item) === "me");
-  const refItems = items.filter((item) => itemPartition(item) === "references");
+  const refItems = sortReferencesForDisplay(items.filter((item) => itemPartition(item) === "references"));
 
   els.app.innerHTML = `
     <section class="brief-screen brief-screen--review">
@@ -3017,6 +3017,16 @@ function briefItemsFor(partition) {
   return state.brief.filter((item) => itemPartition(item) === partition);
 }
 
+// Favourited references lead the list to signal importance. This is a stable
+// partition: it preserves array order within each group, so the favourites keep
+// the recency order that setBriefFirstChoice maintains (newest = rightmost
+// favourite) and the rest stay in insertion order.
+function sortReferencesForDisplay(items) {
+  const favourites = items.filter((item) => item.firstChoice);
+  const rest = items.filter((item) => !item.firstChoice);
+  return [...favourites, ...rest];
+}
+
 function openBriefPicker() {
   state.briefPickerOpen = true;
   state.briefRefAddOpen = false;
@@ -3053,7 +3063,7 @@ function renderBrief() {
   const pickerOpen = state.briefPickerOpen;
   const refAddOpen = state.briefRefAddOpen;
   const meItems = briefItemsFor("me");
-  const refItems = briefItemsFor("references");
+  const refItems = sortReferencesForDisplay(briefItemsFor("references"));
 
   els.app.innerHTML = `
     <section class="brief-screen">
@@ -3514,11 +3524,31 @@ function setBriefSelfStyle(id, value) {
 
 // "Favourite" is a per-reference toggle: clicking it on a marked reference
 // clears the flag again. Multiple references can be flagged independently.
+// Toggling repositions the item to the favourites/non-favourites boundary among
+// references, so a newly-favourited item becomes the rightmost favourite (and an
+// un-favourited one becomes the leftmost non-favourite).
 function setBriefFirstChoice(id) {
-  setBrief(state.brief.map((item) => {
-    if (item.id !== id) return item;
-    return { ...item, firstChoice: !item.firstChoice };
-  }));
+  const target = state.brief.find((item) => item.id === id);
+  if (!target) return;
+  const nowFavourite = !target.firstChoice;
+
+  const refs = state.brief
+    .filter((item) => itemPartition(item) === "references")
+    .map((item) => (item.id === id ? { ...item, firstChoice: nowFavourite } : item));
+  const toggled = refs.find((item) => item.id === id);
+  const others = refs.filter((item) => item.id !== id);
+  const orderedRefs = [
+    ...others.filter((item) => item.firstChoice),
+    toggled,
+    ...others.filter((item) => !item.firstChoice)
+  ];
+
+  // Splice the reordered references back into their slots, leaving "me" items put.
+  let refIndex = 0;
+  const next = state.brief.map((item) =>
+    itemPartition(item) === "references" ? orderedRefs[refIndex++] : item
+  );
+  setBrief(next);
   renderBrief();
 }
 
