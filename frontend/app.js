@@ -2,24 +2,24 @@
 // sequentially so the classic-script globals keep the same execution order as
 // the previous single-file app.
 const FRONTEND_SCRIPT_FILES = [
-  "/js/storage.js?v=2026-06-11-message-brief-links",
-  "/js/icons.js?v=2026-06-11-message-brief-links",
-  "/js/fallback-styles.js?v=2026-06-11-message-brief-links",
-  "/js/products-and-normalizers.js?v=2026-06-11-message-brief-links",
-  "/js/state.js?v=2026-06-11-message-brief-links",
-  "/js/data-loading.js?v=2026-06-11-message-brief-links",
-  "/js/quiz-filters.js?v=2026-06-11-message-brief-links",
-  "/js/rendering.js?v=2026-06-11-message-brief-links",
-  "/js/favourites.js?v=2026-06-11-message-brief-links",
-  "/js/brief.js?v=2026-06-11-message-brief-links",
-  "/js/brief-sharing.js?v=2026-06-11-message-brief-links",
-  "/js/shared-brief.js?v=2026-06-11-message-brief-links",
-  "/js/try-on.js?v=2026-06-11-message-brief-links",
-  "/js/detail-overlay.js?v=2026-06-11-message-brief-links",
-  "/js/product-overlay.js?v=2026-06-11-message-brief-links",
-  "/js/uploads.js?v=2026-06-11-message-brief-links",
-  "/js/utilities.js?v=2026-06-11-message-brief-links",
-  "/js/init.js?v=2026-06-11-message-brief-links"
+  "/js/storage.js?v=2026-06-11-multiple-briefs",
+  "/js/icons.js?v=2026-06-11-multiple-briefs",
+  "/js/fallback-styles.js?v=2026-06-11-multiple-briefs",
+  "/js/products-and-normalizers.js?v=2026-06-11-multiple-briefs",
+  "/js/state.js?v=2026-06-11-multiple-briefs",
+  "/js/data-loading.js?v=2026-06-11-multiple-briefs",
+  "/js/quiz-filters.js?v=2026-06-11-multiple-briefs",
+  "/js/rendering.js?v=2026-06-11-multiple-briefs",
+  "/js/favourites.js?v=2026-06-11-multiple-briefs",
+  "/js/brief.js?v=2026-06-11-multiple-briefs",
+  "/js/brief-sharing.js?v=2026-06-11-multiple-briefs",
+  "/js/shared-brief.js?v=2026-06-11-multiple-briefs",
+  "/js/try-on.js?v=2026-06-11-multiple-briefs",
+  "/js/detail-overlay.js?v=2026-06-11-multiple-briefs",
+  "/js/product-overlay.js?v=2026-06-11-multiple-briefs",
+  "/js/uploads.js?v=2026-06-11-multiple-briefs",
+  "/js/utilities.js?v=2026-06-11-multiple-briefs",
+  "/js/init.js?v=2026-06-11-multiple-briefs"
 ];
 
 function loadScript(src) {

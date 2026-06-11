@@ -653,10 +653,9 @@ async function deleteFavoriteImage(request: Request, url: URL, db: any): Promise
   return json({ ok: true });
 }
 
-// Upsert the owner's brief keyed by their session. The brief id is a stable
-// share token: a brand-new id is only used the first time a session saves; on
-// later saves the ON CONFLICT branch keeps the existing id so the share link
-// never changes.
+// Upsert a single draft/snapshot by id. Sessions may own multiple completed
+// briefs; the client starts a new id after each completed share so feedback
+// threads and share links stay separate.
 async function saveBrief(request: Request, db: any): Promise<Response> {
   const body = await readJson(request);
 
@@ -678,7 +677,7 @@ async function saveBrief(request: Request, db: any): Promise<Response> {
     .prepare(
       `INSERT INTO style_briefs (id, session_id, items_json, details_json, updated_at)
        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-       ON CONFLICT(session_id) DO UPDATE SET
+       ON CONFLICT(id) DO UPDATE SET
          items_json = excluded.items_json,
          details_json = excluded.details_json,
          updated_at = CURRENT_TIMESTAMP`
@@ -687,11 +686,40 @@ async function saveBrief(request: Request, db: any): Promise<Response> {
     .run();
 
   const row = await db
-    .prepare('SELECT * FROM style_briefs WHERE session_id = ?')
-    .bind(sessionId)
+    .prepare('SELECT * FROM style_briefs WHERE id = ?')
+    .bind(id)
     .first();
 
-  return json({ ok: true, item: rowToStyleBrief(row) }, { status: 201 });
+  const feedback = await db
+    .prepare('SELECT * FROM brief_feedback WHERE brief_id = ? ORDER BY created_at ASC')
+    .bind(id)
+    .all();
+
+  return json({ ok: true, item: rowToStyleBrief(row, feedback.results || []) }, { status: 201 });
+}
+
+async function listBriefs(url: URL, db: any): Promise<Response> {
+  const sessionId = url.searchParams.get('sessionId');
+
+  if (!sessionId || !sessionId.trim()) {
+    return error('Style brief sessionId is required.');
+  }
+
+  const { results } = await db
+    .prepare('SELECT * FROM style_briefs WHERE session_id = ? ORDER BY updated_at DESC')
+    .bind(sessionId.trim())
+    .all();
+
+  const items = [];
+  for (const row of results || []) {
+    const feedback = await db
+      .prepare('SELECT * FROM brief_feedback WHERE brief_id = ? ORDER BY created_at ASC')
+      .bind(row.id)
+      .all();
+    items.push(rowToStyleBrief(row, feedback.results || []));
+  }
+
+  return json({ ok: true, items });
 }
 
 // Public read of a shared brief: returns the owner's items plus any reviewer
@@ -883,6 +911,7 @@ async function handleApi(request: Request, env: Env, url: URL): Promise<Response
   }
 
   if (url.pathname === '/api/briefs') {
+    if (request.method === 'GET') return listBriefs(url, db);
     if (request.method === 'POST') return saveBrief(request, db);
   }
 

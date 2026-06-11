@@ -20,17 +20,25 @@ async function loadSharedBrief(id) {
 // shared-brief endpoint (which returns the brief plus its feedback) so it stays
 // in sync with what reviewers have submitted.
 async function loadOwnerFeedback() {
-  if (!state.briefId) {
+  try {
+    const data = await apiJson(`${API.briefs}?sessionId=${encodeURIComponent(state.sessionId)}`);
+    const briefs = Array.isArray(data.items) ? data.items : [];
+    state.ownerBriefs = briefs;
+    state.ownerFeedback = briefs.flatMap((brief) =>
+      Array.isArray(brief.feedback)
+        ? brief.feedback.map((entry) => ({ ...entry, briefId: entry.briefId || brief.id }))
+        : []
+    );
+  } catch {
+    // Leave whatever we had; a failed refresh shouldn't blank the profile.
+  }
+
+  if (!state.ownerBriefs.length && !state.briefId) {
     state.ownerFeedback = [];
     if (state.view === "messages") renderMessages();
     return;
   }
-  try {
-    const data = await apiJson(`${API.briefs}/${encodeURIComponent(state.briefId)}`);
-    state.ownerFeedback = Array.isArray(data.item?.feedback) ? data.item.feedback : [];
-  } catch {
-    // Leave whatever we had; a failed refresh shouldn't blank the profile.
-  }
+
   if (state.view === "brief") renderBrief();
   if (state.view === "messages") renderMessages();
 }
@@ -518,8 +526,13 @@ function closeBriefCompletePrompt() {
 async function completeBriefFromPrompt(action = "share") {
   const notes = $("#brief-complete-notes")?.value || "";
   setBriefDetails({ ...state.briefDetails, notes });
-  if (action === "copy") await handleBriefCopyLink();
-  else await handleBriefUrlShare();
+  const completed = action === "copy"
+    ? await handleBriefCopyLink()
+    : await handleBriefUrlShare();
+  if (completed) {
+    startNewBriefDraft();
+    loadOwnerFeedback();
+  }
 }
 
 function renderBrief() {
@@ -642,7 +655,7 @@ function renderProfileBriefAside(counts) {
 function renderMessages() {
   const comments = [...(state.ownerFeedback || [])]
     .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
-  const hasBrief = Boolean(state.briefId);
+  const hasBrief = Boolean(state.briefId || (state.ownerBriefs || []).length);
 
   els.app.innerHTML = `
     <section class="messages-screen">
@@ -667,7 +680,8 @@ function renderMessages() {
         <ul class="messages-list">
           ${comments.map((entry) => {
             const date = formatFeedbackDate(entry.createdAt);
-            const briefHref = entry.briefId ? `?brief=${encodeURIComponent(entry.briefId)}` : "?brief";
+            const briefId = String(entry.briefId || "");
+            const briefHref = briefId ? `?brief=${encodeURIComponent(briefId)}&review=1` : "?brief";
             return `
               <li class="message-card">
                 <div class="message-card-head">
@@ -676,7 +690,7 @@ function renderMessages() {
                 </div>
                 ${entry.note ? `<p>${escapeHtml(entry.note)}</p>` : `<p class="message-muted">No written note was included.</p>`}
                 <div class="message-card-actions">
-                  <a class="message-brief-link" href="${escapeAttr(briefHref)}" data-message-brief-link>View style brief</a>
+                  <a class="message-brief-link" href="${escapeAttr(briefHref)}" data-message-brief-link data-brief-id="${escapeAttr(briefId)}">View style brief</a>
                 </div>
               </li>
             `;
@@ -698,8 +712,16 @@ function renderMessages() {
   if (openProfile) openProfile.addEventListener("click", () => setView("brief"));
   document.querySelectorAll("[data-message-brief-link]").forEach((link) => {
     link.addEventListener("click", (event) => {
+      const briefId = link.dataset.briefId;
+      if (!briefId) return;
       event.preventDefault();
-      setView("brief");
+      state.previousView = state.view;
+      writeStored(PREV_VIEW_KEY, state.previousView);
+      state.view = "shared";
+      state.sharedBriefId = briefId;
+      window.history.pushState({ view: "shared", briefId, previousView: state.previousView }, "", link.getAttribute("href"));
+      render();
+      loadSharedBrief(briefId);
     });
   });
 }

@@ -25,6 +25,7 @@ const state = {
   sharedBrief: null,
   sharedBriefError: false,
   editingFeedbackId: null,
+  ownerBriefs: [],
   ownerFeedback: [],
   tryOn: {
     styleId: null,

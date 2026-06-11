@@ -84,6 +84,13 @@ function init() {
       writeStored(PREV_VIEW_KEY, state.previousView);
       render();
       loadOwnerFeedback();
+    } else if (event.state?.view === "shared" && event.state.briefId) {
+      state.view = "shared";
+      state.sharedBriefId = event.state.briefId;
+      state.previousView = event.state.previousView ?? "messages";
+      writeStored(PREV_VIEW_KEY, state.previousView);
+      render();
+      loadSharedBrief(state.sharedBriefId);
     } else if (event.state?.view === "home" || event.state?.view === "welcome") {
       state.view = "home";
       state.previousView = event.state.previousView ?? "home";

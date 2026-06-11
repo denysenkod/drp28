@@ -173,18 +173,19 @@ async function persistShareableBrief(link) {
 
 async function handleBriefCopyLink() {
   const link = ensureShareableBriefLink();
-  if (!link) return;
+  if (!link) return false;
 
   const savePromise = persistShareableBrief(link);
   const copied = await copyBriefShareLink(link);
   const saved = await savePromise;
   if (copied && saved) setShareStatus("Share URL copied to clipboard.", link);
+  return Boolean(saved && copied);
 }
 
 async function handleBriefUrlShare() {
   const link = ensureShareableBriefLink();
   if (!link) {
-    return;
+    return false;
   }
 
   const savePromise = persistShareableBrief(link);
@@ -199,12 +200,13 @@ async function handleBriefUrlShare() {
         throw new Error("Share data is not supported.");
       }
       await navigator.share(shareData);
-      if (await savePromise) setShareStatus("Share URL ready.", link);
-      return;
+      const saved = await savePromise;
+      if (saved) setShareStatus("Share URL ready.", link);
+      return Boolean(saved);
     } catch (error) {
       if (error?.name === "AbortError") {
         if (await savePromise) setShareStatus("Share URL ready.", link);
-        return;
+        return false;
       }
     }
   }
@@ -212,6 +214,12 @@ async function handleBriefUrlShare() {
   const copied = await copyBriefShareLink(link);
   const saved = await savePromise;
   if (copied && saved) setShareStatus("Share URL copied to clipboard.", link);
+  return Boolean(saved && copied);
+}
+
+function startNewBriefDraft() {
+  state.briefId = null;
+  writeStored(BRIEF_ID_KEY, state.briefId);
 }
 
 function setShareStatus(message, link = "") {

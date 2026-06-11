@@ -171,7 +171,7 @@ function createMockD1() {
           }
 
           if (sql.includes('INSERT INTO style_briefs')) {
-            const existing = tables.style_briefs.find((row) => row.session_id === values[1]);
+            const existing = tables.style_briefs.find((row) => row.id === values[0]);
             if (existing) {
               existing.items_json = values[2];
               existing.details_json = values[3];
@@ -305,6 +305,14 @@ function createMockD1() {
           if (sql.includes('FROM favorite_images WHERE session_id = ?')) {
             return {
               results: orderByCreatedAt(tables.favorite_images)
+                .filter((row) => row.session_id === values[0])
+                .map(clone)
+            };
+          }
+
+          if (sql.includes('FROM style_briefs WHERE session_id = ?')) {
+            return {
+              results: orderByCreatedAt(tables.style_briefs)
                 .filter((row) => row.session_id === values[0])
                 .map(clone)
             };
@@ -747,17 +755,30 @@ test('saves a shareable brief, reads it back, and accepts reviewer feedback', as
   const briefId = saved.item.id;
   assert.ok(briefId);
 
-  // Re-saving the same session keeps the same share id (stable link).
-  const resaveResponse = await worker.fetch(new Request('https://example.com/api/briefs', {
+  // Re-saving with the same id updates that specific brief.
+  const updateResponse = await worker.fetch(new Request('https://example.com/api/briefs', {
     method: 'POST',
     body: JSON.stringify({
+      id: briefId,
       sessionId: 'session-owner',
       items: [{ id: 'item-1', partition: 'me', rating: 3, annotation: 'updated' }]
     })
   }), env);
-  const resaved = await resaveResponse.json();
-  assert.equal(resaved.item.id, briefId);
-  assert.equal(resaved.item.items.length, 1);
+  const updated = await updateResponse.json();
+  assert.equal(updated.item.id, briefId);
+  assert.equal(updated.item.items.length, 1);
+
+  // A new completion for the same session creates a distinct stored brief/link.
+  const secondSaveResponse = await worker.fetch(new Request('https://example.com/api/briefs', {
+    method: 'POST',
+    body: JSON.stringify({
+      sessionId: 'session-owner',
+      items: [{ id: 'item-3', partition: 'references', rating: 5, annotation: 'second brief' }]
+    })
+  }), env);
+  const secondSaved = await secondSaveResponse.json();
+  const secondBriefId = secondSaved.item.id;
+  assert.notEqual(secondBriefId, briefId);
 
   // A reviewer opens the link and adds feedback.
   const feedbackResponse = await worker.fetch(new Request(`https://example.com/api/briefs/${briefId}/feedback`, {
@@ -780,6 +801,18 @@ test('saves a shareable brief, reads it back, and accepts reviewer feedback', as
   assert.equal(typeof got.item.details, 'object');
   assert.equal(got.item.feedback.length, 1);
   assert.equal(got.item.feedback[0].note, 'Great starting point');
+
+  const listResponse = await worker.fetch(new Request('https://example.com/api/briefs?sessionId=session-owner'), env);
+  const listed = await listResponse.json();
+
+  assert.equal(listResponse.status, 200);
+  assert.equal(listed.items.length, 2);
+  assert.deepEqual(
+    new Set(listed.items.map((item) => item.id)),
+    new Set([briefId, secondBriefId])
+  );
+  assert.equal(listed.items.find((item) => item.id === briefId).feedback.length, 1);
+  assert.equal(listed.items.find((item) => item.id === secondBriefId).feedback.length, 0);
 });
 
 test('lets a reviewer edit and delete their feedback', async () => {

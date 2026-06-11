@@ -656,6 +656,26 @@ async function handleApi(req, res, url) {
   }
 
   if (url.pathname === '/api/briefs') {
+    if (req.method === 'GET') {
+      const sessionId = url.searchParams.get('sessionId');
+      if (!sessionId || !sessionId.trim()) {
+        sendJson(res, 400, { ok: false, error: 'Style brief sessionId is required.' });
+        return true;
+      }
+
+      const items = store.briefs
+        .filter((brief) => brief.sessionId === sessionId.trim())
+        .sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')))
+        .map((brief) => ({
+          ...brief,
+          feedback: store.briefFeedback
+            .filter((item) => item.briefId === brief.id)
+            .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+        }));
+      sendJson(res, 200, { ok: true, items });
+      return true;
+    }
+
     if (req.method === 'POST') {
       const body = await readJson(req);
       if (!body || typeof body.sessionId !== 'string' || !body.sessionId.trim()) {
@@ -670,7 +690,7 @@ async function handleApi(req, res, url) {
       const sessionId = body.sessionId.trim();
       const details = parseRecord(body.details);
       const requestedId = typeof body.id === 'string' ? body.id.trim() : '';
-      let brief = store.briefs.find((item) => item.sessionId === sessionId);
+      let brief = requestedId ? store.briefs.find((item) => item.id === requestedId) : null;
       if (brief) {
         brief.items = body.items;
         brief.details = details;
@@ -680,7 +700,10 @@ async function handleApi(req, res, url) {
         store.briefs.unshift(brief);
       }
 
-      sendJson(res, 201, { ok: true, item: { ...brief, feedback: [] } });
+      const feedback = store.briefFeedback
+        .filter((item) => item.briefId === brief.id)
+        .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+      sendJson(res, 201, { ok: true, item: { ...brief, feedback } });
       return true;
     }
   }
