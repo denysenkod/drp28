@@ -69,10 +69,17 @@ function defaultBriefDetails() {
   };
 }
 
+// Whether the optional hair-colour treatment section holds anything. General
+// notes are intentionally excluded — they live in their own section, so they
+// must not drive the colour section's auto-open/share/remove behaviour.
 function briefDetailsHasContent(details = {}) {
   const d = details || {};
-  return ["colour", "allergies", "previousTreatments", "damage", "notes"]
+  return ["colour", "allergies", "previousTreatments", "damage"]
     .some((key) => Boolean(String(d[key] || "").trim()));
+}
+
+function briefNotesValue(details = state.briefDetails) {
+  return String((details || {}).notes || "").trim();
 }
 
 function briefDetailsShouldShare(details = {}) {
@@ -94,7 +101,9 @@ function setBriefDetailsOpen(open) {
 }
 
 function removeBriefDetails() {
-  state.briefDetails = defaultBriefDetails();
+  // Clear the colour-treatment fields only; general notes live in their own
+  // section and should survive removing the colour section.
+  state.briefDetails = { ...defaultBriefDetails(), notes: state.briefDetails.notes || "" };
   state.briefDetailsOpen = false;
   writeStored(BRIEF_DETAILS_KEY, state.briefDetails);
   writeStored(BRIEF_DETAILS_OPEN_KEY, state.briefDetailsOpen);
@@ -104,9 +113,14 @@ function removeBriefDetails() {
 }
 
 function briefDetailsPayload() {
-  return briefDetailsIsOpen()
+  // detailsOpen tracks only the colour-treatment section; general notes ride
+  // along independently so they sync even when that section is collapsed.
+  const payload = briefDetailsIsOpen()
     ? { ...state.briefDetails, detailsOpen: true }
     : { detailsOpen: false };
+  const notes = briefNotesValue();
+  if (notes) payload.notes = notes;
+  return payload;
 }
 
 function readStored(key, fallback) {
@@ -2541,9 +2555,11 @@ function updateBriefDetail(key, value) {
   refreshShareButton();
 }
 
-// A brief is worth sharing once it has any item or any hair-colour details.
+// A brief is worth sharing once it has any item, general notes, or hair-colour
+// details.
 function briefHasContent() {
   if (state.brief.length) return true;
+  if (briefNotesValue()) return true;
   return briefDetailsIsOpen() && briefDetailsHasContent(state.briefDetails);
 }
 
@@ -2759,8 +2775,7 @@ function renderBriefDetailsReview(details) {
     ["Hair colour treatment", d.colour],
     ["Allergies or sensitivities", d.allergies],
     ["Previous colour treatments", d.previousTreatments],
-    ["Damage or breakage", d.damage],
-    ["General notes", d.notes]
+    ["Damage or breakage", d.damage]
   ].filter(([, value]) => value && String(value).trim());
 
   if (!rows.length) return "";
@@ -2775,6 +2790,23 @@ function renderBriefDetailsReview(details) {
         `).join("")}
       </dl>
   `, d, { isOpen: true, actionLabel: "" });
+}
+
+// Read-only general notes for the reviewer, shown as its own section so it
+// stands apart from the hair-colour treatment details.
+function renderBriefNotesReview(details) {
+  const notes = briefNotesValue(details);
+  if (!notes) return "";
+  return `
+    <section class="brief-details brief-details--notes">
+      <div class="brief-details-summary brief-details-summary--static">
+        <span class="brief-details-summary-title">General notes</span>
+      </div>
+      <div class="brief-details-panel">
+        <p class="brief-owner-note">${escapeHtml(notes)}</p>
+      </div>
+    </section>
+  `;
 }
 
 // Read-only card: the client's photo with their favourite flag and note. The
@@ -2941,6 +2973,8 @@ function renderSharedBrief() {
         </section>
       </div>
 
+      ${renderBriefNotesReview(state.sharedBrief.details)}
+
       ${renderStylistSummary()}
     </section>
   `;
@@ -3106,6 +3140,8 @@ function renderBrief() {
       </div>
 
       ${renderBriefDetails()}
+
+      ${renderBriefNotes()}
     </section>
 
     ${refAddOpen ? renderBriefRefAddPopup() : ""}
@@ -3143,12 +3179,27 @@ function renderBriefDetails() {
           <span>Damage or breakage</span>
           <textarea id="brief-damage" rows="2" placeholder="e.g. dry ends, breakage from bleach, heat damage">${escapeHtml(d.damage || "")}</textarea>
         </label>
-        <label class="brief-field brief-field--wide">
-          <span>General notes</span>
-          <textarea id="brief-notes" rows="3" placeholder="Anything else you'd like your stylist to know">${escapeHtml(d.notes || "")}</textarea>
-        </label>
       </div>
   `, d, { isOpen, showGhostAdd: true, removable: true });
+}
+
+// General notes is a brief-wide free-text box, kept separate from the optional
+// hair-colour treatment section so it always shows and isn't cleared when the
+// colour section is removed. The value still lives on briefDetails.notes.
+function renderBriefNotes() {
+  const d = state.briefDetails || defaultBriefDetails();
+  return `
+    <section class="brief-details brief-details--notes">
+      <div class="brief-details-summary brief-details-summary--static">
+        <span class="brief-details-summary-title">General notes</span>
+      </div>
+      <div class="brief-details-panel">
+        <div class="brief-field brief-field--wide">
+          <textarea id="brief-notes" rows="3" aria-label="General notes" placeholder="Anything else you'd like your stylist to know">${escapeHtml(d.notes || "")}</textarea>
+        </div>
+      </div>
+    </section>
+  `;
 }
 
 // A placeholder tile that keeps the "Me" partition occupying at least one grid
