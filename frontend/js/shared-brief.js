@@ -666,17 +666,21 @@ function renderMessages() {
   const hasBrief = Boolean(state.briefId || (state.ownerBriefs || []).length);
 
   els.app.innerHTML = `
-    <section class="messages-screen">
+    <section class="messages-screen" id="messages-screen">
       <header class="messages-head">
         <div>
           <p class="eyebrow">Messages</p>
           <h1>Stylist feedback</h1>
           <p>${hasBrief ? "Replies to your shared hairstyle brief appear here." : "Complete and share a hairstyle brief to receive feedback here."}</p>
         </div>
-        <button class="secondary-btn messages-refresh" id="messages-refresh" type="button" ${hasBrief ? "" : "disabled"}>
-          ${iconComment()}<span>Refresh</span>
-        </button>
       </header>
+
+      ${hasBrief ? `
+        <div class="messages-pull" id="messages-pull" aria-live="polite">
+          <span class="messages-pull-icon" aria-hidden="true">${iconComment()}</span>
+          <span id="messages-pull-label">Pull down to refresh</span>
+        </div>
+      ` : ""}
 
       ${!hasBrief ? `
         <section class="messages-empty">
@@ -714,8 +718,7 @@ function renderMessages() {
     </section>
   `;
 
-  const refresh = $("#messages-refresh");
-  if (refresh) refresh.addEventListener("click", loadOwnerFeedback);
+  wireMessagesPullRefresh(hasBrief);
   const openProfile = $("#messages-open-profile");
   if (openProfile) openProfile.addEventListener("click", () => setView("brief"));
   document.querySelectorAll("[data-message-brief-link]").forEach((link) => {
@@ -733,6 +736,80 @@ function renderMessages() {
       loadSharedBrief(briefId);
     });
   });
+}
+
+function wireMessagesPullRefresh(enabled) {
+  const screen = $("#messages-screen");
+  const indicator = $("#messages-pull");
+  const label = $("#messages-pull-label");
+  if (!enabled || !screen || !indicator) return;
+
+  const threshold = 72;
+  const maxPull = 104;
+  let startY = 0;
+  let distance = 0;
+  let pulling = false;
+  let refreshing = false;
+
+  const setPullState = () => {
+    indicator.style.setProperty("--pull-distance", `${distance}px`);
+    indicator.classList.toggle("is-pulling", distance > 0);
+    indicator.classList.toggle("is-ready", distance >= threshold);
+    if (label) label.textContent = distance >= threshold ? "Release to refresh" : "Pull down to refresh";
+  };
+
+  const resetPullState = () => {
+    distance = 0;
+    indicator.style.setProperty("--pull-distance", "0px");
+    indicator.classList.remove("is-pulling", "is-ready", "is-refreshing");
+    if (label) label.textContent = "Pull down to refresh";
+  };
+
+  screen.addEventListener("touchstart", (event) => {
+    if (refreshing || window.scrollY > 0 || event.touches.length !== 1) return;
+    startY = event.touches[0].clientY;
+    pulling = true;
+    distance = 0;
+  }, { passive: true });
+
+  screen.addEventListener("touchmove", (event) => {
+    if (!pulling || refreshing || event.touches.length !== 1) return;
+    if (window.scrollY > 0) {
+      pulling = false;
+      resetPullState();
+      return;
+    }
+
+    const delta = event.touches[0].clientY - startY;
+    if (delta <= 0) {
+      resetPullState();
+      return;
+    }
+
+    distance = Math.min(maxPull, Math.round(delta * 0.55));
+    setPullState();
+    if (distance > 8) event.preventDefault();
+  }, { passive: false });
+
+  screen.addEventListener("touchend", async () => {
+    if (!pulling || refreshing) return;
+    pulling = false;
+    if (distance < threshold) {
+      resetPullState();
+      return;
+    }
+
+    refreshing = true;
+    indicator.classList.add("is-refreshing");
+    indicator.classList.remove("is-ready");
+    indicator.style.setProperty("--pull-distance", "64px");
+    if (label) label.textContent = "Refreshing...";
+    await loadOwnerFeedback();
+  });
+
+  screen.addEventListener("touchcancel", () => {
+    if (!refreshing) resetPullState();
+  }, { passive: true });
 }
 
 function renderProfileBriefListItem(label, count, done) {

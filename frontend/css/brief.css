@@ -1305,6 +1305,7 @@ body[data-view="brief"] .app-shell {
   width: min(920px, 100%);
   margin: 0 auto;
   padding: 34px 0 64px;
+  overscroll-behavior-y: contain;
 }
 
 .messages-head {
@@ -1331,14 +1332,60 @@ body[data-view="brief"] .app-shell {
   font-size: 16px;
 }
 
-.messages-refresh {
-  flex: 0 0 auto;
-}
-
-.messages-refresh svg,
 .messages-empty svg {
   width: 16px;
   height: 16px;
+}
+
+.messages-pull {
+  --pull-distance: 0px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  margin: -8px 0 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--muted);
+  box-shadow: 0 10px 26px rgba(70, 54, 34, 0.08);
+  font-size: 13px;
+  font-weight: 800;
+  opacity: 0.72;
+  pointer-events: none;
+  transform: translateY(calc(var(--pull-distance) * 0.18));
+  transition: opacity 160ms ease, transform 160ms ease, color 160ms ease;
+}
+
+.messages-pull.is-pulling,
+.messages-pull.is-refreshing {
+  opacity: 1;
+}
+
+.messages-pull.is-ready {
+  color: var(--accent-strong);
+}
+
+.messages-pull-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.messages-pull-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.messages-pull.is-refreshing .messages-pull-icon {
+  animation: messages-refresh-spin 850ms linear infinite;
+}
+
+@keyframes messages-refresh-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .messages-list {
@@ -2071,8 +2118,8 @@ body[data-view="brief"] .app-shell {
     flex-direction: column;
   }
 
-  .messages-refresh {
-    width: 100%;
+  .messages-pull {
+    margin-top: -12px;
   }
 
   .message-card-head {
