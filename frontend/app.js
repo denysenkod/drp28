@@ -606,7 +606,7 @@ const QUIZ = [
   },
   {
     id: "vibe",
-    title: "Which words best describe the look you are going for?",
+    title: "Which looks do you like?",
     layout: "collage",
     options: [
       { value: "classic", label: "Classic", vibe: "classic", keywords: ["classic", "side part", "centre part"], images: {
@@ -2106,6 +2106,13 @@ function refineTriggerLabel(filter) {
   return filter.label;
 }
 
+function refineControlTitle(filter) {
+  if (filter.id === "face_shape") return "Shape";
+  if (filter.id === "hair_colour") return "Colour";
+  if (filter.id === "thickness") return "Density";
+  return filter.noun || filter.label;
+}
+
 function refineHasSelection(filter) {
   const val = state.refineFilters[filter.id];
   return filter.id === "thickness" ? val !== null : val.size > 0;
@@ -2119,18 +2126,21 @@ function renderRefineControls() {
         const hasSelection = refineHasSelection(filter);
         const isOpen = open === filter.id;
         const label = refineTriggerLabel(filter);
+        const title = refineControlTitle(filter);
         return `
-          <button
-            class="refine-icon-btn${hasSelection ? " is-active" : ""}${isOpen ? " is-open" : ""}"
-            type="button"
-            data-refine="${escapeAttr(filter.id)}"
-            aria-label="${escapeAttr(label)} filter"
-            aria-expanded="${isOpen}"
-            title="${escapeAttr(hasSelection ? refinePillLabel(filter) : `${label} filter`)}"
-          >
-            ${refineControlIcon(filter.id)}
-            <span>${escapeHtml(label)}</span>
-          </button>
+          <span class="refine-icon-control">
+            <span class="refine-icon-title">${escapeHtml(title)}</span>
+            <button
+              class="refine-icon-btn${hasSelection ? " is-active" : ""}${isOpen ? " is-open" : ""}"
+              type="button"
+              data-refine="${escapeAttr(filter.id)}"
+              aria-label="${escapeAttr(title)} filter"
+              aria-expanded="${isOpen}"
+              title="${escapeAttr(hasSelection ? refinePillLabel(filter) : `${title} filter`)}"
+            >
+              ${refineControlIcon(filter.id)}
+            </button>
+          </span>
         `;
       }).join("")}
     </div>
@@ -2189,7 +2199,6 @@ function renderResultsPage() {
         <div>
           <p class="eyebrow">Curated for you</p>
           <h1 id="results-count">${results.length} styles to try</h1>
-          <p>These are ranked from the answers you gave. Like anything that feels close.</p>
         </div>
         ${renderDiscoveryActions(selectedCount)}
       </div>
