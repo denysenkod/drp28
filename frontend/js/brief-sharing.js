@@ -58,7 +58,7 @@ async function flushBriefSync() {
 
 function briefShareLink() {
   if (!state.briefId) return "";
-  return `${window.location.origin}/?brief=${encodeURIComponent(state.briefId)}`;
+  return `${window.location.origin}/?brief=${encodeURIComponent(state.briefId)}&review=1`;
 }
 
 function prefersNativeBriefShare() {

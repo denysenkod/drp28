@@ -226,13 +226,13 @@ function renderStylistSummary() {
     <section class="brief-summary">
       <div class="brief-partition-head">
         <p class="eyebrow">Stylist</p>
-        <h2>Overall feedback</h2>
-        <p class="brief-partition-copy">Leave a high-level summary of your thoughts for the client.</p>
+        <h2>Review this brief</h2>
+        <p class="brief-partition-copy">Leave a high-level summary for the client. Your review is sent to their Messages tab.</p>
       </div>
       ${list}
       <form class="brief-feedback-form brief-summary-form" id="brief-summary-form">
-        <textarea class="brief-annotation" id="brief-summary-note" rows="4" placeholder="Share your overall thoughts on this brief..."></textarea>
-        <button class="primary-btn brief-feedback-submit" type="submit">Add feedback</button>
+        <textarea class="brief-annotation" id="brief-summary-note" rows="4" placeholder="Share your overall thoughts on their hair, references, colour plan, and what you would recommend..."></textarea>
+        <button class="primary-btn brief-feedback-submit" type="submit">Send review</button>
       </form>
     </section>
   `;
@@ -274,7 +274,7 @@ function renderSharedBrief() {
         <div>
           <p class="eyebrow">Style brief - for review</p>
           <h1>A client's style brief</h1>
-          <p>Photos of the client's own hair and the references they love, with their favourites and notes. Leave one overall summary at the end.</p>
+          <p>Review the client's uploaded hair photos, references, colour details, and notes. Your response will appear in their Messages tab.</p>
         </div>
         <label class="brief-reviewer-name">
           <span>Your name</span>

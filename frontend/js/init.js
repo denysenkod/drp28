@@ -100,6 +100,8 @@ function init() {
 
   // Initialize from URL parameters if landing from external link
   const urlParams = new URLSearchParams(window.location.search);
+  const reviewBriefId = urlParams.get("brief");
+  const forceReview = urlParams.get("review") === "1";
   if (urlParams.has("quiz")) {
     const step = Math.max(0, Math.min(QUIZ.length - 1, parseInt(urlParams.get("quiz"), 10) || 0));
     state.view = "quiz";
@@ -109,10 +111,11 @@ function init() {
   } else if (urlParams.has("search") || urlParams.has("results")) {
     state.view = "results";
     writeStored(VIEW_KEY, "results");
-  } else if (urlParams.get("brief") && urlParams.get("brief") !== state.briefId) {
-    // A shared link to someone else's brief: open it read-only for review.
+  } else if (reviewBriefId && (forceReview || reviewBriefId !== state.briefId)) {
+    // Shared links open the read-only stylist review page. The explicit
+    // review flag keeps this true even in the client's own browser.
     state.view = "shared";
-    state.sharedBriefId = urlParams.get("brief");
+    state.sharedBriefId = reviewBriefId;
   } else if (urlParams.has("brief")) {
     state.view = "brief";
     writeStored(VIEW_KEY, "brief");
