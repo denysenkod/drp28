@@ -23,43 +23,65 @@ const REVIEWER_NAME_KEY = "drp28.frontend.reviewerName";
 // users can skip the whole section, while "Natural / undyed" remains available
 // as an explicit colour choice.
 const NO_COLOUR_TREATMENT = "Natural / undyed";
+// Each option carries a solid hex swatch shown next to its label in the
+// dropdown. The field is still free-text (users can type a colour we don't
+// list); a typed value only gets a swatch when it matches one of these names.
 const HAIR_COLOUR_OPTIONS = [
-  NO_COLOUR_TREATMENT,
-  "Jet black",
-  "Soft black",
-  "Darkest brown",
-  "Dark brown",
-  "Medium brown",
-  "Light brown",
-  "Chestnut brown",
-  "Ash brown",
-  "Dark blonde",
-  "Medium blonde",
-  "Light blonde",
-  "Ash blonde",
-  "Platinum blonde",
-  "Honey blonde",
-  "Strawberry blonde",
-  "Auburn",
-  "Copper / ginger",
-  "Bright red",
-  "Burgundy",
-  "Mahogany",
-  "Rose gold",
-  "Pastel pink",
-  "Hot pink",
-  "Lavender",
-  "Purple",
-  "Blue",
-  "Teal",
-  "Green",
-  "Silver / grey",
-  "Highlights",
-  "Balayage",
-  "Ombré",
-  "Bleached / lightened",
-  "Other"
+  { name: NO_COLOUR_TREATMENT, hex: "#a8835f" },
+  { name: "Jet black", hex: "#0a0a0a" },
+  { name: "Soft black", hex: "#1c1a19" },
+  { name: "Darkest brown", hex: "#2a1d13" },
+  { name: "Dark brown", hex: "#3b2417" },
+  { name: "Medium brown", hex: "#5c3b22" },
+  { name: "Light brown", hex: "#7d5333" },
+  { name: "Chestnut brown", hex: "#6a3f2a" },
+  { name: "Ash brown", hex: "#6f5d4e" },
+  { name: "Dark blonde", hex: "#8c6a3f" },
+  { name: "Medium blonde", hex: "#b08d57" },
+  { name: "Light blonde", hex: "#d9bd7e" },
+  { name: "Ash blonde", hex: "#c2b291" },
+  { name: "Platinum blonde", hex: "#ece5d0" },
+  { name: "Honey blonde", hex: "#d2a85a" },
+  { name: "Strawberry blonde", hex: "#c97f4e" },
+  { name: "Auburn", hex: "#7a3520" },
+  { name: "Copper / ginger", hex: "#b06030" },
+  { name: "Bright red", hex: "#b21e1e" },
+  { name: "Burgundy", hex: "#5c1a2b" },
+  { name: "Mahogany", hex: "#4a1c1c" },
+  { name: "Rose gold", hex: "#d8a39a" },
+  { name: "Pastel pink", hex: "#f4c2d0" },
+  { name: "Hot pink", hex: "#e83e8c" },
+  { name: "Lavender", hex: "#b9a7d6" },
+  { name: "Purple", hex: "#6a3fa0" },
+  { name: "Blue", hex: "#2f5bb7" },
+  { name: "Teal", hex: "#1f8a8a" },
+  { name: "Green", hex: "#2e8b57" },
+  { name: "Silver / grey", hex: "#b8bcc0" },
+  { name: "Highlights", hex: "#c9a76a" },
+  { name: "Balayage", hex: "#b8895a" },
+  { name: "Ombré", hex: "#6b4a2f" },
+  { name: "Bleached / lightened", hex: "#ece0c0" },
+  { name: "Other", hex: "#9aa0a6" }
 ];
+
+// Hex for a colour name (case-insensitive), or null if it isn't one we list.
+function hairColourHex(name) {
+  const key = String(name || "").trim().toLowerCase();
+  if (!key) return null;
+  const match = HAIR_COLOUR_OPTIONS.find((c) => c.name.toLowerCase() === key);
+  return match ? match.hex : null;
+}
+
+// Swatch markup for a colour. A known colour renders its solid hex square;
+// anything else (blank, or a typed value we don't recognise) renders an empty
+// placeholder square.
+function hairColourSwatch(name) {
+  const hex = hairColourHex(name);
+  if (!hex) {
+    return '<span class="hair-colour-swatch hair-colour-swatch--empty" aria-hidden="true"></span>';
+  }
+  return `<span class="hair-colour-swatch" style="background:${escapeAttr(hex)}" aria-hidden="true"></span>`;
+}
 
 function defaultBriefDetails() {
   return {
@@ -3213,12 +3235,22 @@ function renderBriefDetails() {
   const isOpen = briefDetailsIsOpen();
   return renderColourCareTab(`
       <div class="brief-details-grid">
-        <label class="brief-field brief-field--wide">
-          <span>Hair colour treatment</span>
-          <input type="text" id="brief-colour" list="brief-colour-list" autocomplete="off" placeholder="Search hair colours, or leave blank" value="${escapeAttr(d.colour || "")}">
-          <datalist id="brief-colour-list">
-            ${HAIR_COLOUR_OPTIONS.map((c) => `<option value="${escapeAttr(c)}"></option>`).join("")}
-          </datalist>
+        <label class="brief-field brief-field--wide" for="brief-colour">
+          <span id="brief-colour-label">Hair colour treatment</span>
+          <div class="hair-colour-select" id="brief-colour-select">
+            <div class="hair-colour-input-wrap">
+              <span class="hair-colour-swatch-slot" id="brief-colour-swatch">${hairColourSwatch(d.colour || "")}</span>
+              <input type="text" id="brief-colour" class="hair-colour-input" role="combobox" autocomplete="off" aria-expanded="false" aria-controls="brief-colour-menu" placeholder="Type or pick a hair colour, or leave blank" value="${escapeAttr(d.colour || "")}">
+              <svg class="hair-colour-caret" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <ul class="hair-colour-menu" id="brief-colour-menu" role="listbox" aria-labelledby="brief-colour-label" hidden>
+              ${HAIR_COLOUR_OPTIONS.map((c) => `
+              <li class="hair-colour-option" role="option" data-value="${escapeAttr(c.name)}" aria-selected="${d.colour === c.name ? "true" : "false"}">
+                ${hairColourSwatch(c.name)}
+                <span class="hair-colour-option-label">${escapeHtml(c.name)}</span>
+              </li>`).join("")}
+            </ul>
+          </div>
         </label>
         <label class="brief-field">
           <span>Allergies or sensitivities</span>
@@ -3234,6 +3266,98 @@ function renderBriefDetails() {
         </label>
       </div>
   `, d, { isOpen, showGhostAdd: true, removable: true });
+}
+
+// Wire the hair-colour combobox. The input stays free-text (type anything),
+// and the dropdown below shows the listed colours — each with a solid hex
+// swatch — filtered to what's typed. The swatch left of the input tracks the
+// current value, so it lights up when the text matches a known colour. State
+// updates silently on input (no re-render) so the field keeps focus.
+function wireHairColourSelect() {
+  const select = $("#brief-colour-select");
+  if (!select) return;
+  const input = $("#brief-colour");
+  const menu = $("#brief-colour-menu");
+  const swatchSlot = $("#brief-colour-swatch");
+  if (!input || !menu || !swatchSlot) return;
+  const options = Array.from(menu.querySelectorAll(".hair-colour-option"));
+
+  const closeMenu = () => {
+    if (menu.hidden) return;
+    menu.hidden = true;
+    input.setAttribute("aria-expanded", "false");
+    document.removeEventListener("click", onDocClick, true);
+  };
+  const openMenu = () => {
+    if (menu.hidden) {
+      menu.hidden = false;
+      input.setAttribute("aria-expanded", "true");
+      document.addEventListener("click", onDocClick, true);
+    }
+  };
+  function onDocClick(event) {
+    if (!select.contains(event.target)) closeMenu();
+  }
+
+  // Show only options whose name contains the typed text; reveal everything
+  // when the field is empty. Mark the exact match as selected.
+  const filterOptions = () => {
+    const query = input.value.trim().toLowerCase();
+    let anyVisible = false;
+    options.forEach((option) => {
+      const value = option.getAttribute("data-value") || "";
+      const visible = !query || value.toLowerCase().includes(query);
+      option.hidden = !visible;
+      if (visible) anyVisible = true;
+      option.setAttribute("aria-selected", value.toLowerCase() === query ? "true" : "false");
+    });
+    if (anyVisible) openMenu();
+    else closeMenu();
+  };
+
+  const setSwatch = (value) => {
+    swatchSlot.innerHTML = hairColourSwatch(value);
+  };
+
+  // Commit a colour: fill the input, sync state and swatch, close the menu.
+  const selectValue = (value) => {
+    input.value = value;
+    updateBriefDetail("colour", value);
+    setSwatch(value);
+    options.forEach((option) => {
+      option.setAttribute("aria-selected", option.getAttribute("data-value") === value ? "true" : "false");
+    });
+    closeMenu();
+  };
+
+  input.addEventListener("focus", filterOptions);
+  input.addEventListener("input", () => {
+    updateBriefDetail("colour", input.value);
+    setSwatch(input.value);
+    filterOptions();
+  });
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeMenu();
+      input.blur();
+    } else if (event.key === "Enter") {
+      // Enter takes the top filtered result (if the menu is showing one).
+      const top = options.find((option) => !option.hidden);
+      if (!menu.hidden && top) {
+        event.preventDefault();
+        selectValue(top.getAttribute("data-value") || "");
+      }
+    }
+  });
+
+  options.forEach((option) => {
+    // Use mousedown so the selection lands before the input's blur fires.
+    option.addEventListener("mousedown", (event) => {
+      event.preventDefault();
+      selectValue(option.getAttribute("data-value") || "");
+      input.focus();
+    });
+  });
 }
 
 // General notes is a brief-wide free-text box, kept separate from the optional
@@ -3518,7 +3642,6 @@ function wireBrief() {
   // Hair-colour fields update state silently (no re-render) so the current
   // input keeps focus while the user types.
   const detailFields = [
-    ["brief-colour", "colour"],
     ["brief-allergies", "allergies"],
     ["brief-previous", "previousTreatments"],
     ["brief-damage", "damage"],
@@ -3528,6 +3651,7 @@ function wireBrief() {
     const node = $(`#${id}`);
     if (node) node.addEventListener("input", () => updateBriefDetail(key, node.value));
   });
+  wireHairColourSelect();
   const colourCareTab = $("#brief-details-accordion");
   if (colourCareTab && colourCareTab.tagName === "DETAILS") {
     colourCareTab.addEventListener("toggle", () => {

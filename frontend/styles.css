@@ -3201,6 +3201,122 @@ body[data-view="brief"] .app-shell {
   border-color: var(--accent);
 }
 
+/* Hair-colour combobox: a free-text input (with a live swatch) plus a filtered
+   listbox of named colours, each carrying a solid hex swatch. */
+.hair-colour-select {
+  position: relative;
+}
+
+.hair-colour-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.hair-colour-input-wrap:focus-within {
+  border-color: var(--accent);
+}
+
+.hair-colour-swatch-slot {
+  flex: 0 0 auto;
+  display: inline-flex;
+}
+
+.hair-colour-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.hair-colour-input:focus {
+  outline: 0;
+}
+
+.hair-colour-caret {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  color: var(--muted);
+}
+
+.hair-colour-swatch {
+  flex: 0 0 auto;
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* Empty placeholder square shown for blank / unrecognised values. */
+.hair-colour-swatch--empty {
+  background:
+    repeating-linear-gradient(
+      45deg,
+      var(--line) 0,
+      var(--line) 1px,
+      transparent 1px,
+      transparent 5px
+    );
+}
+
+.hair-colour-menu {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 280px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--card, var(--bg));
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+}
+
+.hair-colour-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.hair-colour-option:hover {
+  background: var(--bg);
+}
+
+.hair-colour-option[aria-selected="true"] {
+  background: var(--bg);
+  font-weight: 700;
+}
+
+.hair-colour-option[hidden] {
+  display: none;
+}
+
+.hair-colour-option-label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 .brief-details-readout {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
