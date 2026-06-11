@@ -304,6 +304,13 @@ body[data-view="quiz"] .app-shell {
   padding-bottom: 18px;
 }
 
+/* Tighten the space between the topbar and the first heading on the results
+   ("Curated for you") and Profile ("Design") screens. */
+body[data-view="results"] .app-shell,
+body[data-view="brief"] .app-shell {
+  padding-top: 16px;
+}
+
 .eyebrow {
   margin: 0 0 10px;
   color: var(--muted);
@@ -463,7 +470,6 @@ body[data-view="quiz"] .app-shell {
   gap: 10px;
   width: 100%;
   min-height: 48px;
-  margin-bottom: 28px;
   padding: 0 16px;
   background: var(--surface);
   border: 1px solid #d8cbb9;
