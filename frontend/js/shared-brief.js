@@ -16,6 +16,43 @@ async function loadSharedBrief(id) {
   if (state.view === "shared") render();
 }
 
+// The owner's own view of any feedback their stylist has left. Fetched from the
+// shared-brief endpoint (which returns the brief plus its feedback) so it stays
+// in sync with what reviewers have submitted.
+async function loadOwnerFeedback() {
+  if (!state.briefId) {
+    state.ownerFeedback = [];
+    return;
+  }
+  try {
+    const data = await apiJson(`${API.briefs}/${encodeURIComponent(state.briefId)}`);
+    state.ownerFeedback = Array.isArray(data.item?.feedback) ? data.item.feedback : [];
+  } catch {
+    // Leave whatever we had; a failed refresh shouldn't blank the profile.
+  }
+  if (state.view === "brief") renderBrief();
+}
+
+// Read-only feedback panel shown at the top of the owner's profile, just under
+// the intro. Hidden entirely until a stylist has left something.
+function renderOwnerFeedback() {
+  const comments = state.ownerFeedback || [];
+  if (!comments.length) return "";
+  return `
+    <section class="profile-feedback">
+      <p class="profile-feedback-kicker">Feedback from your stylist</p>
+      <ul class="profile-feedback-list">
+        ${comments.map((entry) => `
+          <li class="profile-feedback-entry">
+            <span class="profile-feedback-author">${escapeHtml(entry.author || "Reviewer")}</span>
+            ${entry.note ? `<p class="profile-feedback-note">${escapeHtml(entry.note)}</p>` : ""}
+          </li>
+        `).join("")}
+      </ul>
+    </section>
+  `;
+}
+
 function renderFirstChoicePill(item) {
   return "";
 }
@@ -143,18 +180,39 @@ function renderSharedItem(item) {
 
 // One high-level summary for the whole brief: any previously-left comments,
 // plus a single box for the stylist to add their overall feedback.
+function renderFeedbackEntry(entry) {
+  if (state.editingFeedbackId === entry.id) {
+    return `
+      <li class="brief-feedback-entry brief-feedback-entry--editing">
+        <form class="brief-feedback-form brief-feedback-edit-form" data-feedback-edit-form="${escapeAttr(entry.id)}">
+          <textarea class="brief-annotation" rows="4" data-feedback-edit-note>${escapeHtml(entry.note || "")}</textarea>
+          <div class="brief-feedback-edit-actions">
+            <button class="secondary-btn" type="button" data-feedback-cancel>Cancel</button>
+            <button class="primary-btn brief-feedback-submit" type="submit">Save</button>
+          </div>
+        </form>
+      </li>
+    `;
+  }
+  return `
+    <li class="brief-feedback-entry">
+      <div class="brief-feedback-meta">
+        <span class="brief-feedback-author">${escapeHtml(entry.author || "Reviewer")}</span>
+        <span class="brief-feedback-actions">
+          <button class="brief-feedback-action" type="button" data-feedback-edit="${escapeAttr(entry.id)}">Edit</button>
+          <button class="brief-feedback-action brief-feedback-action--danger" type="button" data-feedback-delete="${escapeAttr(entry.id)}">Delete</button>
+        </span>
+      </div>
+      ${entry.note ? `<p class="brief-feedback-note">${escapeHtml(entry.note)}</p>` : ""}
+    </li>
+  `;
+}
+
 function renderStylistSummary() {
   const comments = state.sharedBrief?.feedback || [];
   const list = comments.length
     ? `<ul class="brief-feedback-list">
-        ${comments.map((entry) => `
-          <li class="brief-feedback-entry">
-            <div class="brief-feedback-meta">
-              <span class="brief-feedback-author">${escapeHtml(entry.author || "Reviewer")}</span>
-            </div>
-            ${entry.note ? `<p class="brief-feedback-note">${escapeHtml(entry.note)}</p>` : ""}
-          </li>
-        `).join("")}
+        ${comments.map(renderFeedbackEntry).join("")}
       </ul>`
     : "";
   return `
@@ -263,6 +321,29 @@ function wireSharedBrief() {
       submitBriefSummary(summaryForm);
     });
   }
+
+  document.querySelectorAll("[data-feedback-edit]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.editingFeedbackId = button.dataset.feedbackEdit;
+      render();
+    });
+  });
+  document.querySelectorAll("[data-feedback-cancel]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.editingFeedbackId = null;
+      render();
+    });
+  });
+  document.querySelectorAll("[data-feedback-delete]").forEach((button) => {
+    button.addEventListener("click", () => deleteBriefFeedbackEntry(button.dataset.feedbackDelete));
+  });
+  const editForm = document.querySelector("[data-feedback-edit-form]");
+  if (editForm) {
+    editForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      submitBriefFeedbackEdit(editForm, editForm.dataset.feedbackEditForm);
+    });
+  }
 }
 
 // Submit one brief-level summary comment (no rating, no per-image target).
@@ -293,6 +374,58 @@ async function submitBriefSummary(form) {
   } catch {
     if (submitBtn) submitBtn.disabled = false;
     form.classList.add("is-invalid");
+  }
+}
+
+// Save an edit to an existing feedback entry. Mirrors the new-feedback flow but
+// PUTs to the entry's endpoint and replaces the entry in place.
+async function submitBriefFeedbackEdit(form, feedbackId) {
+  const noteInput = form.querySelector("[data-feedback-edit-note]");
+  const note = noteInput ? noteInput.value.trim() : "";
+  const submitBtn = form.querySelector(".brief-feedback-submit");
+
+  if (!note) {
+    form.classList.add("is-invalid");
+    return;
+  }
+  form.classList.remove("is-invalid");
+  if (submitBtn) submitBtn.disabled = true;
+
+  try {
+    const data = await apiJson(`${API.briefs}/${encodeURIComponent(state.sharedBriefId)}/feedback/${encodeURIComponent(feedbackId)}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        author: state.reviewerName.trim() || "Reviewer",
+        note
+      })
+    });
+    if (state.sharedBrief && data.item) {
+      state.sharedBrief.feedback = (state.sharedBrief.feedback || []).map((entry) =>
+        entry.id === feedbackId ? data.item : entry
+      );
+    }
+    state.editingFeedbackId = null;
+    render();
+  } catch {
+    if (submitBtn) submitBtn.disabled = false;
+    form.classList.add("is-invalid");
+  }
+}
+
+// Delete a feedback entry, then drop it from the local copy and re-render.
+async function deleteBriefFeedbackEntry(feedbackId) {
+  if (!window.confirm("Delete this feedback?")) return;
+  try {
+    await apiJson(`${API.briefs}/${encodeURIComponent(state.sharedBriefId)}/feedback/${encodeURIComponent(feedbackId)}`, {
+      method: "DELETE"
+    });
+    if (state.sharedBrief) {
+      state.sharedBrief.feedback = (state.sharedBrief.feedback || []).filter((entry) => entry.id !== feedbackId);
+    }
+    if (state.editingFeedbackId === feedbackId) state.editingFeedbackId = null;
+    render();
+  } catch {
+    // Leave the entry in place if the delete failed.
   }
 }
 
@@ -402,6 +535,7 @@ function renderBrief() {
             <p class="eyebrow">Your profile</p>
             <h1 class="profile-title">Your hair <em>brief</em></h1>
             <p class="profile-lede">Gather photos of your hair today and the looks you're after, add the colour you have in mind and a few notes, then share one link with your stylist.</p>
+            ${renderOwnerFeedback()}
           </header>
 
           <div class="profile-work">

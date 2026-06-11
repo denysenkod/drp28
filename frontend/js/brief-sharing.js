@@ -30,6 +30,9 @@ async function syncBrief() {
       state.briefId = data.item.id;
       writeStored(BRIEF_ID_KEY, state.briefId);
     }
+    if (Array.isArray(data.item?.feedback)) {
+      state.ownerFeedback = data.item.feedback;
+    }
     return data.item;
   } catch {
     return null;

@@ -24,6 +24,8 @@ const state = {
   sharedBriefId: null,
   sharedBrief: null,
   sharedBriefError: false,
+  editingFeedbackId: null,
+  ownerFeedback: [],
   tryOn: {
     styleId: null,
     userImageData: "",
@@ -109,6 +111,7 @@ function setView(view) {
   }
   if (view === "brief") {
     window.history.pushState({ view: "brief", previousView: state.previousView }, "", "?brief");
+    loadOwnerFeedback();
   }
   if (view === "home") {
     window.history.pushState({ view: "home", previousView: state.previousView }, "", "/");

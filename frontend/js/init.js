@@ -77,6 +77,7 @@ function init() {
       state.previousView = event.state.previousView ?? "welcome";
       writeStored(PREV_VIEW_KEY, state.previousView);
       render();
+      loadOwnerFeedback();
     } else if (event.state?.view === "home" || event.state?.view === "welcome") {
       state.view = "home";
       state.previousView = event.state.previousView ?? "home";
@@ -118,6 +119,7 @@ function init() {
   loadGallery();
   loadFavourites();
   if (state.view === "shared") loadSharedBrief(state.sharedBriefId);
+  if (state.view === "brief") loadOwnerFeedback();
 }
 
 init();

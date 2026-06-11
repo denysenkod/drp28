@@ -200,6 +200,19 @@ function createMockD1() {
             });
           }
 
+          if (sql.includes('UPDATE brief_feedback SET author = ?, rating = ?, note = ? WHERE id = ?')) {
+            const row = tables.brief_feedback.find((item) => item.id === values[3]);
+            if (row) {
+              row.author = values[0];
+              row.rating = values[1];
+              row.note = values[2];
+            }
+          }
+
+          if (sql.includes('DELETE FROM brief_feedback WHERE id = ?')) {
+            tables.brief_feedback = tables.brief_feedback.filter((row) => row.id !== values[0]);
+          }
+
           if (sql.includes('DELETE FROM gallery_images WHERE id = ?')) {
             tables.gallery_images = tables.gallery_images.filter((row) => row.id !== values[0]);
           }
@@ -767,6 +780,62 @@ test('saves a shareable brief, reads it back, and accepts reviewer feedback', as
   assert.equal(typeof got.item.details, 'object');
   assert.equal(got.item.feedback.length, 1);
   assert.equal(got.item.feedback[0].note, 'Great starting point');
+});
+
+test('lets a reviewer edit and delete their feedback', async () => {
+  const { default: worker } = await loadWorker();
+  const env = await createAssetEnv();
+
+  const save = await worker.fetch(new Request('https://example.com/api/briefs', {
+    method: 'POST',
+    body: JSON.stringify({ sessionId: 'session-edit', items: [] })
+  }), env);
+  const briefId = (await save.json()).item.id;
+
+  const created = await worker.fetch(new Request(`https://example.com/api/briefs/${briefId}/feedback`, {
+    method: 'POST',
+    body: JSON.stringify({ author: 'Stylist', note: 'First take' })
+  }), env);
+  const feedbackId = (await created.json()).item.id;
+
+  // Edit the note.
+  const edited = await worker.fetch(new Request(`https://example.com/api/briefs/${briefId}/feedback/${feedbackId}`, {
+    method: 'PUT',
+    body: JSON.stringify({ author: 'Stylist', note: 'Revised take' })
+  }), env);
+  const editedBody = await edited.json();
+  assert.equal(edited.status, 200);
+  assert.equal(editedBody.item.note, 'Revised take');
+
+  // Editing to an empty note is rejected.
+  const emptyEdit = await worker.fetch(new Request(`https://example.com/api/briefs/${briefId}/feedback/${feedbackId}`, {
+    method: 'PUT',
+    body: JSON.stringify({ note: '   ' })
+  }), env);
+  assert.equal(emptyEdit.status, 400);
+
+  // Editing missing feedback is a 404.
+  const missingEdit = await worker.fetch(new Request(`https://example.com/api/briefs/${briefId}/feedback/nope`, {
+    method: 'PUT',
+    body: JSON.stringify({ note: 'x' })
+  }), env);
+  assert.equal(missingEdit.status, 404);
+
+  // Delete the feedback.
+  const deleted = await worker.fetch(new Request(`https://example.com/api/briefs/${briefId}/feedback/${feedbackId}`, {
+    method: 'DELETE'
+  }), env);
+  assert.equal(deleted.status, 200);
+
+  // It no longer comes back with the brief.
+  const got = await worker.fetch(new Request(`https://example.com/api/briefs/${briefId}`), env);
+  assert.equal((await got.json()).item.feedback.length, 0);
+
+  // Deleting again is a 404.
+  const deleteAgain = await worker.fetch(new Request(`https://example.com/api/briefs/${briefId}/feedback/${feedbackId}`, {
+    method: 'DELETE'
+  }), env);
+  assert.equal(deleteAgain.status, 404);
 });
 
 test('rejects empty feedback and missing briefs', async () => {

@@ -811,6 +811,38 @@
   color: var(--ink);
 }
 
+.brief-feedback-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.brief-feedback-action {
+  border: none;
+  background: none;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.brief-feedback-action:hover {
+  color: var(--ink);
+  background: var(--surface);
+}
+
+.brief-feedback-action--danger:hover {
+  color: #c0392b;
+}
+
+.brief-feedback-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .brief-feedback-form {
   display: flex;
   flex-direction: column;
@@ -1153,6 +1185,53 @@ body[data-view="brief"] .app-shell {
   color: var(--muted);
   font-size: 16px;
   line-height: 1.6;
+}
+
+/* Stylist feedback surfaced at the top of the owner's profile. */
+.profile-feedback {
+  margin-top: 24px;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+}
+
+.profile-feedback-kicker {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.profile-feedback-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.profile-feedback-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.profile-feedback-author {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.profile-feedback-note {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink);
 }
 
 .profile-section {

@@ -717,6 +717,49 @@ async function handleApi(req, res, url) {
     }
   }
 
+  const briefFeedbackItemMatch = url.pathname.match(/^\/api\/briefs\/([^/]+)\/feedback\/([^/]+)$/);
+  if (briefFeedbackItemMatch) {
+    const id = decodeURIComponent(briefFeedbackItemMatch[1]);
+    const feedbackId = decodeURIComponent(briefFeedbackItemMatch[2]);
+    const existing = store.briefFeedback.find((item) => item.id === feedbackId && item.briefId === id);
+
+    if (req.method === 'PUT' || req.method === 'PATCH') {
+      if (!existing) {
+        sendJson(res, 404, { ok: false, error: 'Feedback not found.' });
+        return true;
+      }
+
+      const body = await readJson(req);
+      const note = typeof body?.note === 'string' ? body.note.trim() : '';
+      const hasRating = body && body.rating !== null && body.rating !== undefined && body.rating !== '';
+      const rating = hasRating ? Math.max(0, Math.min(5, Math.round(Number(body.rating) || 0))) : null;
+
+      if (!note && rating === null) {
+        sendJson(res, 400, { ok: false, error: 'Feedback needs a note or a rating.' });
+        return true;
+      }
+
+      existing.author = typeof body?.author === 'string' && body.author.trim()
+        ? body.author.trim().slice(0, 80)
+        : existing.author || 'Reviewer';
+      existing.rating = rating;
+      existing.note = note;
+
+      sendJson(res, 200, { ok: true, item: existing });
+      return true;
+    }
+
+    if (req.method === 'DELETE') {
+      if (!existing) {
+        sendJson(res, 404, { ok: false, error: 'Feedback not found.' });
+        return true;
+      }
+      store.briefFeedback = store.briefFeedback.filter((item) => item.id !== feedbackId);
+      sendJson(res, 200, { ok: true, id: feedbackId });
+      return true;
+    }
+  }
+
   const briefMatch = url.pathname.match(/^\/api\/briefs\/([^/]+)$/);
   if (briefMatch) {
     if (req.method === 'GET') {

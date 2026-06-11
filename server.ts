@@ -757,6 +757,63 @@ async function addBriefFeedback(request: Request, db: any, id: string): Promise<
   return json({ ok: true, item: rowToBriefFeedback(row) }, { status: 201 });
 }
 
+// A reviewer edits a piece of feedback they previously left. Like creation,
+// the result must still carry a note, a rating, or both.
+async function updateBriefFeedback(request: Request, db: any, id: string, feedbackId: string): Promise<Response> {
+  const existing = await db
+    .prepare('SELECT * FROM brief_feedback WHERE id = ? AND brief_id = ?')
+    .bind(feedbackId, id)
+    .first();
+
+  if (!existing) {
+    return error('Feedback not found.', 404);
+  }
+
+  const body = await readJson(request);
+  const note = typeof body?.note === 'string' ? body.note.trim() : '';
+  const hasRating = body && body.rating !== null && body.rating !== undefined && body.rating !== '';
+  const rating = hasRating ? Math.max(0, Math.min(5, Math.round(Number(body.rating) || 0))) : null;
+
+  if (!note && rating === null) {
+    return error('Feedback needs a note or a rating.');
+  }
+
+  const author = typeof body?.author === 'string' && body.author.trim()
+    ? body.author.trim().slice(0, 80)
+    : existing.author || 'Reviewer';
+
+  await db
+    .prepare('UPDATE brief_feedback SET author = ?, rating = ?, note = ? WHERE id = ?')
+    .bind(author, rating, note, feedbackId)
+    .run();
+
+  const row = await db
+    .prepare('SELECT * FROM brief_feedback WHERE id = ?')
+    .bind(feedbackId)
+    .first();
+
+  return json({ ok: true, item: rowToBriefFeedback(row) });
+}
+
+// A reviewer removes a piece of feedback they previously left.
+async function deleteBriefFeedback(db: any, id: string, feedbackId: string): Promise<Response> {
+  const existing = await db
+    .prepare('SELECT id FROM brief_feedback WHERE id = ? AND brief_id = ?')
+    .bind(feedbackId, id)
+    .first();
+
+  if (!existing) {
+    return error('Feedback not found.', 404);
+  }
+
+  await db
+    .prepare('DELETE FROM brief_feedback WHERE id = ?')
+    .bind(feedbackId)
+    .run();
+
+  return json({ ok: true, id: feedbackId });
+}
+
 async function handleApi(request: Request, env: Env, url: URL): Promise<Response | null> {
   if (url.pathname === '/api/status') {
     return json({
@@ -833,6 +890,18 @@ async function handleApi(request: Request, env: Env, url: URL): Promise<Response
   if (briefFeedbackMatch) {
     if (request.method === 'POST') {
       return addBriefFeedback(request, db, decodeURIComponent(briefFeedbackMatch[1]));
+    }
+  }
+
+  const briefFeedbackItemMatch = url.pathname.match(/^\/api\/briefs\/([^/]+)\/feedback\/([^/]+)$/);
+  if (briefFeedbackItemMatch) {
+    const briefId = decodeURIComponent(briefFeedbackItemMatch[1]);
+    const feedbackId = decodeURIComponent(briefFeedbackItemMatch[2]);
+    if (request.method === 'PUT' || request.method === 'PATCH') {
+      return updateBriefFeedback(request, db, briefId, feedbackId);
+    }
+    if (request.method === 'DELETE') {
+      return deleteBriefFeedback(db, briefId, feedbackId);
     }
   }
 
