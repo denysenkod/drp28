@@ -304,6 +304,13 @@ body[data-view="quiz"] .app-shell {
   padding-bottom: 18px;
 }
 
+/* Tighten the space between the topbar and the first heading on the results
+   ("Curated for you") and Profile ("Design") screens. */
+body[data-view="results"] .app-shell,
+body[data-view="brief"] .app-shell {
+  padding-top: 16px;
+}
+
 .eyebrow {
   margin: 0 0 10px;
   color: var(--muted);
@@ -467,7 +474,6 @@ body[data-view="quiz"] .app-shell {
   gap: 10px;
   width: 100%;
   min-height: 48px;
-  margin-bottom: 28px;
   padding: 0 16px;
   background: var(--surface);
   border: 1px solid #d8cbb9;
@@ -2675,42 +2681,125 @@ body[data-view="quiz"] .app-shell {
   color: #6d5844;
 }
 
-.brief-stars {
+.brief-ref-controls {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 2px;
+  gap: 8px;
 }
 
-.brief-star {
-  width: 32px;
-  height: 32px;
+.brief-first-choice {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.brief-first-choice:focus {
+  outline: none;
+}
+
+.brief-first-choice:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.brief-first-choice.is-on {
+  background: var(--accent-soft);
+  border-color: rgba(143, 107, 13, 0.45);
+  color: var(--accent-2);
+}
+
+.brief-first-choice-check {
+  display: inline-flex;
+  align-items: center;
+}
+
+.brief-first-choice-check svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* The tick animates in only once the reference is marked as a first choice. */
+.brief-first-choice .brief-first-choice-check {
+  width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: width 0.15s ease, opacity 0.15s ease;
+}
+
+.brief-first-choice.is-on .brief-first-choice-check {
+  width: 16px;
+  opacity: 1;
+}
+
+.brief-note-toggle {
+  position: relative;
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0;
-  border: 0;
-  background: transparent;
-  color: #d3c4ae;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--muted);
 }
 
-.brief-star svg {
-  width: 24px;
-  height: 24px;
+.brief-note-toggle svg {
+  width: 20px;
+  height: 20px;
 }
 
-.brief-star.is-on {
-  color: var(--accent);
+.brief-note-toggle:focus {
+  outline: none;
 }
 
-.brief-star.is-on svg path {
-  fill: var(--accent);
+.brief-note-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.brief-note-toggle.has-note {
+  color: var(--accent-2);
+  border-color: rgba(143, 107, 13, 0.45);
+  background: var(--accent-soft);
+}
+
+/* A dot signals there's a note even while the panel is collapsed. */
+.brief-note-toggle.has-note::after {
+  content: "";
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 1.5px solid var(--surface);
 }
 
 .brief-annotation-label {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+/* The note panel collapses via the [hidden] attribute; the class's own
+   display:flex would otherwise override the attribute's display:none. */
+.brief-annotation-label[hidden] {
+  display: none;
 }
 
 .brief-annotation-label span {
@@ -2793,15 +2882,25 @@ body[data-view="quiz"] .app-shell {
   border-color: var(--accent);
 }
 
-.brief-stars--static .brief-star {
-  width: 22px;
-  height: 22px;
-  cursor: default;
+.brief-first-choice-pill {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-2);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.brief-stars--static .brief-star svg {
-  width: 18px;
-  height: 18px;
+.brief-first-choice-pill .brief-first-choice-check svg {
+  width: 14px;
+  height: 14px;
 }
 
 .brief-owner-note {

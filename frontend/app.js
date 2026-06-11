@@ -70,10 +70,17 @@ function defaultBriefDetails() {
   };
 }
 
+// Whether the optional hair-colour treatment section holds anything. General
+// notes are intentionally excluded — they live in their own section, so they
+// must not drive the colour section's auto-open/share/remove behaviour.
 function briefDetailsHasContent(details = {}) {
   const d = details || {};
-  return ["colour", "allergies", "previousTreatments", "damage", "notes"]
+  return ["colour", "allergies", "previousTreatments", "damage"]
     .some((key) => Boolean(String(d[key] || "").trim()));
+}
+
+function briefNotesValue(details = state.briefDetails) {
+  return String((details || {}).notes || "").trim();
 }
 
 function briefDetailsShouldShare(details = {}) {
@@ -95,7 +102,9 @@ function setBriefDetailsOpen(open) {
 }
 
 function removeBriefDetails() {
-  state.briefDetails = defaultBriefDetails();
+  // Clear the colour-treatment fields only; general notes live in their own
+  // section and should survive removing the colour section.
+  state.briefDetails = { ...defaultBriefDetails(), notes: state.briefDetails.notes || "" };
   state.briefDetailsOpen = false;
   writeStored(BRIEF_DETAILS_KEY, state.briefDetails);
   writeStored(BRIEF_DETAILS_OPEN_KEY, state.briefDetailsOpen);
@@ -105,9 +114,14 @@ function removeBriefDetails() {
 }
 
 function briefDetailsPayload() {
-  return briefDetailsIsOpen()
+  // detailsOpen tracks only the colour-treatment section; general notes ride
+  // along independently so they sync even when that section is collapsed.
+  const payload = briefDetailsIsOpen()
     ? { ...state.briefDetails, detailsOpen: true }
     : { detailsOpen: false };
+  const notes = briefNotesValue();
+  if (notes) payload.notes = notes;
+  return payload;
 }
 
 function readStored(key, fallback) {
@@ -184,8 +198,8 @@ function iconPlus() {
   return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" ${iconAttrs}/></svg>`;
 }
 
-function iconStar() {
-  return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.6l2.6 5.27 5.82.85-4.21 4.1.99 5.79L12 16.86l-5.2 2.75.99-5.79-4.21-4.1 5.82-.85z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+function iconComment() {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 19 16H9l-4 4v-4H5a1.5 1.5 0 0 1-1.5-1.5v-8A1.5 1.5 0 0 1 5 5z" ${iconAttrs}/></svg>`;
 }
 
 function iconShare() {
@@ -2523,9 +2537,9 @@ function renderFavourites() {
 // partitions so they can separate themselves from their inspiration:
 //   - "me"          photos of the user's own hair
 //   - "references"  styles on other people (uploads or saved gallery favourites)
-// Every item is classified with the same rubric (a 5-star rating and free-text
-// notes). Photos are added straight into a partition via that partition's own
-// add tile, so the source of the upload decides where it lands.
+// References can be marked as a "Favourite" and carry free-text notes.
+// Photos are added straight into a partition via that partition's own add
+// tile, so the source of the upload decides where it lands.
 // The brief lives in localStorage so it survives reloads, and is mirrored to the
 // backend (debounced) so the owner can share a link that a stylist can review.
 function setBrief(next) {
@@ -2555,9 +2569,11 @@ function updateBriefDetail(key, value) {
   refreshShareButton();
 }
 
-// A brief is worth sharing once it has any item or any hair-colour details.
+// A brief is worth sharing once it has any item, general notes, or hair-colour
+// details.
 function briefHasContent() {
   if (state.brief.length) return true;
+  if (briefNotesValue()) return true;
   return briefDetailsIsOpen() && briefDetailsHasContent(state.briefDetails);
 }
 
@@ -2698,8 +2714,8 @@ function setShareStatus(message, link = "") {
 
 // ---------- Reviewing a shared brief (read-only + feedback) ----------
 // When the app is opened with a foreign ?brief=<id>, it loads that brief from
-// the server. The reviewer can read the owner's photos, ratings and notes, and
-// leave their own feedback per item.
+// the server. The reviewer can read the owner's photos, favourites and notes,
+// and leave their own feedback per item.
 async function loadSharedBrief(id) {
   state.sharedBrief = null;
   state.sharedBriefError = false;
@@ -2714,13 +2730,13 @@ async function loadSharedBrief(id) {
   if (state.view === "shared") render();
 }
 
-function renderStaticStars(rating) {
-  const value = Number(rating) || 0;
-  if (!value) return "";
+function renderFirstChoicePill(item) {
+  if (!item.firstChoice) return "";
   return `
-    <div class="brief-stars brief-stars--static" role="img" aria-label="Rated ${value} out of 5">
-      ${[1, 2, 3, 4, 5].map((n) => `<span class="brief-star ${n <= value ? "is-on" : ""}" aria-hidden="true">${iconStar()}</span>`).join("")}
-    </div>
+    <p class="brief-first-choice-pill" role="img" aria-label="Marked as a favourite">
+      <span class="brief-first-choice-check" aria-hidden="true">${iconCheck()}</span>
+      Favourite
+    </p>
   `;
 }
 
@@ -2773,8 +2789,7 @@ function renderBriefDetailsReview(details) {
     ["Hair colour treatment", d.colour],
     ["Allergies or sensitivities", d.allergies],
     ["Previous colour treatments", d.previousTreatments],
-    ["Damage or breakage", d.damage],
-    ["General notes", d.notes]
+    ["Damage or breakage", d.damage]
   ].filter(([, value]) => value && String(value).trim());
 
   if (!rows.length) return "";
@@ -2791,8 +2806,26 @@ function renderBriefDetailsReview(details) {
   `, d, { isOpen: true, actionLabel: "" });
 }
 
-// Read-only card: the client's photo with their own rating and note. The stylist
-// no longer comments per photo — feedback is a single high-level summary below.
+// Read-only general notes for the reviewer, shown as its own section so it
+// stands apart from the hair-colour treatment details.
+function renderBriefNotesReview(details) {
+  const notes = briefNotesValue(details);
+  if (!notes) return "";
+  return `
+    <section class="brief-details brief-details--notes">
+      <div class="brief-details-summary brief-details-summary--static">
+        <span class="brief-details-summary-title">General notes</span>
+      </div>
+      <div class="brief-details-panel">
+        <p class="brief-owner-note">${escapeHtml(notes)}</p>
+      </div>
+    </section>
+  `;
+}
+
+// Read-only card: the client's photo with their favourite flag and note. The
+// stylist no longer comments per photo — feedback is a single high-level summary
+// below.
 // Helpers for the "Your hair" partition: each photo can be marked as a current
 // or past hairstyle, and that choice is reflected in the shared brief too.
 function selfHairstyleStatus(item) {
@@ -2850,7 +2883,7 @@ function renderSharedItem(item) {
       <div class="brief-card-body">
         ${isOwnHair
           ? renderSelfHairstyleStatus(item, true)
-          : `${renderStaticStars(item.rating)}${item.annotation ? `<p class="brief-owner-note">${escapeHtml(item.annotation)}</p>` : `<p class="brief-owner-note brief-owner-note--empty">No notes from the client.</p>`}`
+          : `${renderFirstChoicePill(item)}${item.annotation ? `<p class="brief-owner-note">${escapeHtml(item.annotation)}</p>` : `<p class="brief-owner-note brief-owner-note--empty">No notes from the client.</p>`}`
         }
       </div>
     </article>
@@ -2917,7 +2950,7 @@ function renderSharedBrief() {
 
   const items = Array.isArray(state.sharedBrief.items) ? state.sharedBrief.items : [];
   const meItems = items.filter((item) => itemPartition(item) === "me");
-  const refItems = items.filter((item) => itemPartition(item) === "references");
+  const refItems = sortReferencesForDisplay(items.filter((item) => itemPartition(item) === "references"));
 
   els.app.innerHTML = `
     <section class="brief-screen brief-screen--review">
@@ -2925,7 +2958,7 @@ function renderSharedBrief() {
         <div>
           <p class="eyebrow">Style brief · for review</p>
           <h1>A client's style brief</h1>
-          <p>Photos of the client's own hair and the references they love, with their ratings and notes. Leave one overall summary at the end.</p>
+          <p>Photos of the client's own hair and the references they love, with their favourites and notes. Leave one overall summary at the end.</p>
         </div>
         <label class="brief-reviewer-name">
           <span>Your name</span>
@@ -2953,6 +2986,8 @@ function renderSharedBrief() {
           </div>
         </section>
       </div>
+
+      ${renderBriefNotesReview(state.sharedBrief.details)}
 
       ${renderStylistSummary()}
     </section>
@@ -3030,6 +3065,16 @@ function briefItemsFor(partition) {
   return state.brief.filter((item) => itemPartition(item) === partition);
 }
 
+// Favourited references lead the list to signal importance. This is a stable
+// partition: it preserves array order within each group, so the favourites keep
+// the recency order that setBriefFirstChoice maintains (newest = rightmost
+// favourite) and the rest stay in insertion order.
+function sortReferencesForDisplay(items) {
+  const favourites = items.filter((item) => item.firstChoice);
+  const rest = items.filter((item) => !item.firstChoice);
+  return [...favourites, ...rest];
+}
+
 function openBriefPicker() {
   state.briefPickerOpen = true;
   state.briefRefAddOpen = false;
@@ -3066,7 +3111,7 @@ function renderBrief() {
   const pickerOpen = state.briefPickerOpen;
   const refAddOpen = state.briefRefAddOpen;
   const meItems = briefItemsFor("me");
-  const refItems = briefItemsFor("references");
+  const refItems = sortReferencesForDisplay(briefItemsFor("references"));
 
   els.app.innerHTML = `
     <section class="brief-screen">
@@ -3074,7 +3119,7 @@ function renderBrief() {
         <div>
           <p class="eyebrow">Design</p>
           <h1>Profile</h1>
-          <p>Gather photos of your own hair and references on other people, pull in styles you've saved, then rate and annotate each one.</p>
+          <p>Gather photos of your own hair and references on other people, pull in styles you've saved, then mark your favourites and add notes.</p>
         </div>
         <div class="brief-share">
           <button class="primary-btn brief-share-btn" id="brief-share-btn" type="button" ${briefHasContent() ? "" : "disabled"}>
@@ -3109,6 +3154,8 @@ function renderBrief() {
       </div>
 
       ${renderBriefDetails()}
+
+      ${renderBriefNotes()}
     </section>
 
     ${refAddOpen ? renderBriefRefAddPopup() : ""}
@@ -3146,12 +3193,27 @@ function renderBriefDetails() {
           <span>Damage or breakage</span>
           <textarea id="brief-damage" rows="2" placeholder="e.g. dry ends, breakage from bleach, heat damage">${escapeHtml(d.damage || "")}</textarea>
         </label>
-        <label class="brief-field brief-field--wide">
-          <span>General notes</span>
-          <textarea id="brief-notes" rows="3" placeholder="Anything else you'd like your stylist to know">${escapeHtml(d.notes || "")}</textarea>
-        </label>
       </div>
   `, d, { isOpen, showGhostAdd: true, removable: true });
+}
+
+// General notes is a brief-wide free-text box, kept separate from the optional
+// hair-colour treatment section so it always shows and isn't cleared when the
+// colour section is removed. The value still lives on briefDetails.notes.
+function renderBriefNotes() {
+  const d = state.briefDetails || defaultBriefDetails();
+  return `
+    <section class="brief-details brief-details--notes">
+      <div class="brief-details-summary brief-details-summary--static">
+        <span class="brief-details-summary-title">General notes</span>
+      </div>
+      <div class="brief-details-panel">
+        <div class="brief-field brief-field--wide">
+          <textarea id="brief-notes" rows="3" aria-label="General notes" placeholder="Anything else you'd like your stylist to know">${escapeHtml(d.notes || "")}</textarea>
+        </div>
+      </div>
+    </section>
+  `;
 }
 
 // A placeholder tile that keeps the "Me" partition occupying at least one grid
@@ -3249,27 +3311,47 @@ function renderBriefPicker(savedStyles) {
   `;
 }
 
-function renderBriefStars(item) {
-  const rating = Number(item.rating) || 0;
+// A reference's controls: a "Favourite" toggle and a comment icon that reveals
+// a notes textarea. The note panel is collapsed by default; the icon shows an
+// active dot whenever a note exists so it's discoverable while hidden.
+function renderBriefReferenceControls(item) {
+  const isFavourite = Boolean(item.firstChoice);
+  const hasNote = Boolean(String(item.annotation || "").trim());
+  const notePlaceholder = "Leave a note for your stylist";
   return `
-    <div class="brief-stars" role="group" aria-label="Rate this look out of 5">
-      ${[1, 2, 3, 4, 5].map((n) => `
-        <button
-          class="brief-star ${n <= rating ? "is-on" : ""}"
-          type="button"
-          data-brief-star="${escapeAttr(item.id)}"
-          data-star-value="${n}"
-          aria-label="${n} star${n > 1 ? "s" : ""}"
-          aria-pressed="${n <= rating}"
-        >${iconStar()}</button>
-      `).join("")}
+    <div class="brief-ref-controls">
+      <button
+        class="brief-first-choice ${isFavourite ? "is-on" : ""}"
+        type="button"
+        data-brief-first-choice="${escapeAttr(item.id)}"
+        aria-pressed="${isFavourite}"
+      >
+        <span class="brief-first-choice-check" aria-hidden="true">${iconCheck()}</span>
+        <span>Favourite</span>
+      </button>
+      <button
+        class="brief-note-toggle ${hasNote ? "has-note" : ""}"
+        type="button"
+        data-brief-note-toggle="${escapeAttr(item.id)}"
+        aria-expanded="false"
+        aria-label="Add a note"
+        title="Add a note"
+      >${iconComment()}</button>
     </div>
+    <label class="brief-annotation-label" data-brief-note-panel="${escapeAttr(item.id)}" hidden>
+      <span>Notes</span>
+      <textarea
+        class="brief-annotation"
+        data-brief-note="${escapeAttr(item.id)}"
+        rows="2"
+        placeholder="${escapeAttr(notePlaceholder)}"
+      >${escapeHtml(item.annotation || "")}</textarea>
+    </label>
   `;
 }
 
 function renderBriefItem(item) {
   const isOwnHair = itemPartition(item) === "me";
-  const notePlaceholder = "What did you like about this?";
   return `
     <article class="brief-card" data-brief-id="${escapeAttr(item.id)}">
       <div class="brief-card-image">
@@ -3281,16 +3363,7 @@ function renderBriefItem(item) {
       <div class="brief-card-body">
         ${isOwnHair
           ? renderSelfHairstyleStatus(item)
-          : `${renderBriefStars(item)}
-        <label class="brief-annotation-label">
-          <span>Notes</span>
-          <textarea
-            class="brief-annotation"
-            data-brief-note="${escapeAttr(item.id)}"
-            rows="2"
-            placeholder="${escapeAttr(notePlaceholder)}"
-          >${escapeHtml(item.annotation || "")}</textarea>
-        </label>`
+          : renderBriefReferenceControls(item)
         }
       </div>
     </article>
@@ -3308,13 +3381,29 @@ function wireBriefItemCard(card) {
       setBriefSelfStyle(button.dataset.briefSelfStyle, button.dataset.selfStyleValue);
     });
   });
-  card.querySelectorAll("[data-brief-star]").forEach((button) => {
+  card.querySelectorAll("[data-brief-first-choice]").forEach((button) => {
     button.addEventListener("click", () => {
-      setBriefRating(button.dataset.briefStar, parseInt(button.dataset.starValue, 10));
+      setBriefFirstChoice(button.dataset.briefFirstChoice);
+    });
+  });
+  card.querySelectorAll("[data-brief-note-toggle]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const id = button.dataset.briefNoteToggle;
+      const panel = card.querySelector(`[data-brief-note-panel="${CSS.escape(id)}"]`);
+      if (!panel) return;
+      const open = panel.hasAttribute("hidden");
+      panel.toggleAttribute("hidden", !open);
+      button.setAttribute("aria-expanded", String(open));
+      if (open) panel.querySelector("textarea")?.focus();
     });
   });
   card.querySelectorAll("[data-brief-note]").forEach((area) => {
-    area.addEventListener("input", () => updateBriefNote(area.dataset.briefNote, area.value));
+    area.addEventListener("input", () => {
+      updateBriefNote(area.dataset.briefNote, area.value);
+      // Keep the comment icon's active dot in sync without a re-render.
+      const toggle = card.querySelector(`[data-brief-note-toggle="${CSS.escape(area.dataset.briefNote)}"]`);
+      if (toggle) toggle.classList.toggle("has-note", Boolean(area.value.trim()));
+    });
   });
 }
 
@@ -3434,7 +3523,7 @@ function addSavedToBrief(styleId, button = null) {
     imageUrl: style.imageUrl,
     name: style.name,
     partition: "references",
-    rating: 0,
+    firstChoice: false,
     annotation: ""
   };
   setBrief([item, ...state.brief]);
@@ -3458,7 +3547,7 @@ function addBriefImage(imageUrl, name, partition) {
     imageUrl,
     name,
     partition,
-    rating: 0,
+    firstChoice: false,
     annotation: "",
     hairstyleStatus: ""
   };
@@ -3498,13 +3587,33 @@ function setBriefSelfStyle(id, value) {
   renderBrief();
 }
 
-// The 5-star rating is optional: clicking the star that already marks the
-// current rating clears it back to unrated.
-function setBriefRating(id, value) {
-  setBrief(state.brief.map((item) => {
-    if (item.id !== id) return item;
-    return { ...item, rating: item.rating === value ? 0 : value };
-  }));
+// "Favourite" is a per-reference toggle: clicking it on a marked reference
+// clears the flag again. Multiple references can be flagged independently.
+// Toggling repositions the item to the favourites/non-favourites boundary among
+// references, so a newly-favourited item becomes the rightmost favourite (and an
+// un-favourited one becomes the leftmost non-favourite).
+function setBriefFirstChoice(id) {
+  const target = state.brief.find((item) => item.id === id);
+  if (!target) return;
+  const nowFavourite = !target.firstChoice;
+
+  const refs = state.brief
+    .filter((item) => itemPartition(item) === "references")
+    .map((item) => (item.id === id ? { ...item, firstChoice: nowFavourite } : item));
+  const toggled = refs.find((item) => item.id === id);
+  const others = refs.filter((item) => item.id !== id);
+  const orderedRefs = [
+    ...others.filter((item) => item.firstChoice),
+    toggled,
+    ...others.filter((item) => !item.firstChoice)
+  ];
+
+  // Splice the reordered references back into their slots, leaving "me" items put.
+  let refIndex = 0;
+  const next = state.brief.map((item) =>
+    itemPartition(item) === "references" ? orderedRefs[refIndex++] : item
+  );
+  setBrief(next);
   renderBrief();
 }
 
