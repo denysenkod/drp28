@@ -2,24 +2,24 @@
 // sequentially so the classic-script globals keep the same execution order as
 // the previous single-file app.
 const FRONTEND_SCRIPT_FILES = [
-  "/js/storage.js?v=2026-06-11-share-copy",
-  "/js/icons.js?v=2026-06-11-share-copy",
-  "/js/fallback-styles.js?v=2026-06-11-share-copy",
-  "/js/products-and-normalizers.js?v=2026-06-11-share-copy",
-  "/js/state.js?v=2026-06-11-share-copy",
-  "/js/data-loading.js?v=2026-06-11-share-copy",
-  "/js/quiz-filters.js?v=2026-06-11-share-copy",
-  "/js/rendering.js?v=2026-06-11-share-copy",
-  "/js/favourites.js?v=2026-06-11-share-copy",
-  "/js/brief.js?v=2026-06-11-share-copy",
-  "/js/brief-sharing.js?v=2026-06-11-share-copy",
-  "/js/shared-brief.js?v=2026-06-11-share-copy",
-  "/js/try-on.js?v=2026-06-11-share-copy",
-  "/js/detail-overlay.js?v=2026-06-11-share-copy",
-  "/js/product-overlay.js?v=2026-06-11-share-copy",
-  "/js/uploads.js?v=2026-06-11-share-copy",
-  "/js/utilities.js?v=2026-06-11-share-copy",
-  "/js/init.js?v=2026-06-11-share-copy"
+  "/js/storage.js?v=2026-06-11-colour-inline",
+  "/js/icons.js?v=2026-06-11-colour-inline",
+  "/js/fallback-styles.js?v=2026-06-11-colour-inline",
+  "/js/products-and-normalizers.js?v=2026-06-11-colour-inline",
+  "/js/state.js?v=2026-06-11-colour-inline",
+  "/js/data-loading.js?v=2026-06-11-colour-inline",
+  "/js/quiz-filters.js?v=2026-06-11-colour-inline",
+  "/js/rendering.js?v=2026-06-11-colour-inline",
+  "/js/favourites.js?v=2026-06-11-colour-inline",
+  "/js/brief.js?v=2026-06-11-colour-inline",
+  "/js/brief-sharing.js?v=2026-06-11-colour-inline",
+  "/js/shared-brief.js?v=2026-06-11-colour-inline",
+  "/js/try-on.js?v=2026-06-11-colour-inline",
+  "/js/detail-overlay.js?v=2026-06-11-colour-inline",
+  "/js/product-overlay.js?v=2026-06-11-colour-inline",
+  "/js/uploads.js?v=2026-06-11-colour-inline",
+  "/js/utilities.js?v=2026-06-11-colour-inline",
+  "/js/init.js?v=2026-06-11-colour-inline"
 ];
 
 function loadScript(src) {

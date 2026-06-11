@@ -103,7 +103,7 @@ function renderBriefDetailsReview(details) {
   if (!briefDetailsShouldShare(d)) return "";
 
   const rows = [
-    ["Hair colour treatment", d.colour],
+    ["Hair colour treatment", isNoColourTreatment(d.colour) ? "" : normalizeBriefColour(d.colour)],
     ["Allergies or sensitivities", d.allergies],
     ["Previous colour treatments", d.previousTreatments],
     ["Damage or breakage", d.damage]
@@ -603,7 +603,6 @@ function renderProfileBriefAside(counts) {
     <aside class="profile-brief-card">
       <div class="profile-brief-top">
         <span class="profile-brief-kicker">Your brief</span>
-        <span class="profile-brief-ref">${state.briefId ? `REF ${escapeHtml(String(state.briefId).slice(0, 4).toUpperCase())}` : "Draft"}</span>
       </div>
       <h2>${counts.percent >= 75 ? "Almost ready" : "In progress"}</h2>
 
@@ -674,7 +673,8 @@ function handleProfileShareDirect() {
 // focus is preserved.
 function renderBriefDetails() {
   const d = state.briefDetails || defaultBriefDetails();
-  const colourValue = String(d.colour || "");
+  const colourValue = normalizeBriefColour(d.colour);
+  const noColourTreatment = isNoColourTreatment(colourValue);
   const knownColour = HAIR_COLOUR_OPTIONS.some((c) => c.name === colourValue);
   const selectedColour = colourValue && knownColour ? colourValue : (colourValue ? "Other" : "");
   const otherColour = colourValue && !knownColour ? colourValue : "";
@@ -689,10 +689,10 @@ function renderBriefDetails() {
           <label class="profile-colour-row profile-colour-row--wide" for="brief-colour">
             <span class="profile-colour-key" id="brief-colour-label">Hair colour treatment</span>
               <span class="profile-colour-value">
-                <span class="hair-colour-swatch-slot" id="brief-colour-swatch">${hairColourSwatch(d.colour || "")}</span>
                 <span class="hair-colour-select" id="brief-colour-select">
                   <button class="hair-colour-input-wrap profile-colour-trigger" id="brief-colour" type="button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="brief-colour-label brief-colour-value">
-                    <span class="profile-colour-trigger-text" id="brief-colour-value">${escapeHtml(colourValue || "Pick a colour")}</span>
+                    <span class="hair-colour-swatch-slot" id="brief-colour-swatch">${hairColourSwatch(d.colour || "")}</span>
+                    <span class="profile-colour-trigger-text" id="brief-colour-value">${escapeHtml(colourValue)}</span>
                     <svg class="hair-colour-caret" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                   </button>
                   <ul class="hair-colour-menu profile-colour-menu" id="brief-colour-menu" role="listbox" aria-labelledby="brief-colour-label" hidden>
@@ -706,20 +706,20 @@ function renderBriefDetails() {
               </span>
             </span>
           </label>
-          ${renderProfileTextRow("Allergies or sensitivities", "brief-allergies", d.allergies, "e.g. PPD allergy, sensitive scalp - or none")}
-          ${renderProfileTextRow("Previous colour treatments", "brief-previous", d.previousTreatments, "e.g. box dye 3 months ago")}
-          ${renderProfileTextRow("Damage or breakage", "brief-damage", d.damage, "e.g. dry ends, breakage from bleach")}
+          ${renderProfileTextRow("Allergies or sensitivities", "brief-allergies", d.allergies, "e.g. PPD allergy, sensitive scalp etc", noColourTreatment)}
+          ${renderProfileTextRow("Previous colour treatments", "brief-previous", d.previousTreatments, "e.g. box dye 3 months ago", noColourTreatment)}
+          ${renderProfileTextRow("Damage or breakage", "brief-damage", d.damage, "e.g. dry ends, breakage from bleach", noColourTreatment)}
         </div>
       </div>
     </section>
   `;
 }
 
-function renderProfileTextRow(label, id, value, placeholder) {
+function renderProfileTextRow(label, id, value, placeholder, hidden = false) {
   return `
-    <label class="profile-colour-row" for="${escapeAttr(id)}">
+    <label class="profile-colour-row" data-colour-detail-row for="${escapeAttr(id)}" ${hidden ? 'hidden style="display:none"' : ""}>
       <span class="profile-colour-key">${escapeHtml(label)}</span>
-      <textarea class="profile-row-input" id="${escapeAttr(id)}" rows="1" placeholder="${escapeAttr(placeholder)}">${escapeHtml(value || "")}</textarea>
+      <textarea class="profile-row-input" id="${escapeAttr(id)}" rows="1" placeholder="${escapeAttr(placeholder)}">${escapeHtml(hidden ? "" : value || "")}</textarea>
     </label>
   `;
 }
@@ -761,18 +761,39 @@ function wireHairColourSelect() {
     swatchSlot.innerHTML = hairColourSwatch(value);
   };
 
+  const setDetailRowsHidden = (hidden) => {
+    document.querySelectorAll("[data-colour-detail-row]").forEach((row) => {
+      row.hidden = hidden;
+      row.style.display = hidden ? "none" : "";
+      if (hidden) {
+        const field = row.querySelector("textarea");
+        if (field) field.value = "";
+      }
+    });
+  };
+
   const selectValue = (value) => {
     const isOther = value === "Other";
     const next = isOther ? (otherInput.value.trim() || "Other") : value;
-    updateBriefDetail("colour", next);
-    valueLabel.textContent = next || "Pick a colour";
-    setSwatch(next);
+    const noColourTreatment = isNoColourTreatment(next);
+    const normalized = noColourTreatment ? NO_COLOUR_TREATMENT : next;
+    setBriefDetails({
+      ...state.briefDetails,
+      colour: normalized,
+      allergies: noColourTreatment ? "" : state.briefDetails.allergies,
+      previousTreatments: noColourTreatment ? "" : state.briefDetails.previousTreatments,
+      damage: noColourTreatment ? "" : state.briefDetails.damage
+    });
+    valueLabel.textContent = normalized;
+    setSwatch(normalized);
     otherInput.hidden = !isOther;
+    setDetailRowsHidden(noColourTreatment);
     options.forEach((option) => {
       option.setAttribute("aria-selected", option.getAttribute("data-value") === value ? "true" : "false");
     });
     closeMenu();
     if (isOther) otherInput.focus();
+    refreshShareButton();
   };
 
   trigger.addEventListener("click", () => {
@@ -800,9 +821,10 @@ function wireHairColourSelect() {
 
   otherInput.addEventListener("input", () => {
     const value = otherInput.value.trim();
-    updateBriefDetail("colour", value || "Other");
+    setBriefDetails({ ...state.briefDetails, colour: value || "Other" });
     valueLabel.textContent = value || "Other";
     setSwatch(value || "Other");
+    setDetailRowsHidden(false);
     refreshShareButton();
   });
 }

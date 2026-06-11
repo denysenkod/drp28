@@ -19,15 +19,14 @@ const BRIEF_DETAILS_KEY = "drp28.frontend.briefDetails";
 const BRIEF_DETAILS_OPEN_KEY = "drp28.frontend.briefDetailsOpen";
 const REVIEWER_NAME_KEY = "drp28.frontend.reviewerName";
 
-// Hair colour details that travel with the brief. Every field starts blank so
-// users can skip the whole section, while "Natural / undyed" remains available
-// as an explicit colour choice.
-const NO_COLOUR_TREATMENT = "Natural / undyed";
+// Hair colour details that travel with the brief. "None" is the default and
+// means the colour-treatment fields should stay out of the stylist share.
+const NO_COLOUR_TREATMENT = "None";
 // Each option carries a solid hex swatch shown next to its label in the
 // dropdown. The field is still free-text (users can type a colour we don't
 // list); a typed value only gets a swatch when it matches one of these names.
 const HAIR_COLOUR_OPTIONS = [
-  { name: NO_COLOUR_TREATMENT, hex: "#a8835f" },
+  { name: NO_COLOUR_TREATMENT, none: true },
   { name: "Jet black", hex: "#0a0a0a" },
   { name: "Soft black", hex: "#1c1a19" },
   { name: "Darkest brown", hex: "#2a1d13" },
@@ -64,9 +63,21 @@ const HAIR_COLOUR_OPTIONS = [
   { name: "Other", hex: "#9aa0a6" }
 ];
 
+function normalizeBriefColour(value) {
+  const text = String(value || "").trim();
+  const key = text.toLowerCase();
+  if (!key || key === "none" || key === "natural / undyed") return NO_COLOUR_TREATMENT;
+  return text;
+}
+
+function isNoColourTreatment(value) {
+  return normalizeBriefColour(value) === NO_COLOUR_TREATMENT;
+}
+
 // Hex for a colour name (case-insensitive), or null if it isn't one we list.
 function hairColourHex(name) {
-  const key = String(name || "").trim().toLowerCase();
+  if (isNoColourTreatment(name)) return null;
+  const key = normalizeBriefColour(name).toLowerCase();
   if (!key) return null;
   const match = HAIR_COLOUR_OPTIONS.find((c) => c.name.toLowerCase() === key);
   return match ? match.hex : null;
@@ -76,6 +87,9 @@ function hairColourHex(name) {
 // anything else (blank, or a typed value we don't recognise) renders an empty
 // placeholder square.
 function hairColourSwatch(name) {
+  if (isNoColourTreatment(name)) {
+    return '<span class="hair-colour-swatch hair-colour-swatch--none" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"></circle><path d="M6.4 6.4l11.2 11.2"></path></svg></span>';
+  }
   const hex = hairColourHex(name);
   if (!hex) {
     return '<span class="hair-colour-swatch hair-colour-swatch--empty" aria-hidden="true"></span>';
@@ -85,7 +99,7 @@ function hairColourSwatch(name) {
 
 function defaultBriefDetails() {
   return {
-    colour: "",
+    colour: NO_COLOUR_TREATMENT,
     allergies: "",
     previousTreatments: "",
     damage: "",
@@ -98,6 +112,7 @@ function defaultBriefDetails() {
 // must not drive the colour section's auto-open/share/remove behaviour.
 function briefDetailsHasContent(details = {}) {
   const d = details || {};
+  if (isNoColourTreatment(d.colour)) return false;
   return ["colour", "allergies", "previousTreatments", "damage"]
     .some((key) => Boolean(String(d[key] || "").trim()));
 }
@@ -108,11 +123,13 @@ function briefNotesValue(details = state.briefDetails) {
 
 function briefDetailsShouldShare(details = {}) {
   const d = details || {};
+  if (isNoColourTreatment(d.colour)) return false;
   if (typeof d.detailsOpen === "boolean") return d.detailsOpen;
   return briefDetailsHasContent(d);
 }
 
 function briefDetailsIsOpen() {
+  if (isNoColourTreatment(state.briefDetails?.colour)) return false;
   if (typeof state.briefDetailsOpen === "boolean") return state.briefDetailsOpen;
   return briefDetailsHasContent(state.briefDetails);
 }
@@ -139,8 +156,8 @@ function removeBriefDetails() {
 function briefDetailsPayload() {
   // detailsOpen tracks only the colour-treatment section; general notes ride
   // along independently so they sync even when that section is collapsed.
-  const payload = briefDetailsIsOpen()
-    ? { ...state.briefDetails, detailsOpen: true }
+  const payload = briefDetailsIsOpen() && briefDetailsHasContent(state.briefDetails)
+    ? { ...state.briefDetails, colour: normalizeBriefColour(state.briefDetails.colour), detailsOpen: true }
     : { detailsOpen: false };
   const notes = briefNotesValue();
   if (notes) payload.notes = notes;

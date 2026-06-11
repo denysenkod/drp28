@@ -1013,6 +1013,20 @@
   background: var(--bg);
 }
 
+.hair-colour-swatch--none {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.hair-colour-swatch--none svg {
+  width: 16px;
+  height: 16px;
+}
+
 /* Empty placeholder square shown for blank / unrecognised values. */
 .hair-colour-swatch--empty {
   background:
@@ -1467,17 +1481,23 @@ body[data-view="brief"] .app-shell {
 .profile-colour-row .hair-colour-select {
   flex: 1 1 auto;
   min-width: min(280px, 100%);
+  display: flex;
+  justify-content: flex-end;
 }
 
 .profile-colour-row .hair-colour-input-wrap {
-  width: 100%;
+  width: auto;
   background: transparent;
   border: 0;
   padding: 0;
 }
 
 .profile-colour-trigger {
+  display: inline-flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 10px;
+  margin-left: auto;
   cursor: pointer;
   color: var(--ink);
   font: inherit;
@@ -1878,8 +1898,26 @@ body[data-view="brief"] .app-shell {
   .profile-row-input {
     width: 100%;
     max-width: none;
-    justify-content: flex-start;
     text-align: left;
+  }
+
+  .profile-colour-value {
+    justify-content: flex-end;
+  }
+
+  .profile-colour-row .hair-colour-select {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .profile-colour-row .hair-colour-input-wrap {
+    margin-left: auto;
+  }
+
+  .profile-colour-menu {
+    left: 0;
+    right: 0;
+    width: 100%;
   }
 
   .profile-colour-row .hair-colour-input {

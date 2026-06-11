@@ -88,15 +88,24 @@ function syncFavouriteReferencesToBrief() {
 // Optional hair-colour details. Persisted alongside the brief items and synced
 // so they reach the stylist who opens the share link.
 function setBriefDetails(next) {
+  const colour = normalizeBriefColour(next?.colour);
+  const noColourTreatment = isNoColourTreatment(colour);
   const cleaned = {
-    colour: String(next?.colour || ""),
-    allergies: String(next?.allergies || ""),
-    previousTreatments: String(next?.previousTreatments || ""),
-    damage: String(next?.damage || ""),
+    colour,
+    allergies: noColourTreatment ? "" : String(next?.allergies || ""),
+    previousTreatments: noColourTreatment ? "" : String(next?.previousTreatments || ""),
+    damage: noColourTreatment ? "" : String(next?.damage || ""),
     notes: String(next?.notes || "")
   };
   state.briefDetails = cleaned;
   writeStored(BRIEF_DETAILS_KEY, cleaned);
+  if (noColourTreatment) {
+    state.briefDetailsOpen = false;
+    writeStored(BRIEF_DETAILS_OPEN_KEY, state.briefDetailsOpen);
+  } else if (briefDetailsHasContent(cleaned)) {
+    state.briefDetailsOpen = true;
+    writeStored(BRIEF_DETAILS_OPEN_KEY, state.briefDetailsOpen);
+  }
   scheduleBriefSync();
 }
 
