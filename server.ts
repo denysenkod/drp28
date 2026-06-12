@@ -1,6 +1,6 @@
 const APP_NAME = 'DRP28';
 const API_MESSAGE = 'Backend is running on Cloudflare Workers.';
-const TRY_ON_GENERATION_LIMIT = 5;
+const DEFAULT_TRY_ON_GENERATION_LIMIT = 5;
 
 interface Env {
   ASSETS: {
@@ -8,6 +8,7 @@ interface Env {
   };
   DB?: any;
   OPENAI_API_KEY?: string;
+  TRY_ON_GENERATION_LIMIT?: string;
 }
 
 function json(data: unknown, init: ResponseInit = {}): Response {
@@ -38,6 +39,13 @@ function ensureDb(env: Env): any {
   }
 
   return env.DB;
+}
+
+function tryOnGenerationLimit(env: Env) {
+  const configured = Number(env.TRY_ON_GENERATION_LIMIT);
+  return Number.isInteger(configured) && configured > 0
+    ? configured
+    : DEFAULT_TRY_ON_GENERATION_LIMIT;
 }
 
 function parseList(value: unknown): string[] {
@@ -246,6 +254,27 @@ function tryOnPrompt(styleName: unknown): string {
   ].join(' ');
 }
 
+async function getTryOnUsage(url: URL, db: any, limit: any): Promise<Response> {
+  const sessionId = url.searchParams.get('sessionId');
+
+  if (!sessionId || !sessionId.trim()) {
+    return error('Try-on sessionId is required.');
+  }
+
+  const usageRow = await db
+    .prepare('SELECT COUNT(*) AS count FROM try_on_generations WHERE session_id = ?')
+    .bind(sessionId.trim())
+    .first();
+  const used = Number(usageRow?.count || 0);
+
+  return json({
+    ok: true,
+    limit,
+    used,
+    remaining: Math.max(0, limit - used)
+  });
+}
+
 async function createTryOnImage(request: Request, env: Env): Promise<Response> {
   if (!env.OPENAI_API_KEY) {
     return error('OpenAI API key is not configured.', 503);
@@ -273,12 +302,13 @@ async function createTryOnImage(request: Request, env: Env): Promise<Response> {
     .bind(sessionId)
     .first();
   const used = Number(usageRow?.count || 0);
+  const limit = tryOnGenerationLimit(env);
 
-  if (used >= TRY_ON_GENERATION_LIMIT) {
+  if (used >= limit) {
     return json({
       ok: false,
-      error: `Try-on generation limit reached. You have used all ${TRY_ON_GENERATION_LIMIT} generations.`,
-      limit: TRY_ON_GENERATION_LIMIT,
+      error: `Try-on generation limit reached. You have used all ${limit} generations.`,
+      limit,
       used,
       remaining: 0
     }, { status: 429 });
@@ -344,9 +374,9 @@ async function createTryOnImage(request: Request, env: Env): Promise<Response> {
   return json({
     ok: true,
     model: 'gpt-image-2',
-    limit: TRY_ON_GENERATION_LIMIT,
+    limit,
     used: used + 1,
-    remaining: Math.max(0, TRY_ON_GENERATION_LIMIT - used - 1),
+    remaining: Math.max(0, limit - used - 1),
     imageData: `data:image/png;base64,${b64}`
   });
 }
@@ -866,6 +896,10 @@ async function handleApi(request: Request, env: Env, url: URL): Promise<Response
     db = ensureDb(env);
   } catch {
     return error('D1 database binding is not configured.', 503);
+  }
+
+  if (url.pathname === '/api/try-on/usage') {
+    if (request.method === 'GET') return getTryOnUsage(url, db, tryOnGenerationLimit(env));
   }
 
   if (url.pathname === '/api/gallery') {

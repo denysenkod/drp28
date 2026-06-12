@@ -15,7 +15,7 @@ function openTryOn() {
     sourceBriefItemId: profilePhoto?.id || null,
     resultImageData: "",
     resultSaved: false,
-    usageLimit: 5,
+    usageLimit: null,
     usageUsed: null,
     usageRemaining: null,
     status: "idle",
@@ -26,6 +26,7 @@ function openTryOn() {
   renderTryOn();
   els.tryOnOverlay.hidden = false;
   document.body.style.overflow = "hidden";
+  loadTryOnUsage(style.id);
 }
 
 function closeTryOn() {
@@ -46,12 +47,14 @@ function renderTryOn() {
 
   const hasSelfie = Boolean(state.tryOn.userImageData);
   const isGenerating = state.tryOn.status === "generating";
-  const canApply = hasSelfie && style.imageUrl && !isGenerating && !state.tryOn.askProfileUpdate;
-  const limit = Number(state.tryOn.usageLimit || 5);
+  const limit = Number.isFinite(Number(state.tryOn.usageLimit)) ? Number(state.tryOn.usageLimit) : null;
   const remaining = Number.isFinite(Number(state.tryOn.usageRemaining)) ? Number(state.tryOn.usageRemaining) : null;
   const used = Number.isFinite(Number(state.tryOn.usageUsed)) ? Number(state.tryOn.usageUsed) : null;
-  const usageText = remaining === null
-    ? `${limit} total try-ons per session`
+  const canApply = hasSelfie && style.imageUrl && !isGenerating && !state.tryOn.askProfileUpdate && (remaining === null || remaining > 0);
+  const usageText = limit === null
+    ? "Checking try-on limit..."
+    : remaining === null
+      ? `${limit} total try-ons per session`
     : `${remaining} of ${limit} try-ons left`;
   const resultReady = Boolean(state.tryOn.resultImageData);
   const hairstyleFrame = isGenerating
@@ -108,11 +111,13 @@ function renderTryOn() {
         </div>
       ` : ""}
 
-      <div class="try-on-controls">
-        <button class="primary-btn" id="try-on-apply" type="button" ${canApply ? "" : "disabled"}>
-          ${isGenerating ? "Applying..." : "Apply haircut"}
-        </button>
-      </div>
+      ${state.tryOn.status === "idle" ? `
+        <div class="try-on-controls">
+          <button class="primary-btn" id="try-on-apply" type="button" ${canApply ? "" : "disabled"}>
+            Apply haircut
+          </button>
+        </div>
+      ` : ""}
 
       ${state.tryOn.askProfileUpdate ? `
         <div class="try-on-profile-choice">
@@ -129,6 +134,22 @@ function renderTryOn() {
   `;
 
   wireTryOn();
+}
+
+async function loadTryOnUsage(styleId) {
+  try {
+    const data = await apiJson(`${API.tryOnUsage}?sessionId=${encodeURIComponent(state.sessionId)}`);
+    if (state.tryOn.styleId !== styleId || els.tryOnOverlay.hidden) return;
+    state.tryOn.usageLimit = Number(data.limit);
+    state.tryOn.usageUsed = Number(data.used);
+    state.tryOn.usageRemaining = Number(data.remaining);
+  } catch {
+    if (state.tryOn.styleId !== styleId || els.tryOnOverlay.hidden) return;
+    state.tryOn.usageLimit = null;
+    state.tryOn.usageUsed = null;
+    state.tryOn.usageRemaining = null;
+  }
+  renderTryOn();
 }
 
 function wireTryOn() {
@@ -302,18 +323,18 @@ async function applyTryOn() {
       })
     });
     state.tryOn.resultImageData = data.imageData || "";
-    state.tryOn.usageLimit = Number(data.limit || state.tryOn.usageLimit || 5);
-    state.tryOn.usageUsed = Number(data.used || 0);
-    state.tryOn.usageRemaining = Number(data.remaining || 0);
+    if (data.limit !== undefined) state.tryOn.usageLimit = Number(data.limit);
+    if (data.used !== undefined) state.tryOn.usageUsed = Number(data.used);
+    if (data.remaining !== undefined) state.tryOn.usageRemaining = Number(data.remaining);
     state.tryOn.status = "done";
     if (!state.tryOn.resultImageData) {
       state.tryOn.error = "Try-on generation did not return an image.";
     }
   } catch (err) {
     const data = err?.data || {};
-    if (data.limit !== undefined) state.tryOn.usageLimit = Number(data.limit || state.tryOn.usageLimit || 5);
-    if (data.used !== undefined) state.tryOn.usageUsed = Number(data.used || 0);
-    if (data.remaining !== undefined) state.tryOn.usageRemaining = Number(data.remaining || 0);
+    if (data.limit !== undefined) state.tryOn.usageLimit = Number(data.limit);
+    if (data.used !== undefined) state.tryOn.usageUsed = Number(data.used);
+    if (data.remaining !== undefined) state.tryOn.usageRemaining = Number(data.remaining);
     state.tryOn.status = "idle";
     state.tryOn.error = err instanceof Error ? err.message : "Try-on generation failed.";
   }

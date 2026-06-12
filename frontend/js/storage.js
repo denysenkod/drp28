@@ -4,7 +4,8 @@ const API = {
   favorites: "/api/favorites",
   userPhotos: "/api/user-photos",
   briefs: "/api/briefs",
-  tryOn: "/api/try-on"
+  tryOn: "/api/try-on",
+  tryOnUsage: "/api/try-on/usage"
 };
 
 const SESSION_KEY = "drp28.frontend.sessionId";

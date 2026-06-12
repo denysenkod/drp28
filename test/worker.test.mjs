@@ -631,6 +631,19 @@ test('try-on route requires the OpenAI API key', async () => {
   assert.equal(body.error, 'OpenAI API key is not configured.');
 });
 
+test('try-on usage reports the configured generation limit for the session', async () => {
+  const { default: worker } = await loadWorker();
+  const env = { ...(await createAssetEnv()), TRY_ON_GENERATION_LIMIT: '7' };
+
+  const response = await worker.fetch(new Request('https://example.com/api/try-on/usage?sessionId=session-usage'), env);
+  const body = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(body.limit, 7);
+  assert.equal(body.used, 0);
+  assert.equal(body.remaining, 7);
+});
+
 test('try-on route limits successful generations per session', async () => {
   const { default: worker } = await loadWorker();
   const env = { ...(await createAssetEnv()), OPENAI_API_KEY: 'test-key' };

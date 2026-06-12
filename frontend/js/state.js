@@ -35,7 +35,7 @@ const state = {
     sourceBriefItemId: null,
     resultImageData: "",
     resultSaved: false,
-    usageLimit: 5,
+    usageLimit: null,
     usageUsed: null,
     usageRemaining: null,
     status: "idle",
