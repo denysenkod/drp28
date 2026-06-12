@@ -164,6 +164,15 @@
   box-shadow: 0 0 0 3px rgba(199, 155, 42, 0.18);
 }
 
+.try-on-image--result {
+  display: block;
+}
+
+.try-on-image.is-loading {
+  display: grid;
+  place-items: center;
+}
+
 .try-on-result-image {
   aspect-ratio: 3 / 4;
   max-height: 640px;

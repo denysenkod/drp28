@@ -54,6 +54,28 @@ function renderTryOn() {
     ? `${limit} total try-ons per session`
     : `${remaining} of ${limit} try-ons left`;
   const resultReady = Boolean(state.tryOn.resultImageData);
+  const hairstyleFrame = isGenerating
+    ? `
+      <div class="try-on-image try-on-image--result is-loading">
+        <div class="try-on-loading">
+          <span></span>
+          <strong>Creating your try-on</strong>
+          <em>This can take a moment.</em>
+        </div>
+      </div>
+    `
+    : resultReady
+      ? `
+        <div class="try-on-image try-on-image--result">
+          <img src="${escapeAttr(state.tryOn.resultImageData)}" alt="Generated haircut try-on">
+        </div>
+      `
+      : `
+        <label class="try-on-image try-on-selfie-target" title="${hasSelfie ? "Use a different selfie" : "Upload selfie"}">
+          ${hasSelfie ? `<img src="${escapeAttr(state.tryOn.userImageData)}" alt="Your selfie">` : `<span>Add a selfie</span>`}
+          <input class="brief-file-input try-on-selfie-input" type="file" accept="image/*">
+        </label>
+      `;
 
   els.tryOnBody.innerHTML = `
     <div class="try-on-popup">
@@ -72,13 +94,19 @@ function renderTryOn() {
         </figure>
 
         <figure class="try-on-frame">
-          <label class="try-on-image try-on-selfie-target" title="${hasSelfie ? "Use a different selfie" : "Upload selfie"}">
-            ${hasSelfie ? `<img src="${escapeAttr(state.tryOn.userImageData)}" alt="Your selfie">` : `<span>Add a selfie</span>`}
-            <input class="brief-file-input try-on-selfie-input" type="file" accept="image/*">
-          </label>
-          <figcaption>${hasSelfie ? escapeHtml(state.tryOn.userImageName || "Your selfie") : "Your selfie"}</figcaption>
+          ${hairstyleFrame}
+          <figcaption>Your hairstyle</figcaption>
         </figure>
       </div>
+
+      ${resultReady ? `
+        <div class="try-on-result-actions">
+          <button class="secondary-btn" id="try-on-download" type="button">Download image</button>
+          <button class="primary-btn" id="try-on-save-result" type="button" ${state.tryOn.resultSaved ? "disabled" : ""}>
+            ${state.tryOn.resultSaved ? "Saved" : "Save to favourites"}
+          </button>
+        </div>
+      ` : ""}
 
       <div class="try-on-controls">
         <button class="primary-btn" id="try-on-apply" type="button" ${canApply ? "" : "disabled"}>
@@ -97,29 +125,6 @@ function renderTryOn() {
       ` : ""}
 
       ${state.tryOn.error ? `<p class="try-on-error">${escapeHtml(state.tryOn.error)}</p>` : ""}
-
-      ${isGenerating || resultReady ? `
-        <figure class="try-on-result">
-          <div class="try-on-result-image ${isGenerating ? "is-loading" : ""}">
-            ${isGenerating ? `
-              <div class="try-on-loading">
-                <span></span>
-                <strong>Creating your try-on</strong>
-                <em>This can take a moment.</em>
-              </div>
-            ` : `<img src="${escapeAttr(state.tryOn.resultImageData)}" alt="Generated haircut try-on">`}
-          </div>
-          <figcaption>Your realistic try-on</figcaption>
-          ${resultReady ? `
-            <div class="try-on-result-actions">
-              <button class="secondary-btn" id="try-on-download" type="button">Download image</button>
-              <button class="primary-btn" id="try-on-save-result" type="button" ${state.tryOn.resultSaved ? "disabled" : ""}>
-                ${state.tryOn.resultSaved ? "Saved" : "Save to favourites"}
-              </button>
-            </div>
-          ` : ""}
-        </figure>
-      ` : ""}
     </div>
   `;
 
