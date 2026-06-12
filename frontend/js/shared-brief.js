@@ -23,8 +23,23 @@ async function loadOwnerFeedback() {
   try {
     const data = await apiJson(`${API.briefs}?sessionId=${encodeURIComponent(state.sessionId)}`);
     const briefs = Array.isArray(data.items) ? data.items : [];
-    state.ownerBriefs = briefs;
-    state.ownerFeedback = briefs.flatMap((brief) =>
+    const knownIds = new Set(briefs.map((brief) => brief.id).filter(Boolean));
+    const rememberedIds = Array.isArray(state.completedBriefIds) ? state.completedBriefIds : [];
+    const rememberedBriefs = await Promise.all(
+      rememberedIds
+        .filter((id) => id && !knownIds.has(id))
+        .map(async (id) => {
+          try {
+            const itemData = await apiJson(`${API.briefs}/${encodeURIComponent(id)}`);
+            return itemData.item || null;
+          } catch {
+            return null;
+          }
+        })
+    );
+    const allBriefs = [...briefs, ...rememberedBriefs.filter(Boolean)];
+    state.ownerBriefs = allBriefs;
+    state.ownerFeedback = allBriefs.flatMap((brief) =>
       Array.isArray(brief.feedback)
         ? brief.feedback.map((entry) => ({ ...entry, briefId: entry.briefId || brief.id }))
         : []
@@ -514,21 +529,21 @@ function closeBriefRefAdd() {
 }
 
 function openBriefCompletePrompt() {
-  state.briefCompletePromptOpen = true;
   state.shareStatus = "";
+  state.shareLink = "";
   state.briefPickerOpen = false;
   state.briefRefAddOpen = false;
-  document.body.style.overflow = "hidden";
-  renderBrief();
+  if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden && els.tryOnOverlay.hidden) {
+    document.body.style.overflow = "";
+  }
+  setView("complete");
 }
 
 function closeBriefCompletePrompt() {
-  if (!state.briefCompletePromptOpen) return;
-  state.briefCompletePromptOpen = false;
-  if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden && !state.briefPickerOpen && !state.briefRefAddOpen) {
+  if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden && els.tryOnOverlay.hidden && !state.briefPickerOpen && !state.briefRefAddOpen) {
     document.body.style.overflow = "";
   }
-  if (state.view === "brief") renderBrief();
+  if (state.view === "complete") setView("brief");
 }
 
 async function completeBriefFromPrompt(action = "share") {
@@ -538,6 +553,7 @@ async function completeBriefFromPrompt(action = "share") {
     ? await handleBriefCopyLink()
     : await handleBriefUrlShare();
   if (completed) {
+    rememberCompletedBrief();
     startNewBriefDraft();
     loadOwnerFeedback();
   }
@@ -552,7 +568,6 @@ function renderBrief() {
   const savedStyles = state.styles.filter((style) => state.favourites.has(style.id));
   const pickerOpen = state.briefPickerOpen;
   const refAddOpen = state.briefRefAddOpen;
-  const completePromptOpen = state.briefCompletePromptOpen;
   const meItems = briefItemsFor("me");
   const refItems = sortReferencesForDisplay(briefItemsFor("references"));
   const counts = profileBriefCounts(meItems, refItems);
@@ -599,29 +614,63 @@ function renderBrief() {
       ${renderProfileMobileShare(counts)}
     </section>
 
-    ${completePromptOpen ? renderBriefCompletePrompt() : ""}
     ${pickerOpen ? renderBriefPicker(savedStyles) : ""}
   `;
 
   wireBrief();
 }
 
+function renderBriefCompletePage() {
+  const d = state.briefDetails || defaultBriefDetails();
+  els.app.innerHTML = `
+    <section class="brief-complete-page">
+      <button class="secondary-btn brief-complete-back" id="brief-complete-close" type="button">
+        ${iconArrow()}<span>Back to profile</span>
+      </button>
+      <header class="brief-complete-hero">
+        <p class="eyebrow">Style brief</p>
+        <h1>Complete profile</h1>
+        <p>Add anything else your stylist should know, then copy or share one link to this brief.</p>
+      </header>
+
+      <div class="brief-complete-card" aria-labelledby="brief-complete-title">
+        <div class="brief-picker-head">
+          <div class="overlay-heading">
+            <p class="eyebrow">Final note</p>
+            <h2 id="brief-complete-title">Anything else to tell the stylist?</h2>
+          </div>
+        </div>
+        <label class="brief-field brief-field--wide">
+          <span>Anything else to tell the stylist</span>
+          <textarea id="brief-complete-notes" rows="7" placeholder="Timing, budget, hair history, concerns, or what you definitely do not want...">${escapeHtml(d.notes || "")}</textarea>
+        </label>
+        <div class="brief-share-status brief-complete-status" id="brief-complete-share-status" ${state.shareStatus ? "" : "hidden"}>
+          <span>${escapeHtml(state.shareStatus)}</span>
+        </div>
+        <div class="brief-complete-actions">
+          <button class="secondary-btn" id="brief-complete-copy" type="button">${iconCheck()}<span>Copy link</span></button>
+          <button class="primary-btn" id="brief-complete-share" type="button">${iconShare()}<span>Share with stylist</span></button>
+        </div>
+      </div>
+    </section>
+  `;
+
+  wireBriefCompletePage();
+}
+
 function profileBriefCounts(meItems = briefItemsFor("me"), refItems = briefItemsFor("references")) {
   const colourAdded = briefDetailsHasContent(state.briefDetails);
-  const notesAdded = Boolean(briefNotesValue());
   const completed = [
     meItems.length > 0,
     refItems.length > 0,
-    colourAdded,
-    notesAdded
+    colourAdded
   ].filter(Boolean).length;
   return {
     hair: meItems.length,
     references: refItems.length,
     referenceFavourites: refItems.filter((item) => item.firstChoice).length,
     colourAdded,
-    notesAdded,
-    percent: Math.round((completed / 4) * 100)
+    percent: Math.round((completed / 3) * 100)
   };
 }
 
@@ -643,7 +692,6 @@ function renderProfileBriefAside(counts) {
         ${renderProfileBriefListItem("Your hair", `${counts.hair} ${counts.hair === 1 ? "photo" : "photos"}`, counts.hair > 0)}
         ${renderProfileBriefListItem("References", `${counts.references} ${counts.references === 1 ? "reference" : "references"}`, counts.references > 0)}
         ${renderProfileBriefListItem("Colour & treatment", counts.colourAdded ? "Added" : "Optional", counts.colourAdded)}
-        ${renderProfileBriefListItem("General notes", counts.notesAdded ? "Added" : "Optional", counts.notesAdded)}
       </ul>
 
       <div class="profile-share-block">
@@ -1044,32 +1092,19 @@ function renderBriefCompletePanel() {
   `;
 }
 
-function renderBriefCompletePrompt() {
-  const d = state.briefDetails || defaultBriefDetails();
-  return `
-    <div class="overlay brief-complete-overlay" id="brief-complete-overlay" role="dialog" aria-modal="true" aria-labelledby="brief-complete-title">
-      <div class="overlay-card brief-complete-card">
-        <button class="close-btn close-btn--text" id="brief-complete-close" type="button" aria-label="Close">Close</button>
-        <div class="brief-picker-head">
-          <div class="overlay-heading">
-            <p class="eyebrow">Complete profile</p>
-            <h2 id="brief-complete-title">Anything else to tell the stylist?</h2>
-          </div>
-        </div>
-        <label class="brief-field brief-field--wide">
-          <span>Anything else to tell the stylist</span>
-          <textarea id="brief-complete-notes" rows="6" placeholder="Timing, budget, hair history, concerns, or what you definitely do not want...">${escapeHtml(d.notes || "")}</textarea>
-        </label>
-        <div class="brief-share-status brief-complete-status" id="brief-complete-share-status" ${state.shareStatus ? "" : "hidden"}>
-          <span>${escapeHtml(state.shareStatus)}</span>
-        </div>
-        <div class="brief-complete-actions">
-          <button class="secondary-btn" id="brief-complete-copy" type="button">${iconCheck()}<span>Copy link</span></button>
-          <button class="primary-btn" id="brief-complete-share" type="button">${iconShare()}<span>Share with stylist</span></button>
-        </div>
-      </div>
-    </div>
-  `;
+function wireBriefCompletePage() {
+  const completeClose = $("#brief-complete-close");
+  if (completeClose) {
+    completeClose.addEventListener("click", closeBriefCompletePrompt);
+  }
+  const completeCopy = $("#brief-complete-copy");
+  if (completeCopy) {
+    completeCopy.addEventListener("click", () => completeBriefFromPrompt("copy"));
+  }
+  const completeShare = $("#brief-complete-share");
+  if (completeShare) {
+    completeShare.addEventListener("click", () => completeBriefFromPrompt("share"));
+  }
 }
 
 // A placeholder tile that keeps the "Me" partition occupying at least one grid
@@ -1316,32 +1351,6 @@ function wireBrief() {
   const shareUrlBtn = $("#brief-url-share-btn");
   if (shareUrlBtn) {
     shareUrlBtn.addEventListener("click", handleBriefCopyLink);
-  }
-  const completeOverlay = $("#brief-complete-overlay");
-  if (completeOverlay) {
-    completeOverlay.addEventListener("click", (event) => {
-      if (event.target === completeOverlay) closeBriefCompletePrompt();
-    });
-  }
-  const completeClose = $("#brief-complete-close");
-  if (completeClose) {
-    completeClose.addEventListener("click", closeBriefCompletePrompt);
-  }
-  const completeSkip = $("#brief-complete-skip");
-  if (completeSkip) {
-    completeSkip.addEventListener("click", () => completeBriefFromPrompt(false));
-  }
-  const completeConfirm = $("#brief-complete-confirm");
-  if (completeConfirm) {
-    completeConfirm.addEventListener("click", () => completeBriefFromPrompt(true));
-  }
-  const completeCopy = $("#brief-complete-copy");
-  if (completeCopy) {
-    completeCopy.addEventListener("click", () => completeBriefFromPrompt("copy"));
-  }
-  const completeShare = $("#brief-complete-share");
-  if (completeShare) {
-    completeShare.addEventListener("click", () => completeBriefFromPrompt("share"));
   }
   // Hair-colour fields update state silently (no re-render) so the current
   // input keeps focus while the user types.

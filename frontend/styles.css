@@ -1,9 +1,9 @@
 /* Public stylesheet entrypoint. Rules are split by screen/feature under /css/*. */
-@import url("/css/base.css?v=2026-06-11-profile-feedback");
+@import url("/css/base.css?v=2026-06-11-brief-persistence");
 @import url("/css/home.css?v=2026-06-11-profile-feedback");
 @import url("/css/quiz.css?v=2026-06-11-profile-feedback");
 @import url("/css/results.css?v=2026-06-11-profile-feedback");
 @import url("/css/short-laptop.css?v=2026-06-11-profile-feedback");
-@import url("/css/brief.css?v=2026-06-11-messages-pull-refresh");
-@import url("/css/responsive.css?v=2026-06-11-profile-feedback");
+@import url("/css/brief.css?v=2026-06-11-brief-persistence");
+@import url("/css/responsive.css?v=2026-06-11-brief-persistence");
 @import url("/css/products-tryon.css?v=2026-06-11-profile-feedback");

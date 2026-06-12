@@ -1,5 +1,5 @@
 import { createServer } from 'node:http';
-import { readFile, readdir } from 'node:fs/promises';
+import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
@@ -8,11 +8,12 @@ const PORT = Number(process.env.PORT || 8787);
 const ROOT = fileURLToPath(new URL('.', import.meta.url));
 const PUBLIC_DIR = join(ROOT, 'frontend');
 const MIGRATIONS_DIR = join(ROOT, 'migrations');
+const LOCAL_STORE_PATH = join(ROOT, '.local-dev-store.json');
 const API_STATUS = {
   ok: true,
   app: 'DRP28',
   message: 'Backend is running on Cloudflare Workers.',
-  storage: 'memory'
+  storage: 'memory+persistent-briefs'
 };
 const TRY_ON_GENERATION_LIMIT = 5;
 const store = {
@@ -24,6 +25,29 @@ const store = {
   briefs: [],
   briefFeedback: []
 };
+
+async function loadLocalStore() {
+  try {
+    const raw = await readFile(LOCAL_STORE_PATH, 'utf8');
+    const saved = JSON.parse(raw);
+    if (Array.isArray(saved.briefs)) store.briefs = saved.briefs;
+    if (Array.isArray(saved.briefFeedback)) store.briefFeedback = saved.briefFeedback;
+  } catch {
+    // The fallback server can start with an empty store on first run.
+  }
+}
+
+async function persistLocalStore() {
+  const payload = {
+    briefs: store.briefs,
+    briefFeedback: store.briefFeedback
+  };
+  try {
+    await writeFile(LOCAL_STORE_PATH, JSON.stringify(payload, null, 2));
+  } catch {
+    // Local persistence is best-effort; API responses should still work.
+  }
+}
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -703,6 +727,7 @@ async function handleApi(req, res, url) {
       const feedback = store.briefFeedback
         .filter((item) => item.briefId === brief.id)
         .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+      await persistLocalStore();
       sendJson(res, 201, { ok: true, item: { ...brief, feedback } });
       return true;
     }
@@ -735,6 +760,7 @@ async function handleApi(req, res, url) {
       const feedback = createItem({ briefId: id, itemId, author, rating, note });
       store.briefFeedback.push(feedback);
 
+      await persistLocalStore();
       sendJson(res, 201, { ok: true, item: feedback });
       return true;
     }
@@ -768,6 +794,7 @@ async function handleApi(req, res, url) {
       existing.rating = rating;
       existing.note = note;
 
+      await persistLocalStore();
       sendJson(res, 200, { ok: true, item: existing });
       return true;
     }
@@ -778,6 +805,7 @@ async function handleApi(req, res, url) {
         return true;
       }
       store.briefFeedback = store.briefFeedback.filter((item) => item.id !== feedbackId);
+      await persistLocalStore();
       sendJson(res, 200, { ok: true, id: feedbackId });
       return true;
     }
@@ -828,6 +856,7 @@ async function serveAsset(pathname, res) {
   }
 }
 
+await loadLocalStore();
 await seedGalleryFromMigrations();
 
 createServer(async (req, res) => {

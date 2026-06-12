@@ -9,6 +9,7 @@ function render() {
   if (state.view === "quiz") renderQuiz();
   else if (state.view === "results") renderResultsPage();
   else if (state.view === "brief") renderBrief();
+  else if (state.view === "complete") renderBriefCompletePage();
   else if (state.view === "messages") renderMessages();
   else if (state.view === "shared") renderSharedBrief();
   else renderHome();
@@ -17,7 +18,8 @@ function render() {
 // Highlight the active destination in the top (desktop) and bottom (mobile) nav.
 function syncNav() {
   document.querySelectorAll("[data-nav]").forEach((btn) => {
-    btn.classList.toggle("is-active", btn.dataset.nav === state.view);
+    const activeView = state.view === "complete" ? "brief" : state.view;
+    btn.classList.toggle("is-active", btn.dataset.nav === activeView);
   });
 }
 

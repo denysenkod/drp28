@@ -76,7 +76,7 @@ Backend endpoint:
 http://localhost:8787/api/status
 ```
 
-The fallback server stores API data in memory only. Restarting it clears local gallery, quiz, photo, and favorites data.
+The fallback server stores gallery, quiz, photo, and favorites data in memory. Shared style briefs and stylist feedback persist locally in `.local-dev-store.json` so review links survive restarts during testing.
 
 To use a different port:
 

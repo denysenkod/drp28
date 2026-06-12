@@ -80,7 +80,6 @@ async function handleBriefComplete() {
     return;
   }
   const link = briefShareLink();
-  state.briefCompletePromptOpen = false;
   if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden && !state.briefPickerOpen && !state.briefRefAddOpen) {
     document.body.style.overflow = "";
   }
@@ -220,6 +219,14 @@ async function handleBriefUrlShare() {
 function startNewBriefDraft() {
   state.briefId = null;
   writeStored(BRIEF_ID_KEY, state.briefId);
+}
+
+function rememberCompletedBrief(id = state.briefId) {
+  const briefId = String(id || "").trim();
+  if (!briefId) return;
+  const ids = Array.isArray(state.completedBriefIds) ? state.completedBriefIds : [];
+  state.completedBriefIds = [briefId, ...ids.filter((item) => item !== briefId)].slice(0, 30);
+  writeStored(COMPLETED_BRIEF_IDS_KEY, state.completedBriefIds);
 }
 
 function setShareStatus(message, link = "") {

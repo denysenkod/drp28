@@ -37,7 +37,7 @@ Seeded from migrations with GQ men's trends and Glamour women's haircuts.
 
 ### Local Development
 - **With npm**: `npm start` launches Wrangler dev (full Cloudflare simulation, includes D1 local binding)
-- **Without npm**: `node local-dev.mjs` (Node.js fallback server; memory-only storage, no persistence between restarts)
+- **Without npm**: `node local-dev.mjs` (Node.js fallback server; gallery/quiz/photo/favorites are memory-only, shared briefs and stylist feedback persist locally)
 - Port: 8787 (configurable via `PORT=3000 node local-dev.mjs`)
 
 ### Testing
@@ -187,5 +187,5 @@ The `.welcome-logo-row` (HairMatch wordmark) is hidden on mobile (`≤820px`) vi
 - Frontend is vanilla JS; no build step, no framework. Changes to app.js are live without recompilation.
 - D1 is transactional but not replicated; safe for prototype/testing, plan migration to larger DB if user base grows.
 - Image URLs are stored as text in gallery_images; full image blobs go to R2 (not yet in place).
-- The `local-dev.mjs` server is useful for testing on lab machines without npm; it's memory-only and doesn't persist.
+- The `local-dev.mjs` server is useful for testing on lab machines without npm; gallery/quiz/photo/favorites are memory-only, while shared briefs and stylist feedback persist in `.local-dev-store.json`.
 - Hair analysis requires OpenAI API key; run with `--dry-run` first to preview.

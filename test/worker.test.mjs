@@ -1068,10 +1068,13 @@ test('gallery image AI analysis script is wired to D1 and structured outputs', a
   assert.match(hairAttributesScript, /hair_colour =/);
 });
 
-test('local dev seeds memory gallery from migration files', async () => {
+test('local dev seeds memory gallery and persists shared briefs', async () => {
   const localDev = await readFile(new URL('../local-dev.mjs', import.meta.url), 'utf8');
 
   assert.ok(localDev.includes('seedGalleryFromMigrations'));
   assert.ok(localDev.includes('INSERT OR IGNORE INTO gallery_images'));
+  assert.ok(localDev.includes('loadLocalStore'));
+  assert.ok(localDev.includes('persistLocalStore'));
+  assert.ok(localDev.includes('.local-dev-store.json'));
   assert.ok(localDev.includes('await seedGalleryFromMigrations()'));
 });

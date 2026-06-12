@@ -2,24 +2,24 @@
 // sequentially so the classic-script globals keep the same execution order as
 // the previous single-file app.
 const FRONTEND_SCRIPT_FILES = [
-  "/js/storage.js?v=2026-06-11-messages-pull-refresh",
-  "/js/icons.js?v=2026-06-11-messages-pull-refresh",
-  "/js/fallback-styles.js?v=2026-06-11-messages-pull-refresh",
-  "/js/products-and-normalizers.js?v=2026-06-11-messages-pull-refresh",
-  "/js/state.js?v=2026-06-11-messages-pull-refresh",
-  "/js/data-loading.js?v=2026-06-11-messages-pull-refresh",
-  "/js/quiz-filters.js?v=2026-06-11-messages-pull-refresh",
-  "/js/rendering.js?v=2026-06-11-messages-pull-refresh",
-  "/js/favourites.js?v=2026-06-11-messages-pull-refresh",
-  "/js/brief.js?v=2026-06-11-messages-pull-refresh",
-  "/js/brief-sharing.js?v=2026-06-11-messages-pull-refresh",
-  "/js/shared-brief.js?v=2026-06-11-messages-pull-refresh",
-  "/js/try-on.js?v=2026-06-11-messages-pull-refresh",
-  "/js/detail-overlay.js?v=2026-06-11-messages-pull-refresh",
-  "/js/product-overlay.js?v=2026-06-11-messages-pull-refresh",
-  "/js/uploads.js?v=2026-06-11-messages-pull-refresh",
-  "/js/utilities.js?v=2026-06-11-messages-pull-refresh",
-  "/js/init.js?v=2026-06-11-messages-pull-refresh"
+  "/js/storage.js?v=2026-06-11-brief-persistence",
+  "/js/icons.js?v=2026-06-11-brief-persistence",
+  "/js/fallback-styles.js?v=2026-06-11-brief-persistence",
+  "/js/products-and-normalizers.js?v=2026-06-11-brief-persistence",
+  "/js/state.js?v=2026-06-11-brief-persistence",
+  "/js/data-loading.js?v=2026-06-11-brief-persistence",
+  "/js/quiz-filters.js?v=2026-06-11-brief-persistence",
+  "/js/rendering.js?v=2026-06-11-brief-persistence",
+  "/js/favourites.js?v=2026-06-11-brief-persistence",
+  "/js/brief.js?v=2026-06-11-brief-persistence",
+  "/js/brief-sharing.js?v=2026-06-11-brief-persistence",
+  "/js/shared-brief.js?v=2026-06-12-brief-completeness",
+  "/js/try-on.js?v=2026-06-11-brief-persistence",
+  "/js/detail-overlay.js?v=2026-06-11-brief-persistence",
+  "/js/product-overlay.js?v=2026-06-11-brief-persistence",
+  "/js/uploads.js?v=2026-06-11-brief-persistence",
+  "/js/utilities.js?v=2026-06-11-brief-persistence",
+  "/js/init.js?v=2026-06-11-brief-persistence"
 ];
 
 function loadScript(src) {

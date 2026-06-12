@@ -506,15 +506,18 @@
 }
 
 @media (max-width: 820px) {
-  body[data-view="brief"] .topbar {
+  body[data-view="brief"] .topbar,
+  body[data-view="complete"] .topbar {
     display: none;
   }
 
-  body[data-view="brief"] .bottom-nav {
+  body[data-view="brief"] .bottom-nav,
+  body[data-view="complete"] .bottom-nav {
     display: flex;
   }
 
-  body[data-view="brief"] .app-shell {
+  body[data-view="brief"] .app-shell,
+  body[data-view="complete"] .app-shell {
     width: min(100% - 36px, 1120px);
     padding-top: 96px;
     padding-bottom: 126px;

@@ -307,7 +307,8 @@ body[data-view="quiz"] .app-shell {
 /* Tighten the space between the topbar and the first heading on the results
    ("Curated for you") and Profile ("Design") screens. */
 body[data-view="results"] .app-shell,
-body[data-view="brief"] .app-shell {
+body[data-view="brief"] .app-shell,
+body[data-view="complete"] .app-shell {
   padding-top: 16px;
 }
 

@@ -721,8 +721,50 @@
   height: 16px;
 }
 
+.brief-complete-page {
+  width: min(760px, 100%);
+  margin: 0 auto;
+}
+
+.brief-complete-back {
+  gap: 8px;
+  min-height: 42px;
+  margin-bottom: 28px;
+}
+
+.brief-complete-back svg {
+  width: 16px;
+  height: 16px;
+  transform: rotate(180deg);
+}
+
+.brief-complete-hero {
+  margin-bottom: 26px;
+}
+
+.brief-complete-hero h1 {
+  margin: 0;
+  font-size: clamp(46px, 8vw, 76px);
+  font-weight: 800;
+  line-height: 0.94;
+  letter-spacing: 0;
+}
+
+.brief-complete-hero p:not(.eyebrow) {
+  max-width: 620px;
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.45;
+}
+
 .brief-complete-card {
   width: min(560px, 100%);
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--profile-radius-lg, var(--radius));
+  background: var(--surface);
+  box-shadow: 0 18px 48px rgba(70, 54, 34, 0.1);
 }
 
 .brief-complete-card .brief-field {
@@ -1197,6 +1239,12 @@
 /* ----- Profile page redesign ----- */
 body[data-view="brief"] .app-shell {
   width: min(1320px, calc(100% - 36px));
+  padding-top: 34px;
+  padding-bottom: 84px;
+}
+
+body[data-view="complete"] .app-shell {
+  width: min(900px, calc(100% - 36px));
   padding-top: 34px;
   padding-bottom: 84px;
 }

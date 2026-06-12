@@ -14,11 +14,11 @@ const state = {
   favourites: new Set(),
   brief: readStored(BRIEF_KEY, []),
   briefId: readStored(BRIEF_ID_KEY, null),
+  completedBriefIds: readStored(COMPLETED_BRIEF_IDS_KEY, []),
   briefDetails: { ...defaultBriefDetails(), ...readStored(BRIEF_DETAILS_KEY, {}) },
   briefDetailsOpen: readStored(BRIEF_DETAILS_OPEN_KEY, null),
   briefPickerOpen: false,
   briefRefAddOpen: false,
-  briefCompletePromptOpen: false,
   shareStatus: "",
   shareLink: "",
   sharedBriefId: null,
@@ -95,10 +95,9 @@ function setView(view) {
     writeStored(PREV_VIEW_KEY, state.previousView);
   }
 
-  if (view !== "brief") {
+  if (view !== "brief" && view !== "complete") {
     state.briefPickerOpen = false;
     state.briefRefAddOpen = false;
-    state.briefCompletePromptOpen = false;
     if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden && els.tryOnOverlay.hidden) {
       document.body.style.overflow = "";
     }
@@ -114,6 +113,9 @@ function setView(view) {
   if (view === "brief") {
     window.history.pushState({ view: "brief", previousView: state.previousView }, "", "?brief");
     loadOwnerFeedback();
+  }
+  if (view === "complete") {
+    window.history.pushState({ view: "complete", previousView: state.previousView }, "", "?complete");
   }
   if (view === "messages") {
     window.history.pushState({ view: "messages", previousView: state.previousView }, "", "?messages");

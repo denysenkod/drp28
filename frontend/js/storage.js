@@ -15,6 +15,7 @@ const QUIZ_COMPLETE_KEY = "drp28.frontend.quizComplete";
 const PREV_VIEW_KEY = "drp28.frontend.prevView";
 const BRIEF_KEY = "drp28.frontend.brief";
 const BRIEF_ID_KEY = "drp28.frontend.briefId";
+const COMPLETED_BRIEF_IDS_KEY = "drp28.frontend.completedBriefIds";
 const BRIEF_DETAILS_KEY = "drp28.frontend.briefDetails";
 const BRIEF_DETAILS_OPEN_KEY = "drp28.frontend.briefDetailsOpen";
 const REVIEWER_NAME_KEY = "drp28.frontend.reviewerName";

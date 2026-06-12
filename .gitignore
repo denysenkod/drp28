@@ -3,3 +3,4 @@ node_modules
 .dev.vars*
 .env
 .next
+.local-dev-store.json

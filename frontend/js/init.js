@@ -46,14 +46,13 @@ function init() {
     }
     else if (state.briefPickerOpen) closeBriefPicker();
     else if (state.briefRefAddOpen) closeBriefRefAdd();
-    else if (state.briefCompletePromptOpen) closeBriefCompletePrompt();
+    else if (state.view === "complete") setView("brief");
   });
 
   window.addEventListener("popstate", (event) => {
-    if (state.briefPickerOpen || state.briefRefAddOpen || state.briefCompletePromptOpen) {
+    if (state.briefPickerOpen || state.briefRefAddOpen) {
       state.briefPickerOpen = false;
       state.briefRefAddOpen = false;
-      state.briefCompletePromptOpen = false;
       if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden && els.tryOnOverlay.hidden) {
         document.body.style.overflow = "";
       }
@@ -78,6 +77,11 @@ function init() {
       writeStored(PREV_VIEW_KEY, state.previousView);
       render();
       loadOwnerFeedback();
+    } else if (event.state?.view === "complete") {
+      state.view = "complete";
+      state.previousView = event.state.previousView ?? "brief";
+      writeStored(PREV_VIEW_KEY, state.previousView);
+      render();
     } else if (event.state?.view === "messages") {
       state.view = "messages";
       state.previousView = event.state.previousView ?? "welcome";
@@ -126,6 +130,9 @@ function init() {
     state.view = "shared";
     state.sharedBriefId = reviewBriefId;
     state.sharedBriefClientView = clientView && !forceReview;
+  } else if (urlParams.has("complete")) {
+    state.view = "complete";
+    writeStored(VIEW_KEY, "complete");
   } else if (urlParams.has("brief")) {
     state.view = "brief";
     writeStored(VIEW_KEY, "brief");
