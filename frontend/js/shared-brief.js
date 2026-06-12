@@ -184,6 +184,21 @@ function renderBriefPreferencesReview(details) {
   `;
 }
 
+function renderBriefNotesReview(details) {
+  const notes = briefNotesValue(details);
+  if (!notes) return "";
+  return `
+    <section class="brief-details brief-details--notes">
+      <div class="brief-details-summary brief-details-summary--static">
+        <span class="brief-details-summary-title">Anything else to tell the barber</span>
+      </div>
+      <div class="brief-details-panel">
+        <p class="brief-owner-note">${escapeHtml(notes)}</p>
+      </div>
+    </section>
+  `;
+}
+
 // Read-only card: the client's photo with their favourite flag and note. The
 // stylist no longer comments per photo; feedback is a single high-level summary
 // below.
@@ -342,6 +357,7 @@ function renderSharedBrief() {
       </div>
 
       ${renderBriefPreferencesReview(state.sharedBrief.details)}
+      ${renderBriefNotesReview(state.sharedBrief.details)}
 
       ${renderStylistSummary()}
     </section>
@@ -559,6 +575,8 @@ function closeBriefCompletePrompt() {
 }
 
 async function completeBriefFromPrompt(action = "share") {
+  const notes = $("#brief-complete-notes")?.value || "";
+  setBriefDetails({ ...state.briefDetails, notes });
   const completed = action === "copy"
     ? await handleBriefCopyLink()
     : await handleBriefUrlShare();
@@ -674,6 +692,10 @@ function renderBriefCompletePage() {
             <h2 id="brief-complete-title">Send your style brief</h2>
           </div>
         </div>
+        <label class="brief-field brief-field--wide">
+          <span>Anything else to tell the barber</span>
+          <textarea id="brief-complete-notes" rows="7" placeholder="Timing, budget, hair history, concerns, or what you definitely do not want...">${escapeHtml(d.notes || "")}</textarea>
+        </label>
         <div class="brief-share-status brief-complete-status" id="brief-complete-share-status" ${state.shareStatus ? "" : "hidden"}>
           <span>${escapeHtml(state.shareStatus)}</span>
         </div>

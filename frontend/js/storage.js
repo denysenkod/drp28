@@ -109,7 +109,8 @@ function defaultBriefDetails() {
     budgetRange: "",
     desiredMaintenance: "",
     desiredMaintenanceAuto: false,
-    salonTime: ""
+    salonTime: "",
+    notes: ""
   };
 }
 
@@ -133,6 +134,10 @@ function briefDesiredMaintenanceValue(details = state.briefDetails) {
 
 function briefSalonTimeValue(details = state.briefDetails) {
   return String((details || {}).salonTime || "").trim();
+}
+
+function briefNotesValue(details = state.briefDetails) {
+  return String((details || {}).notes || "").trim();
 }
 
 function briefPreferenceHasContent(details = state.briefDetails) {
@@ -170,7 +175,8 @@ function removeBriefDetails() {
     ...defaultBriefDetails(),
     budgetRange: state.briefDetails.budgetRange || "",
     desiredMaintenance: state.briefDetails.desiredMaintenance || "",
-    salonTime: state.briefDetails.salonTime || ""
+    salonTime: state.briefDetails.salonTime || "",
+    notes: state.briefDetails.notes || ""
   };
   state.briefDetailsOpen = false;
   writeStored(BRIEF_DETAILS_KEY, state.briefDetails);
@@ -191,9 +197,11 @@ function briefDetailsPayload() {
   const budgetRange = briefBudgetValue();
   const desiredMaintenance = briefDesiredMaintenanceValue();
   const salonTime = briefSalonTimeValue();
+  const notes = briefNotesValue();
   if (budgetRange) payload.budgetRange = budgetRange;
   if (desiredMaintenance) payload.desiredMaintenance = desiredMaintenance;
   if (salonTime) payload.salonTime = salonTime;
+  if (notes) payload.notes = notes;
   return payload;
 }
 

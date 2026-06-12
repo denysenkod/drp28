@@ -99,7 +99,8 @@ function setBriefDetails(next) {
     budgetRange: String(next?.budgetRange || ""),
     desiredMaintenance: String(next?.desiredMaintenance || ""),
     desiredMaintenanceAuto: Boolean(next?.desiredMaintenanceAuto),
-    salonTime: String(next?.salonTime || "")
+    salonTime: String(next?.salonTime || ""),
+    notes: String(next?.notes || "")
   };
   state.briefDetails = cleaned;
   writeStored(BRIEF_DETAILS_KEY, cleaned);
