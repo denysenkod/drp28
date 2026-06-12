@@ -741,6 +741,7 @@
 
 .detail-actions {
   display: flex;
+  align-items: center;
   gap: 8px;
   flex-wrap: wrap;
   margin: 20px 0;
@@ -759,12 +760,6 @@
 .detail-section p {
   margin: 0;
   color: var(--muted);
-}
-
-.detail-try-on {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 28px;
 }
 
 .detail-try-on-btn {

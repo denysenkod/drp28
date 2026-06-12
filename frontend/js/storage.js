@@ -207,7 +207,9 @@ async function apiJson(url, options = {}) {
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok || data.ok === false) {
-    throw new Error(data.error || "Request failed.");
+    const err = new Error(data.error || "Request failed.");
+    err.data = data;
+    throw err;
   }
   return data;
 }

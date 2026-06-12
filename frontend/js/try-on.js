@@ -14,6 +14,10 @@ function openTryOn() {
     userImageName: profilePhoto?.name || "Profile selfie",
     sourceBriefItemId: profilePhoto?.id || null,
     resultImageData: "",
+    resultSaved: false,
+    usageLimit: 5,
+    usageUsed: null,
+    usageRemaining: null,
     status: "idle",
     error: "",
     askProfileUpdate: false
@@ -43,13 +47,21 @@ function renderTryOn() {
   const hasSelfie = Boolean(state.tryOn.userImageData);
   const isGenerating = state.tryOn.status === "generating";
   const canApply = hasSelfie && style.imageUrl && !isGenerating && !state.tryOn.askProfileUpdate;
+  const limit = Number(state.tryOn.usageLimit || 5);
+  const remaining = Number.isFinite(Number(state.tryOn.usageRemaining)) ? Number(state.tryOn.usageRemaining) : null;
+  const used = Number.isFinite(Number(state.tryOn.usageUsed)) ? Number(state.tryOn.usageUsed) : null;
+  const usageText = remaining === null
+    ? `${limit} total try-ons per session`
+    : `${remaining} of ${limit} try-ons left`;
+  const resultReady = Boolean(state.tryOn.resultImageData);
 
   els.tryOnBody.innerHTML = `
     <div class="try-on-popup">
       <div class="overlay-heading">
         <p class="eyebrow">Try on</p>
-        <h2>${escapeHtml(style.name)}</h2>
+        <h2>Current hairstyle</h2>
       </div>
+      <p class="try-on-usage">${escapeHtml(usageText)}${used === null ? "" : ` <span>${escapeHtml(String(used))} used</span>`}</p>
 
       <div class="try-on-frames">
         <figure class="try-on-frame">
@@ -86,12 +98,26 @@ function renderTryOn() {
 
       ${state.tryOn.error ? `<p class="try-on-error">${escapeHtml(state.tryOn.error)}</p>` : ""}
 
-      ${state.tryOn.resultImageData ? `
+      ${isGenerating || resultReady ? `
         <figure class="try-on-result">
-          <div class="try-on-result-image">
-            <img src="${escapeAttr(state.tryOn.resultImageData)}" alt="Generated haircut try-on">
+          <div class="try-on-result-image ${isGenerating ? "is-loading" : ""}">
+            ${isGenerating ? `
+              <div class="try-on-loading">
+                <span></span>
+                <strong>Creating your try-on</strong>
+                <em>This can take a moment.</em>
+              </div>
+            ` : `<img src="${escapeAttr(state.tryOn.resultImageData)}" alt="Generated haircut try-on">`}
           </div>
           <figcaption>Your realistic try-on</figcaption>
+          ${resultReady ? `
+            <div class="try-on-result-actions">
+              <button class="secondary-btn" id="try-on-download" type="button">Download image</button>
+              <button class="primary-btn" id="try-on-save-result" type="button" ${state.tryOn.resultSaved ? "disabled" : ""}>
+                ${state.tryOn.resultSaved ? "Saved" : "Save to favourites"}
+              </button>
+            </div>
+          ` : ""}
         </figure>
       ` : ""}
     </div>
@@ -112,6 +138,14 @@ function wireTryOn() {
   if (apply) {
     apply.addEventListener("click", applyTryOn);
   }
+  const download = $("#try-on-download");
+  if (download) {
+    download.addEventListener("click", downloadTryOnResult);
+  }
+  const saveResult = $("#try-on-save-result");
+  if (saveResult) {
+    saveResult.addEventListener("click", saveTryOnResult);
+  }
 
   document.querySelectorAll("[data-try-on-profile]").forEach((button) => {
     button.addEventListener("click", () => answerTryOnProfileUpdate(button.dataset.tryOnProfile === "yes"));
@@ -127,6 +161,7 @@ async function handleTryOnSelfieUpload(fileList) {
     state.tryOn.userImageData = imageData;
     state.tryOn.userImageName = file.name || "Try-on selfie";
     state.tryOn.resultImageData = "";
+    state.tryOn.resultSaved = false;
     state.tryOn.status = "idle";
     state.tryOn.error = "";
     state.tryOn.askProfileUpdate = true;
@@ -188,6 +223,12 @@ async function saveTryOnSelfieToProfile() {
 
 function addTryOnResultToReferences(style, imageData) {
   if (!style || !imageData) return null;
+  const existing = state.brief.find((item) =>
+    item.source === "try-on" &&
+    item.referenceStyleId === style.id &&
+    item.imageUrl === imageData
+  );
+  if (existing) return existing;
   const item = {
     id: briefItemId(),
     source: "try-on",
@@ -202,6 +243,38 @@ function addTryOnResultToReferences(style, imageData) {
   return item;
 }
 
+function tryOnDownloadName(style) {
+  const name = String(style?.name || "current-hairstyle")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 48);
+  return `hairmatch-try-on-${name || "current-hairstyle"}.png`;
+}
+
+function downloadTryOnResult() {
+  const style = state.styles.find((item) => item.id === String(state.tryOn.styleId));
+  if (!state.tryOn.resultImageData) return;
+  const link = document.createElement("a");
+  link.href = state.tryOn.resultImageData;
+  link.download = tryOnDownloadName(style);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
+async function saveTryOnResult() {
+  const style = state.styles.find((item) => item.id === String(state.tryOn.styleId));
+  if (!style || !state.tryOn.resultImageData) return;
+  addTryOnResultToReferences(style, state.tryOn.resultImageData);
+  if (!state.favourites.has(style.id)) {
+    await toggleFavourite(style.id);
+  }
+  state.tryOn.resultSaved = true;
+  flushBriefSync();
+  renderTryOn();
+}
+
 async function applyTryOn() {
   const style = state.styles.find((item) => item.id === String(state.tryOn.styleId));
   if (!style || !state.tryOn.userImageData || !style.imageUrl || state.tryOn.askProfileUpdate) return;
@@ -209,6 +282,7 @@ async function applyTryOn() {
   state.tryOn.status = "generating";
   state.tryOn.error = "";
   state.tryOn.resultImageData = "";
+  state.tryOn.resultSaved = false;
   renderTryOn();
 
   try {
@@ -223,14 +297,18 @@ async function applyTryOn() {
       })
     });
     state.tryOn.resultImageData = data.imageData || "";
+    state.tryOn.usageLimit = Number(data.limit || state.tryOn.usageLimit || 5);
+    state.tryOn.usageUsed = Number(data.used || 0);
+    state.tryOn.usageRemaining = Number(data.remaining || 0);
     state.tryOn.status = "done";
-    if (state.tryOn.resultImageData) {
-      addTryOnResultToReferences(style, state.tryOn.resultImageData);
-      flushBriefSync();
-    } else {
+    if (!state.tryOn.resultImageData) {
       state.tryOn.error = "Try-on generation did not return an image.";
     }
   } catch (err) {
+    const data = err?.data || {};
+    if (data.limit !== undefined) state.tryOn.usageLimit = Number(data.limit || state.tryOn.usageLimit || 5);
+    if (data.used !== undefined) state.tryOn.usageUsed = Number(data.used || 0);
+    if (data.remaining !== undefined) state.tryOn.usageRemaining = Number(data.remaining || 0);
     state.tryOn.status = "idle";
     state.tryOn.error = err instanceof Error ? err.message : "Try-on generation failed.";
   }

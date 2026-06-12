@@ -34,6 +34,10 @@ const state = {
     userImageName: "",
     sourceBriefItemId: null,
     resultImageData: "",
+    resultSaved: false,
+    usageLimit: 5,
+    usageUsed: null,
+    usageRemaining: null,
     status: "idle",
     error: "",
     askProfileUpdate: false
