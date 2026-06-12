@@ -694,7 +694,7 @@ function renderBriefCompletePage() {
         </div>
         <label class="brief-field brief-field--wide">
           <span>Anything else to tell the barber</span>
-          <textarea id="brief-complete-notes" rows="7" placeholder="Timing, budget, hair history, concerns, or what you definitely do not want...">${escapeHtml(d.notes || "")}</textarea>
+          <textarea id="brief-complete-notes" rows="7">${escapeHtml(d.notes || "")}</textarea>
         </label>
         <div class="brief-share-status brief-complete-status" id="brief-complete-share-status" ${state.shareStatus ? "" : "hidden"}>
           <span>${escapeHtml(state.shareStatus)}</span>
