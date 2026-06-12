@@ -938,8 +938,14 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(app.includes('function applyTryOn()'));
   assert.ok(app.includes('function addTryOnResultToReferences'));
   assert.ok(app.includes('source: "try-on"'));
+  assert.ok(app.includes('const showGenerationFrame = isGenerating || hasResult;'));
+  assert.ok(app.includes('data-try-on-profile="yes">Yes</button>'));
+  assert.ok(app.includes('data-try-on-profile="no">No</button>'));
+  assert.ok(app.includes('class="try-on-generated-frame'));
   assert.ok(index.includes('id="detail-try-on"'));
   assert.ok(index.includes('id="try-on-overlay"'));
+  assert.ok(index.includes('styles.css?v=2026-06-12-try-on-actions-center'));
+  assert.ok(index.includes('app.js?v=2026-06-12-try-on-flow'));
   assert.ok(app.includes('imageUrl'));
   assert.ok(app.includes('syncStylesForCurrentRoute'));
   assert.ok(!app.includes('isAdminContext'));
@@ -985,6 +991,8 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(!index.includes('admin-nav-link'));
   assert.ok(!index.includes('topbar-admin-toggle'));
   assert.match(styles, /\.welcome-logo\s*\{[\s\S]*font-size: 56px;/);
+  assert.ok(styles.includes('.try-on-generating-visual'));
+  assert.ok(styles.includes('@keyframes tryOnSweep'));
   assert.ok(!styles.includes('stealth-admin-switch'));
   assert.ok(!styles.includes('admin-attribute'));
   assert.ok(!styles.includes('admin-label'));
