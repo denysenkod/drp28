@@ -51,34 +51,28 @@ function renderTryOn() {
   const remaining = Number.isFinite(Number(state.tryOn.usageRemaining)) ? Number(state.tryOn.usageRemaining) : null;
   const used = Number.isFinite(Number(state.tryOn.usageUsed)) ? Number(state.tryOn.usageUsed) : null;
   const canApply = hasSelfie && style.imageUrl && !isGenerating && !state.tryOn.askProfileUpdate && (remaining === null || remaining > 0);
+  const hasResult = Boolean(state.tryOn.resultImageData);
+  const showGenerationFrame = isGenerating || hasResult;
   const usageText = limit === null
     ? "Checking try-on limit..."
     : remaining === null
       ? `${limit} total try-ons per session`
-    : `${remaining} of ${limit} try-ons left`;
-  const resultReady = Boolean(state.tryOn.resultImageData);
-  const hairstyleFrame = isGenerating
-    ? `
-      <div class="try-on-image try-on-image--result is-loading">
-        <div class="try-on-loading">
-          <span></span>
-          <strong>Creating your try-on</strong>
-          <em>This can take a moment.</em>
-        </div>
+      : `${remaining} of ${limit} try-ons left`;
+  const actionMarkup = state.tryOn.askProfileUpdate ? `
+    <div class="try-on-profile-choice">
+      <p>Use this selfie in Profile too?</p>
+      <div>
+        <button class="primary-btn" type="button" data-try-on-profile="yes">Yes</button>
+        <button class="secondary-btn" type="button" data-try-on-profile="no">No</button>
       </div>
-    `
-    : resultReady
-      ? `
-        <div class="try-on-image try-on-image--result">
-          <img src="${escapeAttr(state.tryOn.resultImageData)}" alt="Generated haircut try-on">
-        </div>
-      `
-      : `
-        <label class="try-on-image try-on-selfie-target" title="${hasSelfie ? "Use a different selfie" : "Upload selfie"}">
-          ${hasSelfie ? `<img src="${escapeAttr(state.tryOn.userImageData)}" alt="Your selfie">` : `<span>Add a selfie</span>`}
-          <input class="brief-file-input try-on-selfie-input" type="file" accept="image/*">
-        </label>
-      `;
+    </div>
+  ` : (!showGenerationFrame ? `
+    <div class="try-on-controls">
+      <button class="primary-btn" id="try-on-apply" type="button" ${canApply ? "" : "disabled"}>
+        Apply haircut
+      </button>
+    </div>
+  ` : "");
 
   els.tryOnBody.innerHTML = `
     <div class="try-on-popup">
@@ -88,21 +82,42 @@ function renderTryOn() {
       </div>
       <p class="try-on-usage">${escapeHtml(usageText)}${used === null ? "" : ` <span>${escapeHtml(String(used))} used</span>`}</p>
 
-      <div class="try-on-frames">
-        <figure class="try-on-frame">
-          <div class="try-on-image">
-            ${style.imageUrl ? `<img src="${escapeAttr(style.imageUrl)}" alt="${escapeAttr(style.name)}" referrerpolicy="no-referrer">` : `<span>No reference image</span>`}
+      ${showGenerationFrame ? `
+        <figure class="try-on-generated-frame ${isGenerating ? "is-generating" : "is-complete"}" aria-live="polite">
+          <div class="try-on-generated-image">
+            ${hasResult ? `<img src="${escapeAttr(state.tryOn.resultImageData)}" alt="Generated haircut try-on">` : `
+              <div class="try-on-generating-state">
+                <div class="try-on-generating-visual" aria-hidden="true">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <p>Generating your try-on</p>
+              </div>
+            `}
           </div>
-          <figcaption>Reference haircut</figcaption>
+          <figcaption>${hasResult ? "Your realistic try-on" : "Blending the reference haircut with your selfie"}</figcaption>
         </figure>
+      ` : `
+        <div class="try-on-frames">
+          <figure class="try-on-frame">
+            <div class="try-on-image">
+              ${style.imageUrl ? `<img src="${escapeAttr(style.imageUrl)}" alt="${escapeAttr(style.name)}" referrerpolicy="no-referrer">` : `<span>No reference image</span>`}
+            </div>
+            <figcaption>Reference haircut</figcaption>
+          </figure>
 
-        <figure class="try-on-frame">
-          ${hairstyleFrame}
-          <figcaption>Your hairstyle</figcaption>
-        </figure>
-      </div>
+          <figure class="try-on-frame">
+            <label class="try-on-image try-on-selfie-target" title="${hasSelfie ? "Use a different selfie" : "Upload selfie"}">
+              ${hasSelfie ? `<img src="${escapeAttr(state.tryOn.userImageData)}" alt="Your selfie">` : `<span>Add a selfie</span>`}
+              <input class="brief-file-input try-on-selfie-input" type="file" accept="image/*">
+            </label>
+            <figcaption>${hasSelfie ? escapeHtml(state.tryOn.userImageName || "Your selfie") : "Your hairstyle"}</figcaption>
+          </figure>
+        </div>
+      `}
 
-      ${resultReady ? `
+      ${hasResult ? `
         <div class="try-on-result-actions">
           <button class="secondary-btn" id="try-on-download" type="button">Download image</button>
           <button class="primary-btn" id="try-on-save-result" type="button" ${state.tryOn.resultSaved ? "disabled" : ""}>
@@ -111,24 +126,7 @@ function renderTryOn() {
         </div>
       ` : ""}
 
-      ${state.tryOn.status === "idle" ? `
-        <div class="try-on-controls">
-          <button class="primary-btn" id="try-on-apply" type="button" ${canApply ? "" : "disabled"}>
-            Apply haircut
-          </button>
-        </div>
-      ` : ""}
-
-      ${state.tryOn.askProfileUpdate ? `
-        <div class="try-on-profile-choice">
-          <p>Use this selfie in Profile too?</p>
-          <div>
-            <button class="primary-btn" type="button" data-try-on-profile="yes">Yes, update Profile</button>
-            <button class="secondary-btn" type="button" data-try-on-profile="no">No, just try on</button>
-          </div>
-        </div>
-      ` : ""}
-
+      ${actionMarkup}
       ${state.tryOn.error ? `<p class="try-on-error">${escapeHtml(state.tryOn.error)}</p>` : ""}
     </div>
   `;
@@ -200,7 +198,10 @@ async function handleTryOnSelfieUpload(fileList) {
 
 async function answerTryOnProfileUpdate(shouldSave) {
   if (shouldSave) {
-    await saveTryOnSelfieToProfile();
+    saveTryOnSelfieToProfile().catch(() => {
+      state.tryOn.error = "Could not update Profile, but you can still try on this selfie.";
+      renderTryOn();
+    });
   }
   state.tryOn.askProfileUpdate = false;
   renderTryOn();
@@ -341,4 +342,3 @@ async function applyTryOn() {
 
   renderTryOn();
 }
-
