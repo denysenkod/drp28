@@ -357,8 +357,12 @@
 }
 
 .try-on-result-actions {
-  justify-content: flex-start;
   margin-top: 12px;
+}
+
+.try-on-result-actions .primary-btn,
+.try-on-result-actions .secondary-btn {
+  width: 240px;
 }
 
 .try-on-profile-choice {
