@@ -94,8 +94,12 @@ function setBriefDetails(next) {
     colour,
     allergies: noColourTreatment ? "" : String(next?.allergies || ""),
     previousTreatments: noColourTreatment ? "" : String(next?.previousTreatments || ""),
+    chemicalHistory: noColourTreatment ? "" : String(next?.chemicalHistory || ""),
     damage: noColourTreatment ? "" : String(next?.damage || ""),
-    notes: String(next?.notes || "")
+    budgetRange: String(next?.budgetRange || ""),
+    desiredMaintenance: String(next?.desiredMaintenance || ""),
+    desiredMaintenanceAuto: Boolean(next?.desiredMaintenanceAuto),
+    salonTime: String(next?.salonTime || "")
   };
   state.briefDetails = cleaned;
   writeStored(BRIEF_DETAILS_KEY, cleaned);
@@ -110,15 +114,19 @@ function setBriefDetails(next) {
 }
 
 function updateBriefDetail(key, value) {
-  setBriefDetails({ ...state.briefDetails, [key]: value });
+  setBriefDetails({
+    ...state.briefDetails,
+    [key]: value,
+    ...(key === "desiredMaintenance" ? { desiredMaintenanceAuto: false } : {})
+  });
   refreshShareButton();
 }
 
-// A brief is worth sharing once it has any item, general notes, or hair-colour
-// details.
+// A brief is worth sharing once it has any item, brief preference, or
+// hair-colour details.
 function briefHasContent() {
   if (state.brief.length) return true;
-  if (briefNotesValue()) return true;
+  if (briefPreferenceHasContent()) return true;
   return briefDetailsIsOpen() && briefDetailsHasContent(state.briefDetails);
 }
 

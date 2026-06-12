@@ -104,8 +104,12 @@ function defaultBriefDetails() {
     colour: NO_COLOUR_TREATMENT,
     allergies: "",
     previousTreatments: "",
+    chemicalHistory: "",
     damage: "",
-    notes: ""
+    budgetRange: "",
+    desiredMaintenance: "",
+    desiredMaintenanceAuto: false,
+    salonTime: ""
   };
 }
 
@@ -115,12 +119,28 @@ function defaultBriefDetails() {
 function briefDetailsHasContent(details = {}) {
   const d = details || {};
   if (isNoColourTreatment(d.colour)) return false;
-  return ["colour", "allergies", "previousTreatments", "damage"]
+  return ["colour", "allergies", "previousTreatments", "chemicalHistory", "damage"]
     .some((key) => Boolean(String(d[key] || "").trim()));
 }
 
-function briefNotesValue(details = state.briefDetails) {
-  return String((details || {}).notes || "").trim();
+function briefBudgetValue(details = state.briefDetails) {
+  return String((details || {}).budgetRange || "").trim();
+}
+
+function briefDesiredMaintenanceValue(details = state.briefDetails) {
+  return String((details || {}).desiredMaintenance || "").trim();
+}
+
+function briefSalonTimeValue(details = state.briefDetails) {
+  return String((details || {}).salonTime || "").trim();
+}
+
+function briefPreferenceHasContent(details = state.briefDetails) {
+  return Boolean(
+    briefBudgetValue(details) ||
+    briefDesiredMaintenanceValue(details) ||
+    briefSalonTimeValue(details)
+  );
 }
 
 function briefDetailsShouldShare(details = {}) {
@@ -144,9 +164,14 @@ function setBriefDetailsOpen(open) {
 }
 
 function removeBriefDetails() {
-  // Clear the colour-treatment fields only; general notes live in their own
-  // section and should survive removing the colour section.
-  state.briefDetails = { ...defaultBriefDetails(), notes: state.briefDetails.notes || "" };
+  // Clear the colour-treatment fields only; brief-wide preferences live in
+  // their own section and should survive removing the colour section.
+  state.briefDetails = {
+    ...defaultBriefDetails(),
+    budgetRange: state.briefDetails.budgetRange || "",
+    desiredMaintenance: state.briefDetails.desiredMaintenance || "",
+    salonTime: state.briefDetails.salonTime || ""
+  };
   state.briefDetailsOpen = false;
   writeStored(BRIEF_DETAILS_KEY, state.briefDetails);
   writeStored(BRIEF_DETAILS_OPEN_KEY, state.briefDetailsOpen);
@@ -156,13 +181,19 @@ function removeBriefDetails() {
 }
 
 function briefDetailsPayload() {
-  // detailsOpen tracks only the colour-treatment section; general notes ride
-  // along independently so they sync even when that section is collapsed.
+  // detailsOpen tracks only the colour-treatment section; brief-wide
+  // preferences ride along independently so they sync even when that section
+  // is collapsed.
   const payload = briefDetailsIsOpen() && briefDetailsHasContent(state.briefDetails)
     ? { ...state.briefDetails, colour: normalizeBriefColour(state.briefDetails.colour), detailsOpen: true }
     : { detailsOpen: false };
-  const notes = briefNotesValue();
-  if (notes) payload.notes = notes;
+  delete payload.desiredMaintenanceAuto;
+  const budgetRange = briefBudgetValue();
+  const desiredMaintenance = briefDesiredMaintenanceValue();
+  const salonTime = briefSalonTimeValue();
+  if (budgetRange) payload.budgetRange = budgetRange;
+  if (desiredMaintenance) payload.desiredMaintenance = desiredMaintenance;
+  if (salonTime) payload.salonTime = salonTime;
   return payload;
 }
 

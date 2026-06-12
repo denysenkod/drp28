@@ -138,6 +138,7 @@ function renderBriefDetailsReview(details) {
     ["Hair colour treatment", isNoColourTreatment(d.colour) ? "" : normalizeBriefColour(d.colour)],
     ["Allergies or sensitivities", d.allergies],
     ["Previous colour treatments", d.previousTreatments],
+    ["Other chemical history", d.chemicalHistory],
     ["Damage or breakage", d.damage]
   ].filter(([, value]) => value && String(value).trim());
 
@@ -155,18 +156,29 @@ function renderBriefDetailsReview(details) {
   `, d, { isOpen: true, actionLabel: "" });
 }
 
-// Read-only general notes for the reviewer, shown as its own section so it
-// stands apart from the hair-colour treatment details.
-function renderBriefNotesReview(details) {
-  const notes = briefNotesValue(details);
-  if (!notes) return "";
+// Read-only brief-wide preferences for the reviewer, shown separately from
+// hair-colour treatment details.
+function renderBriefPreferencesReview(details) {
+  const rows = [
+    ["Budget range", briefBudgetValue(details)],
+    ["Desired maintenance level", briefDesiredMaintenanceValue(details)],
+    ["Time at the barber", briefSalonTimeValue(details)]
+  ].filter(([, value]) => value && String(value).trim());
+  if (!rows.length) return "";
   return `
     <section class="brief-details brief-details--notes">
       <div class="brief-details-summary brief-details-summary--static">
-        <span class="brief-details-summary-title">General notes</span>
+        <span class="brief-details-summary-title">Budget &amp; maintenance</span>
       </div>
       <div class="brief-details-panel">
-        <p class="brief-owner-note">${escapeHtml(notes)}</p>
+        ${rows.length ? `<dl class="brief-details-readout">
+          ${rows.map(([label, value]) => `
+            <div class="brief-detail-row">
+              <dt>${escapeHtml(label)}</dt>
+              <dd>${escapeHtml(value)}</dd>
+            </div>
+          `).join("")}
+        </dl>` : ""}
       </div>
     </section>
   `;
@@ -329,7 +341,7 @@ function renderSharedBrief() {
         </section>
       </div>
 
-      ${renderBriefNotesReview(state.sharedBrief.details)}
+      ${renderBriefPreferencesReview(state.sharedBrief.details)}
 
       ${renderStylistSummary()}
     </section>
@@ -547,8 +559,6 @@ function closeBriefCompletePrompt() {
 }
 
 async function completeBriefFromPrompt(action = "share") {
-  const notes = $("#brief-complete-notes")?.value || "";
-  setBriefDetails({ ...state.briefDetails, notes });
   const completed = action === "copy"
     ? await handleBriefCopyLink()
     : await handleBriefUrlShare();
@@ -559,7 +569,30 @@ async function completeBriefFromPrompt(action = "share") {
   }
 }
 
+function desiredMaintenanceFromAnswers() {
+  const value = Array.isArray(state.answers?.maintenance) ? state.answers.maintenance[0] : "";
+  return {
+    low: "Low maintenance",
+    medium: "Medium maintenance",
+    high: "High maintenance"
+  }[value] || "";
+}
+
+function autofillBriefMaintenanceFromAnswers() {
+  const derived = desiredMaintenanceFromAnswers();
+  if (!derived) return;
+  const current = briefDesiredMaintenanceValue();
+  if (current && !state.briefDetails.desiredMaintenanceAuto) return;
+  if (current === derived && state.briefDetails.desiredMaintenanceAuto) return;
+  setBriefDetails({
+    ...state.briefDetails,
+    desiredMaintenance: derived,
+    desiredMaintenanceAuto: true
+  });
+}
+
 function renderBrief() {
+  autofillBriefMaintenanceFromAnswers();
   syncFavouriteReferencesToBrief();
   const normalizedBrief = normalizeBriefItems(state.brief);
   if (JSON.stringify(normalizedBrief) !== JSON.stringify(state.brief)) {
@@ -579,7 +612,7 @@ function renderBrief() {
           <header class="profile-hero">
             <p class="eyebrow">Your profile</p>
             <h1 class="profile-title">Your hair <em>brief</em></h1>
-            <p class="profile-lede">Gather photos of your hair today and the looks you're after, add the colour you have in mind and a few notes, then share one link with your stylist.</p>
+            <p class="profile-lede">Gather photos of your hair today and the looks you're after, add the colour you have in mind, then share one link with your stylist.</p>
           </header>
 
           <div class="profile-work">
@@ -606,6 +639,7 @@ function renderBrief() {
             </section>
 
             ${renderBriefDetails()}
+            ${renderBriefPreferences()}
           </div>
 
           ${renderProfileBriefAside(counts)}
@@ -630,20 +664,16 @@ function renderBriefCompletePage() {
       <header class="brief-complete-hero">
         <p class="eyebrow">Style brief</p>
         <h1>Complete profile</h1>
-        <p>Add anything else your stylist should know, then copy or share one link to this brief.</p>
+        <p>Copy or share one link to this brief.</p>
       </header>
 
       <div class="brief-complete-card" aria-labelledby="brief-complete-title">
         <div class="brief-picker-head">
           <div class="overlay-heading">
-            <p class="eyebrow">Final note</p>
-            <h2 id="brief-complete-title">Anything else to tell the stylist?</h2>
+            <p class="eyebrow">Ready to share</p>
+            <h2 id="brief-complete-title">Send your style brief</h2>
           </div>
         </div>
-        <label class="brief-field brief-field--wide">
-          <span>Anything else to tell the stylist</span>
-          <textarea id="brief-complete-notes" rows="7" placeholder="Timing, budget, hair history, concerns, or what you definitely do not want...">${escapeHtml(d.notes || "")}</textarea>
-        </label>
         <div class="brief-share-status brief-complete-status" id="brief-complete-share-status" ${state.shareStatus ? "" : "hidden"}>
           <span>${escapeHtml(state.shareStatus)}</span>
         </div>
@@ -660,17 +690,20 @@ function renderBriefCompletePage() {
 
 function profileBriefCounts(meItems = briefItemsFor("me"), refItems = briefItemsFor("references")) {
   const colourAdded = briefDetailsHasContent(state.briefDetails);
+  const budgetMaintenanceAdded = Boolean(briefBudgetValue() && briefDesiredMaintenanceValue());
   const completed = [
     meItems.length > 0,
     refItems.length > 0,
-    colourAdded
+    colourAdded,
+    budgetMaintenanceAdded
   ].filter(Boolean).length;
   return {
     hair: meItems.length,
     references: refItems.length,
     referenceFavourites: refItems.filter((item) => item.firstChoice).length,
     colourAdded,
-    percent: Math.round((completed / 3) * 100)
+    budgetMaintenanceAdded,
+    percent: Math.round((completed / 4) * 100)
   };
 }
 
@@ -692,6 +725,7 @@ function renderProfileBriefAside(counts) {
         ${renderProfileBriefListItem("Your hair", `${counts.hair} ${counts.hair === 1 ? "photo" : "photos"}`, counts.hair > 0)}
         ${renderProfileBriefListItem("References", `${counts.references} ${counts.references === 1 ? "reference" : "references"}`, counts.references > 0)}
         ${renderProfileBriefListItem("Colour & treatment", counts.colourAdded ? "Added" : "Optional", counts.colourAdded)}
+        ${renderProfileBriefListItem("Budget & maintenance", counts.budgetMaintenanceAdded ? "Added" : "Optional", counts.budgetMaintenanceAdded)}
       </ul>
 
       <div class="profile-share-block">
@@ -702,7 +736,7 @@ function renderProfileBriefAside(counts) {
         <div class="profile-share-status" id="brief-share-status" ${state.shareStatus ? "" : "hidden"}>
           <span>${escapeHtml(state.shareStatus)}</span>
         </div>
-        <p class="profile-share-note">${iconCheck()}Review your notes, then copy or share one link.</p>
+        <p class="profile-share-note">${iconCheck()}Review your brief, then copy or share one link.</p>
       </div>
     </aside>
   `;
@@ -734,7 +768,7 @@ function renderMessages() {
         ${!hasBrief ? `
           <section class="messages-empty">
             <h2>No brief shared yet</h2>
-            <p>Create your hairstyle brief, add notes for your stylist, then share the link. Their feedback will land in this tab.</p>
+            <p>Create your hairstyle brief, then share the link. Their feedback will land in this tab.</p>
             <button class="primary-btn" id="messages-open-profile" type="button">${iconCheck()}<span>Complete profile</span></button>
           </section>
         ` : comments.length ? `
@@ -898,6 +932,155 @@ function handleProfileShareDirect() {
   openBriefCompletePrompt();
 }
 
+const TREATMENT_DETAIL_OPTIONS = {
+  allergies: [
+    "No known allergies",
+    "Sensitive scalp",
+    "PPD allergy",
+    "Ammonia sensitivity",
+    "Bleach sensitivity",
+    "Fragrance sensitivity",
+    "Latex allergy",
+    "Nickel allergy",
+    "Prone to irritation",
+    "Other"
+  ],
+  previousTreatments: [
+    "No previous colour",
+    "Box dye",
+    "Permanent colour",
+    "Semi-permanent colour",
+    "Demi-permanent colour",
+    "Bleach / lightener",
+    "Highlights",
+    "Balayage",
+    "Toner / gloss",
+    "Henna",
+    "Colour remover",
+    "Root touch-up",
+    "Other"
+  ],
+  chemicalHistory: [
+    "No other chemical services",
+    "Keratin treatment",
+    "Perm",
+    "Relaxer",
+    "Brazilian blowout",
+    "Smoothing treatment",
+    "Japanese straightening",
+    "Rebonding",
+    "Texturizer",
+    "Chemical straightening",
+    "Protein treatment",
+    "Bond repair treatment",
+    "Other"
+  ],
+  damage: [
+    "No noticeable damage",
+    "Dry ends",
+    "Breakage",
+    "Bleach damage",
+    "Heat damage",
+    "Over-processed",
+    "Frizz / rough texture",
+    "Split ends",
+    "Thinning / shedding",
+    "Scalp irritation",
+    "Elastic / gummy hair",
+    "Other"
+  ]
+};
+
+const TREATMENT_DETAIL_FIELDS = [
+  ["Allergies or sensitivities", "allergies", "brief-allergies"],
+  ["Previous colour treatments", "previousTreatments", "brief-previous"],
+  ["Other chemical history", "chemicalHistory", "brief-chemical-history"],
+  ["Damage or breakage", "damage", "brief-damage"]
+];
+
+function treatmentOptionState(key, value) {
+  const options = TREATMENT_DETAIL_OPTIONS[key] || [];
+  const text = String(value || "").trim();
+  const exact = options.includes(text);
+  return {
+    options,
+    selected: exact ? text : text ? "Other" : "",
+    otherValue: exact ? "" : text && text !== "Other" ? text : ""
+  };
+}
+
+function renderAddableTreatmentRow(label, key, id, value, hidden = false) {
+  const text = String(value || "").trim();
+  const { options, selected, otherValue } = treatmentOptionState(key, text);
+  return `
+    <div class="profile-colour-row profile-treatment-row" data-colour-detail-row ${hidden ? 'hidden style="display:none"' : ""}>
+      <span class="profile-colour-key">${escapeHtml(label)}</span>
+      ${text ? `
+        <span class="profile-treatment-control">
+          <select class="profile-treatment-select" id="${escapeAttr(id)}" data-treatment-key="${escapeAttr(key)}" aria-label="${escapeAttr(label)}">
+            ${options.map((option) => `<option value="${escapeAttr(option)}" ${selected === option ? "selected" : ""}>${escapeHtml(option)}</option>`).join("")}
+          </select>
+          <input class="profile-treatment-other" id="${escapeAttr(id)}-other" data-treatment-other="${escapeAttr(key)}" type="text" placeholder="Add detail" value="${escapeAttr(otherValue)}" ${selected === "Other" ? "" : "hidden"}>
+          <button class="profile-treatment-clear" type="button" data-treatment-clear="${escapeAttr(key)}" aria-label="Remove ${escapeAttr(label)}">&times;</button>
+        </span>
+      ` : `
+        <button class="profile-treatment-add" type="button" data-treatment-add="${escapeAttr(key)}">
+          ${iconPlus()}<span>Add</span>
+        </button>
+      `}
+    </div>
+  `;
+}
+
+function parseBudgetRange(value) {
+  const matches = String(value || "").match(/\d+/g) || [];
+  const first = Number(matches[0]);
+  const second = Number(matches[1]);
+  const min = Number.isFinite(first) ? first : 100;
+  const max = Number.isFinite(second) ? second : Math.max(min + 50, 180);
+  return {
+    min: Math.max(0, Math.min(200, Math.round(min / 10) * 10)),
+    max: Math.max(0, Math.min(200, Math.round(max / 10) * 10))
+  };
+}
+
+function formatBudgetRange(min, max) {
+  const low = Math.min(Number(min), Number(max));
+  const high = Math.max(Number(min), Number(max));
+  return high >= 200 ? `$${low}-$${high}+` : `$${low}-$${high}`;
+}
+
+function budgetRangeTrackStyle(min, max) {
+  const low = Math.min(Number(min), Number(max));
+  const high = Math.max(Number(min), Number(max));
+  return `--budget-min-offset:calc((100% - 28px) * ${low / 200}); --budget-max-offset:calc((100% - 28px) * ${high / 200});`;
+}
+
+function parseSalonTime(value) {
+  const text = String(value || "").toLowerCase();
+  const numbers = text.match(/\d+(\.\d+)?/g) || [];
+  if (!numbers.length) return 120;
+  const first = Number(numbers[0]);
+  if (!Number.isFinite(first)) return 120;
+  const minutes = text.includes("hour") || text.includes("hr") ? first * 60 : first;
+  return Math.max(30, Math.min(180, Math.round(minutes / 15) * 15));
+}
+
+function formatSalonTime(minutes) {
+  const value = Number(minutes);
+  if (value >= 180) return "3 hours or more";
+  const hours = Math.floor(value / 60);
+  const mins = value % 60;
+  if (!hours) return `Less than ${mins} min`;
+  if (!mins) return `Less than ${hours} ${hours === 1 ? "hour" : "hours"}`;
+  return `Less than ${hours} hr ${mins} min`;
+}
+
+function salonTimeTrackStyle(minutes) {
+  const value = Math.max(30, Math.min(180, Number(minutes) || 120));
+  return `--range-progress-offset:calc((100% - 28px) * ${((value - 30) / 150).toFixed(4)});`;
+}
+
 // Collapsible hair-colour section: the user can open it if they want to note
 // their colour, treatments, or related care notes, or leave it collapsed if it
 // is not relevant. The fields update state silently on input (no re-render) so
@@ -937,21 +1120,12 @@ function renderBriefDetails() {
               </span>
             </span>
           </label>
-          ${renderProfileTextRow("Allergies or sensitivities", "brief-allergies", d.allergies, "e.g. PPD allergy, sensitive scalp etc", noColourTreatment)}
-          ${renderProfileTextRow("Previous colour treatments", "brief-previous", d.previousTreatments, "e.g. box dye 3 months ago", noColourTreatment)}
-          ${renderProfileTextRow("Damage or breakage", "brief-damage", d.damage, "e.g. dry ends, breakage from bleach", noColourTreatment)}
+          ${TREATMENT_DETAIL_FIELDS.map(([label, key, id]) =>
+            renderAddableTreatmentRow(label, key, id, d[key], noColourTreatment)
+          ).join("")}
         </div>
       </div>
     </section>
-  `;
-}
-
-function renderProfileTextRow(label, id, value, placeholder, hidden = false) {
-  return `
-    <label class="profile-colour-row" data-colour-detail-row for="${escapeAttr(id)}" ${hidden ? 'hidden style="display:none"' : ""}>
-      <span class="profile-colour-key">${escapeHtml(label)}</span>
-      <textarea class="profile-row-input" id="${escapeAttr(id)}" rows="1" placeholder="${escapeAttr(placeholder)}">${escapeHtml(hidden ? "" : value || "")}</textarea>
-    </label>
   `;
 }
 
@@ -997,7 +1171,7 @@ function wireHairColourSelect() {
       row.hidden = hidden;
       row.style.display = hidden ? "none" : "";
       if (hidden) {
-        const field = row.querySelector("textarea");
+        const field = row.querySelector("select, input");
         if (field) field.value = "";
       }
     });
@@ -1013,6 +1187,7 @@ function wireHairColourSelect() {
       colour: normalized,
       allergies: noColourTreatment ? "" : state.briefDetails.allergies,
       previousTreatments: noColourTreatment ? "" : state.briefDetails.previousTreatments,
+      chemicalHistory: noColourTreatment ? "" : state.briefDetails.chemicalHistory,
       damage: noColourTreatment ? "" : state.briefDetails.damage
     });
     valueLabel.textContent = normalized;
@@ -1060,19 +1235,129 @@ function wireHairColourSelect() {
   });
 }
 
-// General notes is a brief-wide free-text box, kept separate from the optional
-// hair-colour treatment section so it always shows and isn't cleared when the
-// colour section is removed. The value still lives on briefDetails.notes.
-function renderBriefNotes() {
+function wireTreatmentDetailControls() {
+  document.querySelectorAll("[data-treatment-add]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const key = button.dataset.treatmentAdd;
+      const firstOption = (TREATMENT_DETAIL_OPTIONS[key] || []).find((option) => option !== "Other") || "Other";
+      updateBriefDetail(key, firstOption);
+      renderBrief();
+    });
+  });
+
+  document.querySelectorAll("[data-treatment-clear]").forEach((button) => {
+    button.addEventListener("click", () => {
+      updateBriefDetail(button.dataset.treatmentClear, "");
+      renderBrief();
+    });
+  });
+
+  document.querySelectorAll("[data-treatment-key]").forEach((select) => {
+    select.addEventListener("change", () => {
+      const key = select.dataset.treatmentKey;
+      const other = document.querySelector(`[data-treatment-other="${key}"]`);
+      if (select.value === "Other") {
+        if (other) {
+          other.hidden = false;
+          updateBriefDetail(key, other.value.trim() || "Other");
+          other.focus();
+        } else {
+          updateBriefDetail(key, "Other");
+        }
+      } else {
+        if (other) {
+          other.value = "";
+          other.hidden = true;
+        }
+        updateBriefDetail(key, select.value);
+      }
+    });
+  });
+
+  document.querySelectorAll("[data-treatment-other]").forEach((input) => {
+    input.addEventListener("input", () => {
+      updateBriefDetail(input.dataset.treatmentOther, input.value.trim() || "Other");
+    });
+  });
+}
+
+function wireBudgetAndTimeSliders() {
+  const budgetMin = $("#brief-budget-min");
+  const budgetMax = $("#brief-budget-max");
+  const budgetLabel = $("#brief-budget-label");
+  const budgetTrack = $("#brief-budget-slider");
+  const updateBudget = (changed) => {
+    if (!budgetMin || !budgetMax || !budgetLabel) return;
+    let min = Number(budgetMin.value);
+    let max = Number(budgetMax.value);
+    if (min > max) {
+      if (changed === budgetMin) {
+        max = min;
+        budgetMax.value = String(max);
+      } else {
+        min = max;
+        budgetMin.value = String(min);
+      }
+    }
+    const value = formatBudgetRange(min, max);
+    budgetLabel.textContent = value;
+    if (budgetTrack) budgetTrack.setAttribute("style", budgetRangeTrackStyle(min, max));
+    updateBriefDetail("budgetRange", value);
+  };
+  [budgetMin, budgetMax].forEach((input) => {
+    if (input) input.addEventListener("input", () => updateBudget(input));
+  });
+
+  const salonTime = $("#brief-salon-time");
+  const salonLabel = $("#brief-salon-time-label");
+  const salonTrack = $("#brief-salon-time-slider");
+  if (salonTime && salonLabel) {
+    salonTime.addEventListener("input", () => {
+      const value = formatSalonTime(salonTime.value);
+      salonLabel.textContent = value;
+      if (salonTrack) salonTrack.setAttribute("style", salonTimeTrackStyle(salonTime.value));
+      updateBriefDetail("salonTime", value);
+    });
+  }
+}
+
+// Brief-wide preferences are kept separate from the optional hair-colour
+// treatment section so they always show and are not cleared when the colour
+// section is removed.
+function renderBriefPreferences() {
   const d = state.briefDetails || defaultBriefDetails();
+  const budget = parseBudgetRange(d.budgetRange);
+  const budgetLabel = formatBudgetRange(budget.min, budget.max);
+  const salonMinutes = parseSalonTime(d.salonTime);
+  const salonLabel = formatSalonTime(salonMinutes);
   return `
     <section class="profile-section">
       <div class="profile-section-head">
-        <h2>General notes</h2>
-        <p>Anything else you'd like your stylist to know.</p>
+        <h2>Budget &amp; maintenance</h2>
+        <p>Share your spend range, upkeep preference, and appointment timing.</p>
       </div>
       <div class="profile-notes-card">
-        <textarea id="brief-notes" class="profile-notes-field" rows="5" aria-label="General notes" placeholder="Anything else you'd like your stylist to know...">${escapeHtml(d.notes || "")}</textarea>
+        <label class="profile-brief-field">
+          <span>Budget range <b id="brief-budget-label">${escapeHtml(budgetLabel)}</b></span>
+          <div class="profile-range-pair" id="brief-budget-slider" style="${escapeAttr(budgetRangeTrackStyle(budget.min, budget.max))}">
+            <input id="brief-budget-min" type="range" min="0" max="200" step="10" value="${escapeAttr(String(budget.min))}" aria-label="Minimum budget">
+            <input id="brief-budget-max" type="range" min="0" max="200" step="10" value="${escapeAttr(String(budget.max))}" aria-label="Maximum budget">
+          </div>
+        </label>
+        <label class="profile-brief-field">
+          <span>Desired maintenance level</span>
+          <select id="brief-desired-maintenance">
+            ${["", "Low maintenance", "Medium maintenance", "High maintenance", "Flexible"].map((option) => `
+              <option value="${escapeAttr(option)}" ${String(d.desiredMaintenance || "") === option ? "selected" : ""}>${escapeHtml(option || "Select maintenance level")}</option>
+            `).join("")}
+          </select>
+        </label>
+        <label class="profile-brief-field">
+          <span>Time at the barber <b id="brief-salon-time-label">${escapeHtml(salonLabel)}</b></span>
+          <div class="profile-range-pair profile-range-pair--single" id="brief-salon-time-slider" style="${escapeAttr(salonTimeTrackStyle(salonMinutes))}">
+            <input id="brief-salon-time" type="range" min="30" max="180" step="15" value="${escapeAttr(String(salonMinutes))}" aria-label="Time at the barber">
+          </div>
+        </label>
       </div>
     </section>
   `;
@@ -1355,16 +1640,19 @@ function wireBrief() {
   // Hair-colour fields update state silently (no re-render) so the current
   // input keeps focus while the user types.
   const detailFields = [
-    ["brief-allergies", "allergies"],
-    ["brief-previous", "previousTreatments"],
-    ["brief-damage", "damage"],
-    ["brief-notes", "notes"]
+    ["brief-desired-maintenance", "desiredMaintenance"]
   ];
   detailFields.forEach(([id, key]) => {
     const node = $(`#${id}`);
-    if (node) node.addEventListener("input", () => updateBriefDetail(key, node.value));
+    if (node) {
+      const update = () => updateBriefDetail(key, node.value);
+      node.addEventListener("input", update);
+      if (node.tagName === "SELECT") node.addEventListener("change", update);
+    }
   });
   wireHairColourSelect();
+  wireTreatmentDetailControls();
+  wireBudgetAndTimeSliders();
   const colourCareTab = $("#brief-details-accordion");
   if (colourCareTab && colourCareTab.tagName === "DETAILS") {
     colourCareTab.addEventListener("toggle", () => {

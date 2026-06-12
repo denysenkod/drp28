@@ -754,7 +754,17 @@ test('saves a shareable brief, reads it back, and accepts reviewer feedback', as
         { id: 'item-1', partition: 'me', imageUrl: 'data:image/webp;base64,aaa', rating: 4, annotation: 'current cut' },
         { id: 'item-2', partition: 'references', imageUrl: 'https://example.com/ref.webp', rating: 5, annotation: 'love this' }
       ],
-      details: { colour: 'Platinum blonde', allergies: 'PPD', previousTreatments: 'box dye', damage: 'dry ends', notes: 'keep length' }
+      details: {
+        colour: 'Platinum blonde',
+        allergies: 'PPD',
+        previousTreatments: 'box dye',
+        chemicalHistory: 'keratin treatment last year',
+        damage: 'dry ends',
+        budgetRange: '$120-$180',
+        desiredMaintenance: 'Low maintenance',
+        salonTime: 'Under 2 hours',
+        notes: 'keep length'
+      }
     })
   }), env);
   const saved = await saveResponse.json();
@@ -764,6 +774,10 @@ test('saves a shareable brief, reads it back, and accepts reviewer feedback', as
   assert.equal(saved.item.items.length, 2);
   assert.equal(saved.item.details.colour, 'Platinum blonde');
   assert.equal(saved.item.details.allergies, 'PPD');
+  assert.equal(saved.item.details.chemicalHistory, 'keratin treatment last year');
+  assert.equal(saved.item.details.budgetRange, '$120-$180');
+  assert.equal(saved.item.details.desiredMaintenance, 'Low maintenance');
+  assert.equal(saved.item.details.salonTime, 'Under 2 hours');
   assert.deepEqual(saved.item.feedback, []);
   const briefId = saved.item.id;
   assert.ok(briefId);
