@@ -8,6 +8,7 @@ Minimal Cloudflare Worker backend serving the Salon frontend.
 - `frontend/index.html`, `frontend/styles.css`, and `frontend/app.js` are the public frontend entrypoints. The implementation is split under `frontend/js/` and `frontend/css/`.
 - `/api/status` is the backend health/status endpoint.
 - `/api/gallery`, `/api/quiz-responses`, `/api/user-photos`, and `/api/favorites` are D1-backed storage endpoints.
+- `/api/pinterest/*` handles Pinterest OAuth, board listing, and board pin listing.
 - `local-dev.mjs` is a fallback local server for machines with `node` but no `npm` or `npx`.
 
 ## Frontend Structure
@@ -29,6 +30,7 @@ The frontend is still a static vanilla JavaScript app with no build step. `index
 - `frontend/js/state.js` owns the main `state` object, cached DOM lookups, current overlay IDs, route/view switching, fallback style syncing, quiz-step movement, answer persistence, and start-over behavior.
 - `frontend/js/data-loading.js` loads gallery images and favourites from the backend APIs, merges optimistic favourite changes, and refreshes the current render once data arrives.
 - `frontend/js/quiz-filters.js` owns quiz-answer helpers, answer-derived filters, search normalization, scoring, preference options, and the final `computeResults()` pipeline.
+- `frontend/js/pinterest.js` owns the Pinterest search handoff, OAuth popup response, board/pin picker overlay, and conversion of imported pins into saved/try-on-ready style records.
 - `frontend/js/rendering.js` renders the home feed, quiz flow, results/search screen, result cards, filter controls, carousel dots, upload previews, and the event wiring for those screens.
 - `frontend/js/favourites.js` owns favourite toggling, optimistic favourite API writes, saved-count updates, detail save-state updates, and the saved styles overlay.
 - `frontend/js/brief.js` manages the editable style brief collection, including item IDs, partition updates, annotations, first-choice flags, removing items, and mirroring uploaded self photos to the API.
@@ -47,7 +49,7 @@ The frontend is still a static vanilla JavaScript app with no build step. `index
 - `frontend/css/base.css` defines design tokens, global reset rules, typography defaults, navigation, app shell spacing, shared buttons, and other base primitives.
 - `frontend/css/home.css` styles the welcome/home screen, HairMatch wordmark, survey CTA, home feed, and in-page search bar.
 - `frontend/css/quiz.css` styles the quiz layout, progress bar, option cards, image/card grids, mobile carousel-ready quiz pieces, sliders, maintenance product choices, and quiz footer.
-- `frontend/css/results.css` styles the search/results screen, upload/profile preview strips, filter and refine controls, result cards, gallery grid, base overlay layout, detail popup, and similar-results area.
+- `frontend/css/results.css` styles the search/results screen, upload/profile preview strips, filter and refine controls, result cards, Pinterest actions/picker, gallery grid, base overlay layout, detail popup, and similar-results area.
 - `frontend/css/short-laptop.css` contains the `min-width: 821px and max-height: 760px` overrides for short laptop screens. Keep quiz card aspect-ratio changes mirrored here.
 - `frontend/css/brief.css` styles the profile/style brief, self/reference partitions, brief picker, reference add flow, annotations, first-choice controls, sharing controls, shared review UI, feedback, consultation details, and hair-colour combobox.
 - `frontend/css/responsive.css` contains tablet and phone breakpoints, the mobile bottom tab bar, mobile quiz carousel behavior, carousel dots, compact result cards, and very small phone adjustments.
@@ -103,6 +105,24 @@ Fallback local server via npm:
 ```bash
 npm run dev:local
 ```
+
+## Pinterest Integration
+
+Create a Pinterest app and register this OAuth callback:
+
+```text
+https://YOUR_DOMAIN/api/pinterest/auth/callback
+```
+
+Configure these Worker secrets or local environment variables:
+
+```bash
+PINTEREST_CLIENT_ID=your_app_id
+PINTEREST_CLIENT_SECRET=your_app_secret
+PINTEREST_REDIRECT_URI=https://YOUR_DOMAIN/api/pinterest/auth/callback
+```
+
+The app requests `boards:read,pins:read`. Without these values, the Search page still shows the Pinterest actions, but importing albums reports that Pinterest credentials are not configured.
 
 ## Tests
 

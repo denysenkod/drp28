@@ -86,7 +86,7 @@ function closeProduct() {
   els.productOverlay.hidden = true;
   currentProductId = null;
   // The hairstyle or favourites popup may still be open underneath.
-  if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.tryOnOverlay.hidden) document.body.style.overflow = "";
+  if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.tryOnOverlay.hidden && els.pinterestOverlay.hidden) document.body.style.overflow = "";
 }
 
 // Wires product links inside a given scope to open the product popup instead of

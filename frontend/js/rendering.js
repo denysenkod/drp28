@@ -606,6 +606,8 @@ function renderResultsPage() {
       <section class="results-grid" id="results-grid">
         ${results.length ? results.map((style) => buildStyleCardHtml(style, false, { hideFooter: true })).join("") : `<p class="empty-state">No exact matches yet. Search all styles instead.</p>`}
       </section>
+
+      <div id="pinterest-results-actions">${renderPinterestResultsFooter(results)}</div>
     </section>
   `;
 
@@ -619,6 +621,7 @@ function renderResultsPage() {
 
   wireDiscoveryControls();
   wireCards();
+  wirePinterestResultsFooter();
 }
 
 // Re-render only the grid (and result count) so the search field keeps focus
@@ -632,6 +635,11 @@ function refreshResultsGrid() {
     : `<p class="empty-state">No exact matches yet. Search all styles instead.</p>`;
   const count = $("#results-count");
   if (count) count.textContent = `${results.length} styles to try`;
+  const footer = $("#pinterest-results-actions");
+  if (footer) {
+    footer.innerHTML = renderPinterestResultsFooter(results);
+    wirePinterestResultsFooter();
+  }
   wireCards();
 }
 

@@ -16,12 +16,12 @@ function init() {
 
   els.closeFavourites.addEventListener("click", () => {
     els.favouritesOverlay.hidden = true;
-    if (els.detailOverlay.hidden && els.tryOnOverlay.hidden) document.body.style.overflow = "";
+    if (els.detailOverlay.hidden && els.tryOnOverlay.hidden && els.pinterestOverlay.hidden) document.body.style.overflow = "";
   });
   els.favouritesOverlay.addEventListener("click", (event) => {
     if (event.target === els.favouritesOverlay) {
       els.favouritesOverlay.hidden = true;
-      if (els.detailOverlay.hidden && els.tryOnOverlay.hidden) document.body.style.overflow = "";
+      if (els.detailOverlay.hidden && els.tryOnOverlay.hidden && els.pinterestOverlay.hidden) document.body.style.overflow = "";
     }
   });
 
@@ -33,6 +33,10 @@ function init() {
   els.tryOnOverlay.addEventListener("click", (event) => {
     if (event.target === els.tryOnOverlay) closeTryOn();
   });
+  els.closePinterest.addEventListener("click", closePinterestOverlay);
+  els.pinterestOverlay.addEventListener("click", (event) => {
+    if (event.target === els.pinterestOverlay) closePinterestOverlay();
+  });
 
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
@@ -40,6 +44,7 @@ function init() {
     if (!els.tryOnOverlay.hidden) closeTryOn();
     else if (!els.productOverlay.hidden) closeProduct();
     else if (!els.detailOverlay.hidden) closeDetail();
+    else if (!els.pinterestOverlay.hidden) closePinterestOverlay();
     else if (!els.favouritesOverlay.hidden) {
       els.favouritesOverlay.hidden = true;
       document.body.style.overflow = "";
@@ -53,7 +58,7 @@ function init() {
     if (state.briefPickerOpen || state.briefRefAddOpen) {
       state.briefPickerOpen = false;
       state.briefRefAddOpen = false;
-      if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden && els.tryOnOverlay.hidden) {
+      if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden && els.tryOnOverlay.hidden && els.pinterestOverlay.hidden) {
         document.body.style.overflow = "";
       }
     }
@@ -145,6 +150,7 @@ function init() {
   }
 
   render();
+  loadPinterestStatus();
   loadGallery();
   loadFavourites();
   if (state.view === "shared") loadSharedBrief(state.sharedBriefId);

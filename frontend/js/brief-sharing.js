@@ -80,7 +80,7 @@ async function handleBriefComplete() {
     return;
   }
   const link = briefShareLink();
-  if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden && !state.briefPickerOpen && !state.briefRefAddOpen) {
+  if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden && els.pinterestOverlay.hidden && !state.briefPickerOpen && !state.briefRefAddOpen) {
     document.body.style.overflow = "";
   }
   setShareStatus("Style complete", link);

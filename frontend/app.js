@@ -2,24 +2,25 @@
 // sequentially so the classic-script globals keep the same execution order as
 // the previous single-file app.
 const FRONTEND_SCRIPT_FILES = [
-  "/js/storage.js?v=2026-06-12-try-on-usage",
-  "/js/icons.js?v=2026-06-11-brief-persistence",
-  "/js/fallback-styles.js?v=2026-06-11-brief-persistence",
-  "/js/products-and-normalizers.js?v=2026-06-11-brief-persistence",
-  "/js/state.js?v=2026-06-12-try-on-usage",
-  "/js/data-loading.js?v=2026-06-11-brief-persistence",
-  "/js/quiz-filters.js?v=2026-06-11-brief-persistence",
-  "/js/rendering.js?v=2026-06-11-brief-persistence",
-  "/js/favourites.js?v=2026-06-11-brief-persistence",
-  "/js/brief.js?v=2026-06-11-brief-persistence",
-  "/js/brief-sharing.js?v=2026-06-11-brief-persistence",
-  "/js/shared-brief.js?v=2026-06-12-brief-completeness",
-  "/js/try-on.js?v=2026-06-12-try-on-hide-apply",
-  "/js/detail-overlay.js?v=2026-06-12-try-on-actions",
-  "/js/product-overlay.js?v=2026-06-11-brief-persistence",
-  "/js/uploads.js?v=2026-06-11-brief-persistence",
-  "/js/utilities.js?v=2026-06-11-brief-persistence",
-  "/js/init.js?v=2026-06-11-brief-persistence"
+  "/js/storage.js?v=2026-06-12-pinterest",
+  "/js/icons.js?v=2026-06-12-pinterest",
+  "/js/fallback-styles.js?v=2026-06-12-pinterest",
+  "/js/products-and-normalizers.js?v=2026-06-12-pinterest",
+  "/js/state.js?v=2026-06-12-pinterest",
+  "/js/data-loading.js?v=2026-06-12-pinterest",
+  "/js/quiz-filters.js?v=2026-06-12-pinterest",
+  "/js/pinterest.js?v=2026-06-12-pinterest",
+  "/js/rendering.js?v=2026-06-12-pinterest",
+  "/js/favourites.js?v=2026-06-12-pinterest",
+  "/js/brief.js?v=2026-06-12-pinterest",
+  "/js/brief-sharing.js?v=2026-06-12-pinterest",
+  "/js/shared-brief.js?v=2026-06-12-pinterest",
+  "/js/try-on.js?v=2026-06-12-pinterest",
+  "/js/detail-overlay.js?v=2026-06-12-pinterest",
+  "/js/product-overlay.js?v=2026-06-12-pinterest",
+  "/js/uploads.js?v=2026-06-12-pinterest",
+  "/js/utilities.js?v=2026-06-12-pinterest",
+  "/js/init.js?v=2026-06-12-pinterest"
 ];
 
 function loadScript(src) {

@@ -28,6 +28,10 @@
         "purpose":  "Quiz answer helpers, preference filters, result scoring, and search matching."
     },
     {
+        "file":  "/js/pinterest.js",
+        "purpose":  "Pinterest search handoff, OAuth popup handling, board/pin overlay, and imported pin normalization."
+    },
+    {
         "file":  "/js/rendering.js",
         "purpose":  "Main screen rendering and event wiring for home, quiz, search, cards, and filters."
     },

@@ -33,7 +33,7 @@ function closeTryOn() {
   els.tryOnOverlay.hidden = true;
   state.tryOn.status = "idle";
   state.tryOn.error = "";
-  if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden) {
+  if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden && els.pinterestOverlay.hidden) {
     document.body.style.overflow = "";
   }
 }

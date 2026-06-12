@@ -3,6 +3,7 @@ const state = {
   sessionId: getSessionId(),
   styles: FALLBACK_STYLES.map(galleryItemToStyle),
   dbStyles: [],
+  pinterestStyles: readStored(PINTEREST_STYLES_KEY, []).map(galleryItemToStyle),
   galleryLoaded: false,
   galleryLoadError: false,
   view: ((v) => (v === "search" || v === "welcome" ? (v === "search" ? "results" : "home") : v))(readStored(VIEW_KEY, "home")),
@@ -49,7 +50,20 @@ const state = {
   openPreferenceMenu: null,
   openRefineFilter: null,
   refineFilters: { face_shape: new Set(), hair_colour: new Set(), thickness: null },
-  lengthGenderFilter: "masculine"
+  lengthGenderFilter: "masculine",
+  pinterest: {
+    configured: false,
+    connected: false,
+    boards: [],
+    pins: [],
+    selectedBoardId: null,
+    selectedBoardName: "",
+    bookmark: null,
+    pinsBookmark: null,
+    status: "idle",
+    error: "",
+    authPopup: null
+  }
 };
 
 const pendingFavouriteOps = new Map();
@@ -89,7 +103,10 @@ const els = {
   closeProduct: $("#close-product"),
   tryOnOverlay: $("#try-on-overlay"),
   tryOnBody: $("#try-on-body"),
-  closeTryOn: $("#close-try-on")
+  closeTryOn: $("#close-try-on"),
+  pinterestOverlay: $("#pinterest-overlay"),
+  pinterestBody: $("#pinterest-body"),
+  closePinterest: $("#close-pinterest")
 };
 
 function setView(view) {
@@ -102,7 +119,7 @@ function setView(view) {
   if (view !== "brief" && view !== "complete") {
     state.briefPickerOpen = false;
     state.briefRefAddOpen = false;
-    if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden && els.tryOnOverlay.hidden) {
+    if (els.detailOverlay.hidden && els.favouritesOverlay.hidden && els.productOverlay.hidden && els.tryOnOverlay.hidden && els.pinterestOverlay.hidden) {
       document.body.style.overflow = "";
     }
   }
@@ -145,7 +162,10 @@ function fallbackStyles() {
 function syncStylesForCurrentRoute() {
   if (!state.galleryLoaded) return;
 
-  state.styles = state.dbStyles.length ? state.dbStyles : fallbackStyles();
+  const baseStyles = state.dbStyles.length ? state.dbStyles : fallbackStyles();
+  const existing = new Set(baseStyles.map((style) => style.id));
+  const pinterestStyles = state.pinterestStyles.filter((style) => !existing.has(style.id));
+  state.styles = [...baseStyles, ...pinterestStyles];
 }
 
 function setQuizStep(step, skipHistoryPush = false) {

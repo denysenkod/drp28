@@ -741,6 +741,94 @@ test('stores and removes favorite images in D1', async () => {
   assert.equal(empty.items.length, 0);
 });
 
+test('Pinterest auth start returns an OAuth URL when configured', async () => {
+  const { default: worker } = await loadWorker();
+  const env = {
+    ...(await createAssetEnv()),
+    PINTEREST_CLIENT_ID: 'pin-client',
+    PINTEREST_CLIENT_SECRET: 'pin-secret',
+    PINTEREST_REDIRECT_URI: 'https://example.com/api/pinterest/auth/callback'
+  };
+
+  const response = await worker.fetch(new Request('https://example.com/api/pinterest/auth/start'), env);
+  const body = await response.json();
+  const authUrl = new URL(body.authUrl);
+
+  assert.equal(response.status, 200);
+  assert.equal(authUrl.origin, 'https://www.pinterest.com');
+  assert.equal(authUrl.pathname, '/oauth/');
+  assert.equal(authUrl.searchParams.get('client_id'), 'pin-client');
+  assert.equal(authUrl.searchParams.get('redirect_uri'), 'https://example.com/api/pinterest/auth/callback');
+  assert.equal(authUrl.searchParams.get('response_type'), 'code');
+  assert.equal(authUrl.searchParams.get('scope'), 'boards:read,pins:read');
+  assert.ok(authUrl.searchParams.get('state'));
+  assert.match(response.headers.get('set-cookie'), /pinterest_oauth_state=/);
+});
+
+test('Pinterest boards and pins proxy API responses through the Worker', async () => {
+  const { default: worker } = await loadWorker();
+  const env = await createAssetEnv();
+  const originalFetch = globalThis.fetch;
+  const seenUrls = [];
+
+  globalThis.fetch = async (url, options = {}) => {
+    seenUrls.push(String(url));
+    assert.equal(options.headers.authorization, 'Bearer token-1');
+
+    if (String(url).includes('/v5/boards?')) {
+      return new Response(JSON.stringify({
+        items: [{
+          id: 'board-1',
+          name: 'Hair ideas',
+          pin_count: 2,
+          media: { image_cover_url: 'https://example.com/cover.jpg' }
+        }],
+        bookmark: 'next-board'
+      }), { headers: { 'content-type': 'application/json' } });
+    }
+
+    if (String(url).includes('/v5/boards/board-1/pins?')) {
+      return new Response(JSON.stringify({
+        items: [{
+          id: 'pin-1',
+          title: 'Soft bob',
+          description: 'Reference',
+          media: { images: { orig: { url: 'https://example.com/pin.jpg' } } }
+        }],
+        bookmark: null
+      }), { headers: { 'content-type': 'application/json' } });
+    }
+
+    return new Response('{}', { status: 404 });
+  };
+
+  try {
+    const boardsResponse = await worker.fetch(new Request('https://example.com/api/pinterest/boards', {
+      headers: { cookie: 'pinterest_access_token=token-1' }
+    }), env);
+    const boards = await boardsResponse.json();
+
+    assert.equal(boardsResponse.status, 200);
+    assert.equal(boards.items[0].id, 'board-1');
+    assert.equal(boards.items[0].name, 'Hair ideas');
+    assert.equal(boards.items[0].coverImageUrl, 'https://example.com/cover.jpg');
+    assert.equal(boards.bookmark, 'next-board');
+
+    const pinsResponse = await worker.fetch(new Request('https://example.com/api/pinterest/boards/board-1/pins', {
+      headers: { cookie: 'pinterest_access_token=token-1' }
+    }), env);
+    const pins = await pinsResponse.json();
+
+    assert.equal(pinsResponse.status, 200);
+    assert.equal(pins.items[0].id, 'pin-1');
+    assert.equal(pins.items[0].title, 'Soft bob');
+    assert.equal(pins.items[0].imageUrl, 'https://example.com/pin.jpg');
+    assert.equal(seenUrls.length, 2);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test('saves a shareable brief, reads it back, and accepts reviewer feedback', async () => {
   const { default: worker } = await loadWorker();
   const env = await createAssetEnv();
@@ -920,12 +1008,19 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(app.includes('favorites: "/api/favorites"'));
   assert.ok(app.includes('userPhotos: "/api/user-photos"'));
   assert.ok(app.includes('tryOn: "/api/try-on"'));
+  assert.ok(app.includes('pinterest: "/api/pinterest"'));
   assert.ok(app.includes('function openTryOn()'));
   assert.ok(app.includes('function applyTryOn()'));
   assert.ok(app.includes('function addTryOnResultToReferences'));
+  assert.ok(app.includes('function pinterestSearchUrl()'));
+  assert.ok(app.includes('function openPinterestOverlay()'));
+  assert.ok(app.includes('function rememberPinterestPin(pin)'));
+  assert.ok(app.includes('source = "pinterest"'));
   assert.ok(app.includes('source: "try-on"'));
   assert.ok(index.includes('id="detail-try-on"'));
   assert.ok(index.includes('id="try-on-overlay"'));
+  assert.ok(index.includes('id="pinterest-overlay"'));
+  assert.ok(index.includes('id="pinterest-body"'));
   assert.ok(app.includes('imageUrl'));
   assert.ok(app.includes('syncStylesForCurrentRoute'));
   assert.ok(!app.includes('isAdminContext'));
@@ -959,6 +1054,7 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(app.includes('style.hairThickness === thickness'));
   assert.ok(app.includes('function computeResults()'));
   assert.ok(app.includes('return scoredStyles(refined);'));
+  assert.ok(app.includes('renderPinterestResultsFooter(results)'));
   assert.ok(app.includes('toggleFavourite'));
   assert.ok(index.includes('data-filter="gender"'));
   assert.ok(index.includes('id="results-grid"'));

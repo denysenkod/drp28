@@ -62,13 +62,13 @@ const MIME_TYPES = {
   '.webp': 'image/webp'
 };
 
-function send(res, status, body, contentType) {
-  res.writeHead(status, { 'content-type': contentType });
+function send(res, status, body, contentType, headers = {}) {
+  res.writeHead(status, { 'content-type': contentType, ...headers });
   res.end(body);
 }
 
-function sendJson(res, status, body) {
-  send(res, status, JSON.stringify(body), 'application/json; charset=utf-8');
+function sendJson(res, status, body, headers = {}) {
+  send(res, status, JSON.stringify(body), 'application/json; charset=utf-8', headers);
 }
 
 function readJson(req) {
@@ -86,6 +86,42 @@ function readJson(req) {
     });
     req.on('error', () => resolve(null));
   });
+}
+
+function readCookies(req) {
+  const header = req.headers.cookie || '';
+  const cookies = {};
+
+  for (const part of header.split(';')) {
+    const [name, ...rest] = part.trim().split('=');
+    if (!name) continue;
+    try {
+      cookies[name] = decodeURIComponent(rest.join('=') || '');
+    } catch {
+      cookies[name] = rest.join('=') || '';
+    }
+  }
+
+  return cookies;
+}
+
+function cookieSuffix(req, maxAge) {
+  const proto = req.headers['x-forwarded-proto'] || 'http';
+  return `Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${proto === 'https' ? '; Secure' : ''}`;
+}
+
+function clearCookie(name, req) {
+  return `${name}=; ${cookieSuffix(req, 0)}`;
+}
+
+function pinterestConfigured() {
+  return Boolean(process.env.PINTEREST_CLIENT_ID && process.env.PINTEREST_CLIENT_SECRET);
+}
+
+function pinterestRedirectUri(req) {
+  if (process.env.PINTEREST_REDIRECT_URI) return process.env.PINTEREST_REDIRECT_URI;
+  const host = req.headers.host || `localhost:${PORT}`;
+  return `http://${host}/api/pinterest/auth/callback`;
 }
 
 function parseList(value) {
@@ -300,6 +336,171 @@ async function handleTryOn(req, res) {
   return true;
 }
 
+function handlePinterestAuthStart(req, res) {
+  if (!pinterestConfigured()) {
+    sendJson(res, 503, { ok: false, error: 'Pinterest credentials are not configured.' });
+    return true;
+  }
+
+  const state = randomUUID();
+  const authUrl = new URL('https://www.pinterest.com/oauth/');
+  authUrl.searchParams.set('client_id', process.env.PINTEREST_CLIENT_ID);
+  authUrl.searchParams.set('redirect_uri', pinterestRedirectUri(req));
+  authUrl.searchParams.set('response_type', 'code');
+  authUrl.searchParams.set('scope', 'boards:read,pins:read');
+  authUrl.searchParams.set('state', state);
+
+  sendJson(res, 200, { ok: true, authUrl: authUrl.toString() }, {
+    'set-cookie': `pinterest_oauth_state=${encodeURIComponent(state)}; ${cookieSuffix(req, 600)}`
+  });
+  return true;
+}
+
+function pinterestCallbackBody(req, ok, message) {
+  const origin = `http://${req.headers.host || `localhost:${PORT}`}`;
+  const payload = JSON.stringify({ type: 'pinterest-auth', ok, message });
+  return `<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Pinterest</title></head>
+<body>
+<script>
+window.opener && window.opener.postMessage(${payload}, ${JSON.stringify(origin)});
+window.close();
+</script>
+</body>
+</html>`;
+}
+
+async function handlePinterestCallback(req, res, url) {
+  if (!pinterestConfigured()) {
+    send(res, 400, pinterestCallbackBody(req, false, 'Pinterest credentials are not configured.'), 'text/html; charset=utf-8');
+    return true;
+  }
+
+  const code = url.searchParams.get('code') || '';
+  const state = url.searchParams.get('state') || '';
+  const cookies = readCookies(req);
+
+  if (!code || !state || state !== cookies.pinterest_oauth_state) {
+    send(res, 400, pinterestCallbackBody(req, false, 'Pinterest authorization could not be verified.'), 'text/html; charset=utf-8');
+    return true;
+  }
+
+  try {
+    const params = new URLSearchParams();
+    params.set('grant_type', 'authorization_code');
+    params.set('code', code);
+    params.set('redirect_uri', pinterestRedirectUri(req));
+
+    const response = await fetch('https://api.pinterest.com/v5/oauth/token', {
+      method: 'POST',
+      headers: {
+        authorization: `Basic ${Buffer.from(`${process.env.PINTEREST_CLIENT_ID}:${process.env.PINTEREST_CLIENT_SECRET}`).toString('base64')}`,
+        'content-type': 'application/x-www-form-urlencoded'
+      },
+      body: params
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok || typeof data.access_token !== 'string') {
+      send(res, 400, pinterestCallbackBody(req, false, data.message || data.error_description || 'Pinterest authorization failed.'), 'text/html; charset=utf-8');
+      return true;
+    }
+
+    const cookiesToSet = [
+      `pinterest_access_token=${encodeURIComponent(data.access_token)}; ${cookieSuffix(req, Math.max(60, Math.min(Number(data.expires_in || 2592000), 2592000)))}`,
+      clearCookie('pinterest_oauth_state', req)
+    ];
+    if (typeof data.refresh_token === 'string') {
+      cookiesToSet.push(`pinterest_refresh_token=${encodeURIComponent(data.refresh_token)}; ${cookieSuffix(req, 5184000)}`);
+    }
+
+    send(res, 200, pinterestCallbackBody(req, true, 'Pinterest connected.'), 'text/html; charset=utf-8', {
+      'set-cookie': cookiesToSet
+    });
+  } catch (err) {
+    send(res, 400, pinterestCallbackBody(req, false, err instanceof Error ? err.message : 'Pinterest authorization failed.'), 'text/html; charset=utf-8');
+  }
+
+  return true;
+}
+
+function extractPinterestImageUrl(media) {
+  if (!media || typeof media !== 'object') return '';
+  const preferred = ['orig', '1200x', '600x', '400x300', '150x150'];
+  for (const key of preferred) {
+    const url = media?.images?.[key]?.url;
+    if (typeof url === 'string' && url) return url;
+  }
+
+  const stack = [media];
+  while (stack.length) {
+    const item = stack.shift();
+    if (!item || typeof item !== 'object') continue;
+    if (typeof item.url === 'string' && /^https?:\/\//.test(item.url)) return item.url;
+    for (const value of Object.values(item)) {
+      if (value && typeof value === 'object') stack.push(value);
+    }
+  }
+
+  return '';
+}
+
+function normalizePinterestBoard(board) {
+  return {
+    id: board.id,
+    name: board.name || 'Pinterest board',
+    description: board.description || '',
+    privacy: board.privacy || '',
+    pinCount: Number(board.pin_count || 0),
+    coverImageUrl: extractPinterestImageUrl(board.media) || board?.media?.image_cover_url || '',
+    thumbnails: Array.isArray(board?.media?.pin_thumbnail_urls) ? board.media.pin_thumbnail_urls : []
+  };
+}
+
+function normalizePinterestPin(pin) {
+  return {
+    id: pin.id,
+    title: pin.title || pin.alt_text || 'Pinterest style',
+    description: pin.description || '',
+    imageUrl: extractPinterestImageUrl(pin.media),
+    link: pin.link || '',
+    createdAt: pin.created_at || '',
+    dominantColor: pin.dominant_color || '',
+    boardId: pin.board_id || ''
+  };
+}
+
+async function pinterestApi(req, res, path, params = {}) {
+  const accessToken = readCookies(req).pinterest_access_token;
+  if (!accessToken) {
+    sendJson(res, 401, { ok: false, error: 'Pinterest is not connected.' });
+    return null;
+  }
+
+  const apiUrl = new URL(`https://api.pinterest.com/v5${path}`);
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== null && value !== undefined && String(value).trim()) {
+      apiUrl.searchParams.set(key, String(value));
+    }
+  }
+
+  const response = await fetch(apiUrl.toString(), {
+    headers: { authorization: `Bearer ${accessToken}`, accept: 'application/json' }
+  });
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    sendJson(res, response.status, {
+      ok: false,
+      error: data.message || (response.status === 401 ? 'Pinterest authorization expired. Please connect again.' : 'Pinterest request failed.')
+    });
+    return null;
+  }
+
+  return data;
+}
+
 function createItem(data) {
   return {
     id: randomUUID(),
@@ -439,6 +640,63 @@ async function seedGalleryFromMigrations() {
 async function handleApi(req, res, url) {
   if (url.pathname === '/api/status') {
     sendJson(res, 200, API_STATUS);
+    return true;
+  }
+
+  if (url.pathname === '/api/pinterest/status' && req.method === 'GET') {
+    sendJson(res, 200, {
+      ok: true,
+      configured: pinterestConfigured(),
+      connected: Boolean(readCookies(req).pinterest_access_token)
+    });
+    return true;
+  }
+
+  if (url.pathname === '/api/pinterest/auth/start' && req.method === 'GET') {
+    return handlePinterestAuthStart(req, res);
+  }
+
+  if (url.pathname === '/api/pinterest/auth/callback' && req.method === 'GET') {
+    return handlePinterestCallback(req, res, url);
+  }
+
+  if (url.pathname === '/api/pinterest/logout' && req.method === 'POST') {
+    sendJson(res, 200, { ok: true }, {
+      'set-cookie': [
+        clearCookie('pinterest_access_token', req),
+        clearCookie('pinterest_refresh_token', req),
+        clearCookie('pinterest_oauth_state', req)
+      ]
+    });
+    return true;
+  }
+
+  if (url.pathname === '/api/pinterest/boards' && req.method === 'GET') {
+    const data = await pinterestApi(req, res, '/boards', {
+      page_size: Math.max(1, Math.min(Number(url.searchParams.get('page_size') || 50), 100)),
+      bookmark: url.searchParams.get('bookmark') || ''
+    });
+    if (!data) return true;
+    sendJson(res, 200, {
+      ok: true,
+      items: Array.isArray(data.items) ? data.items.map(normalizePinterestBoard) : [],
+      bookmark: data.bookmark || null
+    });
+    return true;
+  }
+
+  const pinterestPinsMatch = url.pathname.match(/^\/api\/pinterest\/boards\/([^/]+)\/pins$/);
+  if (pinterestPinsMatch && req.method === 'GET') {
+    const data = await pinterestApi(req, res, `/boards/${encodeURIComponent(decodeURIComponent(pinterestPinsMatch[1]))}/pins`, {
+      page_size: Math.max(1, Math.min(Number(url.searchParams.get('page_size') || 50), 100)),
+      bookmark: url.searchParams.get('bookmark') || ''
+    });
+    if (!data) return true;
+    sendJson(res, 200, {
+      ok: true,
+      items: Array.isArray(data.items) ? data.items.map(normalizePinterestPin).filter((pin) => pin.imageUrl) : [],
+      bookmark: data.bookmark || null
+    });
     return true;
   }
 

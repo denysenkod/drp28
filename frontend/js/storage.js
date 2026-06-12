@@ -5,7 +5,8 @@ const API = {
   userPhotos: "/api/user-photos",
   briefs: "/api/briefs",
   tryOn: "/api/try-on",
-  tryOnUsage: "/api/try-on/usage"
+  tryOnUsage: "/api/try-on/usage",
+  pinterest: "/api/pinterest"
 };
 
 const SESSION_KEY = "drp28.frontend.sessionId";
@@ -20,6 +21,7 @@ const COMPLETED_BRIEF_IDS_KEY = "drp28.frontend.completedBriefIds";
 const BRIEF_DETAILS_KEY = "drp28.frontend.briefDetails";
 const BRIEF_DETAILS_OPEN_KEY = "drp28.frontend.briefDetailsOpen";
 const REVIEWER_NAME_KEY = "drp28.frontend.reviewerName";
+const PINTEREST_STYLES_KEY = "drp28.frontend.pinterestStyles";
 
 // Hair colour details that travel with the brief. "None" is the default and
 // means the colour-treatment fields should stay out of the stylist share.

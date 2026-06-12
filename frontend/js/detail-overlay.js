@@ -48,7 +48,7 @@ function closeDetail() {
   els.detailOverlay.hidden = true;
   if (!els.tryOnOverlay.hidden) closeTryOn();
   currentDetailId = null;
-  if (els.favouritesOverlay.hidden) document.body.style.overflow = "";
+  if (els.favouritesOverlay.hidden && els.pinterestOverlay.hidden) document.body.style.overflow = "";
 }
 
 function updateDetailLike(id) {
