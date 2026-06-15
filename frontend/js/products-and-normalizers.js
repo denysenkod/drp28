@@ -290,16 +290,6 @@ const QUIZ = [
       { value: "none", label: "No preference", exclusive: true }
     ]
   },
-  {
-    id: "maintenance",
-    title: "How much maintenance?",
-    layout: "slider",
-    options: [
-      { value: "low", label: "Low", upkeep: "Low" },
-      { value: "medium", label: "Medium", products: ["sea-salt-spray", "texture-powder", "matte-paste"], upkeep: "Medium" },
-      { value: "high", label: "High", products: ["curl-cream", "sea-salt-spray", "texture-powder", "matte-paste", "pomade", "gel", "heat-protectant", "hair-oil", "diffuser", "straighteners", "curling-iron"], upkeep: "High" }
-    ]
-  },
 ];
 
 const FACE_SHAPE_FILTER = {
@@ -397,6 +387,17 @@ const REFINE_FILTERS = [
       { value: "thin", label: "Thin" },
       { value: "thick", label: "Thick" },
       { value: "especially thick", label: "Especially thick" }
+    ]
+  },
+  {
+    id: "maintenance",
+    label: "Specify maintenance",
+    noun: "maintenance level",
+    question: "How much maintenance are you open to?",
+    options: [
+      { value: "Low", label: "Low" },
+      { value: "Medium", label: "Medium" },
+      { value: "High", label: "High" }
     ]
   }
 ];

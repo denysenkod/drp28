@@ -49,7 +49,7 @@ const state = {
   openFilterGroups: new Set(),
   openPreferenceMenu: null,
   openRefineFilter: null,
-  refineFilters: { face_shape: new Set(), hair_colour: new Set(), thickness: null },
+  refineFilters: { face_shape: new Set(), hair_colour: new Set(), thickness: null, maintenance: new Set() },
   lengthGenderFilter: "masculine",
   briefCompleteCopyState: "idle",
   briefShareSuccessOpen: false

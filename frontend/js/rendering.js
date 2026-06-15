@@ -480,6 +480,11 @@ function applyRefineFilters(styles) {
     styles = styles.filter((style) => style.hairThickness === thickness);
   }
 
+  const maintenance = state.refineFilters.maintenance;
+  if (maintenance.size > 0) {
+    styles = styles.filter((style) => maintenance.has(style.maintenanceLevel));
+  }
+
   return styles;
 }
 
@@ -500,6 +505,7 @@ function refineTriggerLabel(filter) {
   if (filter.id === "face_shape") return "Face";
   if (filter.id === "hair_colour") return "Colour";
   if (filter.id === "thickness") return "Density";
+  if (filter.id === "maintenance") return "Maintenance";
   return filter.label;
 }
 
@@ -507,6 +513,7 @@ function refineControlTitle(filter) {
   if (filter.id === "face_shape") return "Shape";
   if (filter.id === "hair_colour") return "Colour";
   if (filter.id === "thickness") return "Density";
+  if (filter.id === "maintenance") return "Maintenance";
   return filter.noun || filter.label;
 }
 
@@ -534,7 +541,7 @@ function renderRefineControls() {
               aria-expanded="${isOpen}"
             >
               ${refineControlIcon(filter.id)}
-              <span class="refine-icon-value">${escapeHtml(hasSelection ? refinePillLabel(filter) : "Any")}</span>
+              ${hasSelection ? `<span class="refine-icon-value">${escapeHtml(refinePillLabel(filter))}</span>` : ""}
             </button>
           </span>
         `;
@@ -672,10 +679,13 @@ function refreshResultsGrid() {
 function renderDiscoveryActions(selectedCount) {
   return `
     <div class="results-actions">
-      <button class="secondary-btn filter-toggle-btn" id="filters-btn" type="button" aria-expanded="${state.filterPanelOpen}">
-        Preferences
-        ${selectedCount ? `<span class="filter-count">${selectedCount}</span>` : ""}
-      </button>
+      <span class="preferences-control">
+        <span class="preferences-control-label">Preferences</span>
+        <button class="secondary-btn filter-toggle-btn" id="filters-btn" type="button" aria-expanded="${state.filterPanelOpen}" aria-label="Edit preferences">
+          <span class="filter-toggle-text">Edit</span>
+          ${selectedCount ? `<span class="filter-count">${selectedCount}</span>` : ""}
+        </button>
+      </span>
       ${renderRefineControls()}
     </div>
   `;

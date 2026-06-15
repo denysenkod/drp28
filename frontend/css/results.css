@@ -110,6 +110,16 @@
   justify-content: flex-end;
 }
 
+.preferences-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preferences-control-label {
+  display: none;
+}
+
 .filter-toggle-btn {
   border-color: var(--accent);
   color: var(--accent);

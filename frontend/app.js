@@ -3,13 +3,13 @@
 // the previous single-file app.
 const FRONTEND_SCRIPT_FILES = [
   "/js/storage.js?v=2026-06-15-treatment-dropdowns",
-  "/js/icons.js?v=2026-06-15-home-bottom-rows",
+  "/js/icons.js?v=2026-06-15-maintenance-refine",
   "/js/fallback-styles.js?v=2026-06-11-brief-persistence",
-  "/js/products-and-normalizers.js?v=2026-06-11-brief-persistence",
-  "/js/state.js?v=2026-06-15-onboarding-share",
+  "/js/products-and-normalizers.js?v=2026-06-15-maintenance-refine",
+  "/js/state.js?v=2026-06-15-maintenance-refine",
   "/js/data-loading.js?v=2026-06-15-detail-share",
   "/js/quiz-filters.js?v=2026-06-11-brief-persistence",
-  "/js/rendering.js?v=2026-06-15-no-home-benefits",
+  "/js/rendering.js?v=2026-06-16-preferences-label",
   "/js/favourites.js?v=2026-06-11-brief-persistence",
   "/js/brief.js?v=2026-06-15-treatment-dropdowns",
   "/js/brief-sharing.js?v=2026-06-11-brief-persistence",

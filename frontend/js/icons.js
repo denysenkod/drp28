@@ -81,10 +81,15 @@ function iconHairDensityControl() {
   return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 4.5c-1.5 4.2-1.5 10.8 0 15M12 4.5c-2 4.2-2 10.8 0 15M16.8 4.5c-1.5 4.2-1.5 10.8 0 15" ${iconAttrs}/></svg>`;
 }
 
+function iconMaintenanceControl() {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16a6 6 0 0 1 12 0" ${iconAttrs}/><path d="M12 16l3.5-5" ${iconAttrs}/><path d="M5 19h14" ${iconAttrs}/></svg>`;
+}
+
 function refineControlIcon(id) {
   if (id === "face_shape") return iconFaceShapeControl();
   if (id === "hair_colour") return iconHairColourControl();
   if (id === "thickness") return iconHairDensityControl();
+  if (id === "maintenance") return iconMaintenanceControl();
   return iconCheck();
 }
 
