@@ -20,6 +20,7 @@ const COMPLETED_BRIEF_IDS_KEY = "drp28.frontend.completedBriefIds";
 const BRIEF_DETAILS_KEY = "drp28.frontend.briefDetails";
 const BRIEF_DETAILS_OPEN_KEY = "drp28.frontend.briefDetailsOpen";
 const REVIEWER_NAME_KEY = "drp28.frontend.reviewerName";
+const FEED_ONBOARDING_DISMISSED_KEY = "drp28.frontend.feedOnboardingDismissed";
 
 // Hair colour details that travel with the brief. "None" is the default and
 // means the colour-treatment fields should stay out of the stylist share.
@@ -104,12 +105,10 @@ function defaultBriefDetails() {
     colour: NO_COLOUR_TREATMENT,
     allergies: "",
     previousTreatments: "",
-    chemicalHistory: "",
     damage: "",
-    budgetRange: "",
-    desiredMaintenance: "",
-    desiredMaintenanceAuto: false,
-    salonTime: "",
+    budgetMax: 200,
+    timeAtBarber: 60,
+    maintenancePreference: "",
     notes: ""
   };
 }
@@ -120,32 +119,20 @@ function defaultBriefDetails() {
 function briefDetailsHasContent(details = {}) {
   const d = details || {};
   if (isNoColourTreatment(d.colour)) return false;
-  return ["colour", "allergies", "previousTreatments", "chemicalHistory", "damage"]
+  return ["colour", "allergies", "previousTreatments", "damage"]
     .some((key) => Boolean(String(d[key] || "").trim()));
-}
-
-function briefBudgetValue(details = state.briefDetails) {
-  return String((details || {}).budgetRange || "").trim();
-}
-
-function briefDesiredMaintenanceValue(details = state.briefDetails) {
-  return String((details || {}).desiredMaintenance || "").trim();
-}
-
-function briefSalonTimeValue(details = state.briefDetails) {
-  return String((details || {}).salonTime || "").trim();
 }
 
 function briefNotesValue(details = state.briefDetails) {
   return String((details || {}).notes || "").trim();
 }
 
-function briefPreferenceHasContent(details = state.briefDetails) {
-  return Boolean(
-    briefBudgetValue(details) ||
-    briefDesiredMaintenanceValue(details) ||
-    briefSalonTimeValue(details)
-  );
+function briefBudgetDetailsHasContent(details = state.briefDetails) {
+  const d = details || {};
+  const defaults = defaultBriefDetails();
+  return Number(d.budgetMax ?? defaults.budgetMax) !== defaults.budgetMax
+    || Number(d.timeAtBarber ?? defaults.timeAtBarber) !== defaults.timeAtBarber
+    || Boolean(String(d.maintenancePreference || "").trim());
 }
 
 function briefDetailsShouldShare(details = {}) {
@@ -169,13 +156,14 @@ function setBriefDetailsOpen(open) {
 }
 
 function removeBriefDetails() {
-  // Clear the colour-treatment fields only; brief-wide preferences live in
-  // their own section and should survive removing the colour section.
+  // Clear the colour-treatment fields only; general notes live in their own
+  // section and should survive removing the colour section.
+  const defaults = defaultBriefDetails();
   state.briefDetails = {
-    ...defaultBriefDetails(),
-    budgetRange: state.briefDetails.budgetRange || "",
-    desiredMaintenance: state.briefDetails.desiredMaintenance || "",
-    salonTime: state.briefDetails.salonTime || "",
+    ...defaults,
+    budgetMax: state.briefDetails.budgetMax ?? defaults.budgetMax,
+    timeAtBarber: state.briefDetails.timeAtBarber ?? defaults.timeAtBarber,
+    maintenancePreference: state.briefDetails.maintenancePreference || "",
     notes: state.briefDetails.notes || ""
   };
   state.briefDetailsOpen = false;
@@ -187,21 +175,20 @@ function removeBriefDetails() {
 }
 
 function briefDetailsPayload() {
-  // detailsOpen tracks only the colour-treatment section; brief-wide
-  // preferences ride along independently so they sync even when that section
-  // is collapsed.
+  // detailsOpen tracks only the colour-treatment section; general notes ride
+  // along independently so they sync even when that section is collapsed.
   const payload = briefDetailsIsOpen() && briefDetailsHasContent(state.briefDetails)
     ? { ...state.briefDetails, colour: normalizeBriefColour(state.briefDetails.colour), detailsOpen: true }
     : { detailsOpen: false };
-  delete payload.desiredMaintenanceAuto;
-  const budgetRange = briefBudgetValue();
-  const desiredMaintenance = briefDesiredMaintenanceValue();
-  const salonTime = briefSalonTimeValue();
   const notes = briefNotesValue();
-  if (budgetRange) payload.budgetRange = budgetRange;
-  if (desiredMaintenance) payload.desiredMaintenance = desiredMaintenance;
-  if (salonTime) payload.salonTime = salonTime;
   if (notes) payload.notes = notes;
+  const defaults = defaultBriefDetails();
+  const budgetMax = Number(state.briefDetails?.budgetMax ?? defaults.budgetMax);
+  const timeAtBarber = Number(state.briefDetails?.timeAtBarber ?? defaults.timeAtBarber);
+  const maintenancePreference = String(state.briefDetails?.maintenancePreference || "").trim();
+  if (Number.isFinite(budgetMax)) payload.budgetMax = budgetMax;
+  if (Number.isFinite(timeAtBarber)) payload.timeAtBarber = timeAtBarber;
+  if (maintenancePreference) payload.maintenancePreference = maintenancePreference;
   return payload;
 }
 
@@ -253,4 +240,3 @@ async function apiJson(url, options = {}) {
   }
   return data;
 }
-

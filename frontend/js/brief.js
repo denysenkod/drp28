@@ -90,16 +90,17 @@ function syncFavouriteReferencesToBrief() {
 function setBriefDetails(next) {
   const colour = normalizeBriefColour(next?.colour);
   const noColourTreatment = isNoColourTreatment(colour);
+  const defaults = defaultBriefDetails();
+  const budgetMax = Number(next?.budgetMax ?? defaults.budgetMax);
+  const timeAtBarber = Number(next?.timeAtBarber ?? defaults.timeAtBarber);
   const cleaned = {
     colour,
     allergies: noColourTreatment ? "" : String(next?.allergies || ""),
     previousTreatments: noColourTreatment ? "" : String(next?.previousTreatments || ""),
-    chemicalHistory: noColourTreatment ? "" : String(next?.chemicalHistory || ""),
     damage: noColourTreatment ? "" : String(next?.damage || ""),
-    budgetRange: String(next?.budgetRange || ""),
-    desiredMaintenance: String(next?.desiredMaintenance || ""),
-    desiredMaintenanceAuto: Boolean(next?.desiredMaintenanceAuto),
-    salonTime: String(next?.salonTime || ""),
+    budgetMax: Number.isFinite(budgetMax) ? Math.max(0, Math.min(200, budgetMax)) : defaults.budgetMax,
+    timeAtBarber: Number.isFinite(timeAtBarber) ? Math.max(15, Math.min(180, timeAtBarber)) : defaults.timeAtBarber,
+    maintenancePreference: String(next?.maintenancePreference || ""),
     notes: String(next?.notes || "")
   };
   state.briefDetails = cleaned;
@@ -115,28 +116,24 @@ function setBriefDetails(next) {
 }
 
 function updateBriefDetail(key, value) {
-  setBriefDetails({
-    ...state.briefDetails,
-    [key]: value,
-    ...(key === "desiredMaintenance" ? { desiredMaintenanceAuto: false } : {})
-  });
+  setBriefDetails({ ...state.briefDetails, [key]: value });
   refreshShareButton();
 }
 
-// A brief is worth sharing once it has any item, brief preference, or
-// hair-colour details.
+// A brief is worth sharing once it has any item, general notes, or hair-colour
+// details.
 function briefHasContent() {
   if (state.brief.length) return true;
-  if (briefPreferenceHasContent()) return true;
+  if (briefNotesValue()) return true;
+  if (briefBudgetDetailsHasContent()) return true;
   return briefDetailsIsOpen() && briefDetailsHasContent(state.briefDetails);
 }
 
 function refreshShareButton() {
   const disabled = !briefHasContent();
   document
-    .querySelectorAll("#brief-share-btn, #profile-mobile-share-btn, #brief-url-share-btn")
+    .querySelectorAll("#brief-share-btn, #brief-url-share-btn")
     .forEach((btn) => {
       btn.disabled = disabled;
     });
 }
-

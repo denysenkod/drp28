@@ -23,32 +23,43 @@ function syncNav() {
   });
 }
 
-// Home: the "Find me a style" call-to-action that opens the survey, followed by
-// a doomscroll feed of the results matching the user's search so far (and
-// nothing else -- searching and filtering live on the Search page.
+function renderAnimatedSlogan(text) {
+  const delays = [480, 320, 340, 416, 184, 134];
+  const words = String(text).split(/\s+/).filter(Boolean);
+  return `
+    <h1 id="home-title" class="home-slogan word-animation-processed">
+      <span class="u-sr-only">${escapeHtml(text)}</span>
+      ${words.map((word, index) => `
+        <span class="animate-word ${["style", "effortlessly"].includes(word.toLowerCase()) ? "is-underlined" : ""}" style="--word-delay: ${delays[index % delays.length]}ms;">${escapeHtml(word)}</span>${index < words.length - 1 ? `<span class="animate-space" aria-hidden="true"> </span>` : ""}
+      `).join("")}
+    </h1>
+  `;
+}
+
+// Home: static entry point for first-time visitors.
 function renderHome() {
-  const personalizedResults = computeResults();
-  const broadResults = personalizedResults.length
-    ? personalizedResults
-    : scoredStyles(applyTextSearch(state.styles));
-  const emptyMessage = state.galleryLoaded ? "No styles available yet." : "Loading styles...";
   els.app.innerHTML = `
     <section class="home-screen">
-      ${state.quizComplete ? "" : `
-        <button class="home-cta choice-card" id="find-style-btn" type="button">
-          <span class="home-cta-close" id="home-cta-close" role="button" tabindex="0" aria-label="Hide survey prompt">&times;</span>
-          <span class="choice-title">Tell us about you</span>
-          <span class="choice-action">${QUIZ.length} quick questions ${iconArrow()}</span>
-        </button>
-      `}
-
-      <section class="results-grid home-feed" id="results-grid">
-        ${broadResults.length ? broadResults.map((style) => buildStyleCardHtml(style, false, { hideFooter: true })).join("") : `<p class="empty-state">${emptyMessage}</p>`}
-      </section>
+      <header class="home-entry-bar" aria-label="HairMatch">
+        <p class="home-brand">HairMatch</p>
+      </header>
+      <header class="home-hero" aria-labelledby="home-title">
+        ${renderAnimatedSlogan("Explore your style and express it effortlessly")}
+        <div class="home-actions" aria-label="Start HairMatch">
+          <button class="home-action-card home-primary-action" id="find-style-btn" type="button">
+            <span class="home-action-icon">${iconQuizHome()}</span>
+            <span>Find my style</span>
+          </button>
+          <button class="home-action-card home-secondary-action" id="view-gallery-btn" type="button">
+            <span class="home-action-icon">${iconGalleryHome()}</span>
+            <span>I have got ideas</span>
+          </button>
+        </div>
+      </header>
     </section>
   `;
   const findStyleBtn = $("#find-style-btn");
-  const homeCtaClose = $("#home-cta-close");
+  const viewGalleryBtn = $("#view-gallery-btn");
   if (findStyleBtn) {
     findStyleBtn.addEventListener("click", () => {
       setAnswers({});
@@ -59,20 +70,9 @@ function renderHome() {
       setView("quiz");
     });
   }
-  if (homeCtaClose) {
-    const hideHomeCta = (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      state.quizComplete = true;
-      writeStored(QUIZ_COMPLETE_KEY, state.quizComplete);
-      renderHome();
-    };
-    homeCtaClose.addEventListener("click", hideHomeCta);
-    homeCtaClose.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") hideHomeCta(event);
-    });
+  if (viewGalleryBtn) {
+    viewGalleryBtn.addEventListener("click", () => setView("results"));
   }
-  wireCards();
 }
 
 function renderQuiz() {
@@ -109,16 +109,14 @@ function renderQuiz() {
         <div class="quiz-question">
           <h1>${question.title}</h1>
           ${question.sub ? `<p>${question.sub}</p>` : ""}
-          <div class="quiz-question-buttons">
-            ${state.quizStep > 0 ? `<button class="secondary-btn" id="quiz-back-btn" type="button">Back</button>` : ""}
-            <button class="primary-btn" id="quiz-next-btn" type="button"><span id="quiz-next-label">${nextLabel}</span> ${iconArrow()}</button>
-            ${showLengthGenderToggle ? `
+          ${showLengthGenderToggle ? `
+            <div class="quiz-question-buttons">
               <div class="length-gender-toggle">
                 <button class="length-gender-btn ${state.lengthGenderFilter === "masculine" ? "is-active" : ""}" type="button" data-length-gender="masculine" aria-label="Men">${iconMale()}</button>
                 <button class="length-gender-btn ${state.lengthGenderFilter === "feminine" ? "is-active" : ""}" type="button" data-length-gender="feminine" aria-label="Women">${iconFemale()}</button>
               </div>
-            ` : ""}
-          </div>
+            </div>
+          ` : ""}
         </div>
 
         <div class="quiz-response">
@@ -134,6 +132,10 @@ function renderQuiz() {
 
       <div class="quiz-footer">
         <span>${selected.length ? `<b>${selected.filter((value) => value !== "__all").length || selected.length}</b> selected` : ""}</span>
+        <div class="quiz-footer-buttons">
+          ${state.quizStep > 0 ? `<button class="secondary-btn" id="quiz-back-btn" type="button">Back</button>` : ""}
+          <button class="primary-btn" id="quiz-next-btn" type="button"><span id="quiz-next-label">${nextLabel}</span> ${iconArrow()}</button>
+        </div>
       </div>
     </section>
   `;
@@ -169,7 +171,6 @@ function renderQuiz() {
         renderQuiz();
       });
     });
-    wireCarouselDots(question);
   }
 }
 
@@ -521,10 +522,9 @@ function renderRefineControls() {
       ${REFINE_FILTERS.map((filter) => {
         const hasSelection = refineHasSelection(filter);
         const isOpen = open === filter.id;
-        const label = refineTriggerLabel(filter);
         const title = refineControlTitle(filter);
         return `
-          <span class="refine-icon-control">
+          <span class="refine-icon-control${hasSelection ? " is-active" : " is-inactive"}">
             <span class="refine-icon-title">${escapeHtml(title)}</span>
             <button
               class="refine-icon-btn${hasSelection ? " is-active" : ""}${isOpen ? " is-open" : ""}"
@@ -532,9 +532,9 @@ function renderRefineControls() {
               data-refine="${escapeAttr(filter.id)}"
               aria-label="${escapeAttr(title)} filter"
               aria-expanded="${isOpen}"
-              title="${escapeAttr(hasSelection ? refinePillLabel(filter) : `${title} filter`)}"
             >
               ${refineControlIcon(filter.id)}
+              <span class="refine-icon-value">${escapeHtml(hasSelection ? refinePillLabel(filter) : "Any")}</span>
             </button>
           </span>
         `;
@@ -549,7 +549,7 @@ function renderRefineRow() {
   if (!openFilter) return "";
   return `
     <div class="refine-filters">
-      <div class="refine-panel">
+      <div class="refine-panel" data-refine-panel="${escapeAttr(openFilter.id)}">
         <p class="refine-question">${escapeHtml(openFilter.question)}</p>
         <div class="refine-options">
           ${openFilter.options.map((option) => {
@@ -583,12 +583,13 @@ function computeResults() {
 function renderResultsPage() {
   const results = computeResults();
   const selectedCount = selectedAnswerCount();
+  markFeedOnboardingCompleteWhenReady(selectedCount);
 
   els.app.innerHTML = `
     <section class="results-screen">
       <label class="search-bar">
         <span aria-hidden="true">${iconSearch()}</span>
-        <input type="search" id="search-input" placeholder="Search by length, texture, vibe, or style name" value="${escapeAttr(state.searchQuery)}" autocomplete="off">
+        <input type="search" id="search-input" placeholder="Search styles…" data-placeholder-rest="Search styles…" data-placeholder-focus="Search by length, texture, vibe, or style name" value="${escapeAttr(state.searchQuery)}" autocomplete="off">
       </label>
 
       <div class="results-summary">
@@ -603,6 +604,8 @@ function renderResultsPage() {
 
       ${renderRefineRow()}
 
+      ${renderFeedOnboardingBanner(selectedCount)}
+
       <section class="results-grid" id="results-grid">
         ${results.length ? results.map((style) => buildStyleCardHtml(style, false, { hideFooter: true })).join("") : `<p class="empty-state">No exact matches yet. Search all styles instead.</p>`}
       </section>
@@ -611,6 +614,12 @@ function renderResultsPage() {
 
   const searchInput = $("#search-input");
   if (searchInput) {
+    searchInput.addEventListener("focus", () => {
+      searchInput.placeholder = searchInput.dataset.placeholderFocus || searchInput.placeholder;
+    });
+    searchInput.addEventListener("blur", () => {
+      searchInput.placeholder = searchInput.dataset.placeholderRest || searchInput.placeholder;
+    });
     searchInput.addEventListener("input", (event) => {
       state.searchQuery = event.target.value;
       refreshResultsGrid();
@@ -619,6 +628,31 @@ function renderResultsPage() {
 
   wireDiscoveryControls();
   wireCards();
+}
+
+function markFeedOnboardingCompleteWhenReady(selectedCount) {
+  if (selectedCount <= 0 || state.feedOnboardingDismissed) return;
+  state.feedOnboardingDismissed = true;
+  writeStored(FEED_ONBOARDING_DISMISSED_KEY, true);
+}
+
+function dismissFeedOnboarding() {
+  state.feedOnboardingDismissed = true;
+  writeStored(FEED_ONBOARDING_DISMISSED_KEY, true);
+}
+
+function renderFeedOnboardingBanner(selectedCount) {
+  if (selectedCount > 0 || state.feedOnboardingDismissed) return "";
+  return `
+    <section class="feed-onboarding-banner" aria-labelledby="feed-onboarding-title">
+      <button class="feed-onboarding-dismiss" id="feed-onboarding-dismiss" type="button" aria-label="Dismiss onboarding">&times;</button>
+      <div>
+        <h2 id="feed-onboarding-title">Personalise your feed</h2>
+        <p>Tell us your style preferences and we'll curate looks just for you.</p>
+      </div>
+      <button class="feed-onboarding-cta" id="feed-onboarding-preferences" type="button">Set preferences</button>
+    </section>
+  `;
 }
 
 // Re-render only the grid (and result count) so the search field keeps focus
@@ -705,14 +739,35 @@ function wireDiscoveryControls() {
     if (state.filterPanelOpen) state.openFilterGroups.clear();
     renderCurrentDiscoveryView();
   });
-  const closeFilters = $("#close-filters-btn");
-  if (closeFilters) {
-    closeFilters.addEventListener("click", () => {
-      state.filterPanelOpen = false;
-      state.openFilterGroups.clear();
-      state.openPreferenceMenu = null;
+  const onboardingDismiss = $("#feed-onboarding-dismiss");
+  if (onboardingDismiss) {
+    onboardingDismiss.addEventListener("click", () => {
+      dismissFeedOnboarding();
       renderCurrentDiscoveryView();
     });
+  }
+  const onboardingPreferences = $("#feed-onboarding-preferences");
+  if (onboardingPreferences) {
+    onboardingPreferences.addEventListener("click", () => {
+      state.filterPanelOpen = true;
+      state.openPreferenceMenu = null;
+      state.openFilterGroups.clear();
+      renderCurrentDiscoveryView();
+    });
+  }
+  const closeFilters = $("#close-filters-btn");
+  const closeFilterPanel = () => {
+    state.filterPanelOpen = false;
+    state.openFilterGroups.clear();
+    state.openPreferenceMenu = null;
+    renderCurrentDiscoveryView();
+  };
+  if (closeFilters) {
+    closeFilters.addEventListener("click", closeFilterPanel);
+  }
+  const doneFilters = $("#done-filters-btn");
+  if (doneFilters) {
+    doneFilters.addEventListener("click", closeFilterPanel);
   }
   const clearFilters = $("#clear-filters-btn");
   if (clearFilters) {
@@ -823,11 +878,14 @@ function renderAnswerFilterDrawer(selectedCount) {
       </div>
       <p class="answer-filter-copy">Adjust the profile from one place. Results update as soon as you change an answer.</p>
       <div class="answer-filter-actions">
-        <button class="secondary-btn" id="clear-filters-btn" type="button">Clear answers</button>
+        <button class="secondary-btn clear-answers-btn" id="clear-filters-btn" type="button">Clear answers</button>
       </div>
       <div class="answer-filter-count">${selectedCount || 0} selected</div>
       <div class="answer-filter-groups">
         ${DISCOVERY_FILTER_QUESTIONS.map(renderFilterGroup).join("")}
+      </div>
+      <div class="answer-filter-footer">
+        <button class="primary-btn done-filters-btn" id="done-filters-btn" type="button">Done</button>
       </div>
     </aside>
   `;
@@ -877,14 +935,15 @@ function buildStyleCardHtml(style, compact = false, options = {}) {
     <article class="style-card ${compact ? "is-compact" : ""}" data-style-id="${style.id}">
       <button class="style-card-image" type="button" data-open-style="${style.id}" aria-label="Open ${escapeAttr(style.name)}">
         ${style.imageUrl ? `<img src="${style.imageUrl}" alt="${escapeAttr(style.name)}" loading="lazy" referrerpolicy="no-referrer">` : `<span>${escapeHtml(style.name)}</span>`}
+        <span class="style-card-name-overlay"><span class="style-card-name-text">${escapeHtml(style.name)}</span></span>
       </button>
+      <button class="heart-btn heart-btn--overlay ${liked ? "is-liked" : ""}" type="button" data-like-style="${style.id}" aria-label="${liked ? "Remove from saved" : "Save style"}">${liked ? "&hearts;" : "&#9825;"}</button>
       ${compact || hideFooter ? "" : `
         <div class="style-card-footer">
           <div>
             <h2>${escapeHtml(style.name)}</h2>
             <p>${style.length} length - ${style.hairType}</p>
           </div>
-          <button class="heart-btn ${liked ? "is-liked" : ""}" type="button" data-like-style="${style.id}" aria-label="${liked ? "Remove from saved" : "Save style"}">${liked ? "&hearts;" : "&#9825;"}</button>
         </div>
       `}
     </article>
@@ -902,4 +961,3 @@ function wireCards(scope = document) {
     });
   });
 }
-

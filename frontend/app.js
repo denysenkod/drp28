@@ -2,24 +2,24 @@
 // sequentially so the classic-script globals keep the same execution order as
 // the previous single-file app.
 const FRONTEND_SCRIPT_FILES = [
-  "/js/storage.js?v=2026-06-12-share-page-notes",
-  "/js/icons.js?v=2026-06-11-brief-persistence",
+  "/js/storage.js?v=2026-06-15-onboarding-share",
+  "/js/icons.js?v=2026-06-15-home-bottom-rows",
   "/js/fallback-styles.js?v=2026-06-11-brief-persistence",
   "/js/products-and-normalizers.js?v=2026-06-11-brief-persistence",
-  "/js/state.js?v=2026-06-12-try-on-usage",
-  "/js/data-loading.js?v=2026-06-11-brief-persistence",
+  "/js/state.js?v=2026-06-15-onboarding-share",
+  "/js/data-loading.js?v=2026-06-15-detail-share",
   "/js/quiz-filters.js?v=2026-06-11-brief-persistence",
-  "/js/rendering.js?v=2026-06-11-brief-persistence",
+  "/js/rendering.js?v=2026-06-15-no-home-benefits",
   "/js/favourites.js?v=2026-06-11-brief-persistence",
-  "/js/brief.js?v=2026-06-12-share-page-notes",
+  "/js/brief.js?v=2026-06-15-no-brief-progress-header",
   "/js/brief-sharing.js?v=2026-06-11-brief-persistence",
-  "/js/shared-brief.js?v=2026-06-12-share-page-notes",
+  "/js/shared-brief.js?v=2026-06-15-onboarding-share",
   "/js/try-on.js?v=2026-06-12-try-on-flow",
-  "/js/detail-overlay.js?v=2026-06-12-try-on-actions",
+  "/js/detail-overlay.js?v=2026-06-15-detail-share",
   "/js/product-overlay.js?v=2026-06-11-brief-persistence",
   "/js/uploads.js?v=2026-06-11-brief-persistence",
   "/js/utilities.js?v=2026-06-11-brief-persistence",
-  "/js/init.js?v=2026-06-11-brief-persistence"
+  "/js/init.js?v=2026-06-15-onboarding-share"
 ];
 
 function loadScript(src) {

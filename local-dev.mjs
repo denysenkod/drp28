@@ -755,7 +755,7 @@ async function handleApi(req, res, url) {
 
       const author = typeof body?.author === 'string' && body.author.trim()
         ? body.author.trim().slice(0, 80)
-        : 'Reviewer';
+        : 'Stylist';
       const itemId = typeof body?.itemId === 'string' && body.itemId.trim() ? body.itemId.trim() : null;
       const feedback = createItem({ briefId: id, itemId, author, rating, note });
       store.briefFeedback.push(feedback);
@@ -790,7 +790,7 @@ async function handleApi(req, res, url) {
 
       existing.author = typeof body?.author === 'string' && body.author.trim()
         ? body.author.trim().slice(0, 80)
-        : existing.author || 'Reviewer';
+        : existing.author || 'Stylist';
       existing.rating = rating;
       existing.note = note;
 

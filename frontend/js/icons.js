@@ -17,8 +17,40 @@ function iconArrow() {
   return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" ${iconAttrs}/></svg>`;
 }
 
+function iconQuizHome() {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4.5h8a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-11a2 2 0 0 1 2-2Z" ${iconAttrs}/><path d="M9 9h6M9 12h6M9 15h3" ${iconAttrs}/></svg>`;
+}
+
+function iconGalleryHome() {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2" ${iconAttrs}/><path d="m7 16 3.2-3.2a1.5 1.5 0 0 1 2.1 0L15 15.5l1-1a1.5 1.5 0 0 1 2.1 0L20 16.4" ${iconAttrs}/><circle cx="15.5" cy="9.5" r="1.4" ${iconAttrs}/></svg>`;
+}
+
+function iconProductsHome() {
+  return `<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 25h12v28H10V25zM13 19h6v6h-6v-6zM9 15h14v4H9v-4zM29 25h10v28H29V25zM31.5 17h5v8h-5v-8zM47 25h10v28H47V25zM49.5 17h5v8h-5v-8z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M12 44h8M31 44h6M49 44h6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>`;
+}
+
+function iconVisualProfileHome() {
+  return `<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="27" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M18 52c2.2-9 8.2-14 14-14s11.8 5 14 14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M32 34c-6.1 0-10.5-5-10.5-11.4S25.9 11 32 11s10.5 5.2 10.5 11.6S38.1 34 32 34z" fill="none" stroke="currentColor" stroke-width="2.5"/></svg>`;
+}
+
+function iconCamera() {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 6.5 10 4.5h4l1.5 2H18a2.5 2.5 0 0 1 2.5 2.5v8A2.5 2.5 0 0 1 18 19.5H6A2.5 2.5 0 0 1 3.5 17V9A2.5 2.5 0 0 1 6 6.5h2.5Z" ${iconAttrs}/><circle cx="12" cy="13" r="3.5" ${iconAttrs}/></svg>`;
+}
+
+function iconImage() {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2" ${iconAttrs}/><path d="m6.5 16 3.6-3.5a1.4 1.4 0 0 1 2 0l2.2 2.2.9-.9a1.4 1.4 0 0 1 2 0l2.3 2.2" ${iconAttrs}/><circle cx="15.5" cy="9.5" r="1.4" ${iconAttrs}/></svg>`;
+}
+
 function iconCheck() {
   return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7" ${iconAttrs}/></svg>`;
+}
+
+function iconClipboard() {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="6" width="11" height="15" rx="2" ${iconAttrs}/><path d="M9.5 6V4.8A1.8 1.8 0 0 1 11.3 3h3.4a1.8 1.8 0 0 1 1.8 1.8V6M10 10h5M10 14h5M10 18h3" ${iconAttrs}/></svg>`;
+}
+
+function iconInfo() {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" ${iconAttrs}/><path d="M12 11v5M12 8h.01" ${iconAttrs}/></svg>`;
 }
 
 function iconPlus() {
@@ -27,6 +59,10 @@ function iconPlus() {
 
 function iconComment() {
   return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 19 16H9l-4 4v-4H5a1.5 1.5 0 0 1-1.5-1.5v-8A1.5 1.5 0 0 1 5 5z" ${iconAttrs}/></svg>`;
+}
+
+function iconEnvelope() {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2" ${iconAttrs}/><path d="m4.5 7 7.5 6 7.5-6" ${iconAttrs}/></svg>`;
 }
 
 function iconShare() {
@@ -96,4 +132,3 @@ function lengthIcon(level) {
   const len = [4, 12, 20, 28, 38, 48][level] || 20;
   return `<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="16" r="8" ${iconAttrs}/><path d="M24 16q-6 4-6 ${len}M40 16q6 4 6 ${len}" ${iconAttrs}/></svg>`;
 }
-

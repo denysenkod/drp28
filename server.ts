@@ -795,7 +795,7 @@ async function addBriefFeedback(request: Request, db: any, id: string): Promise<
 
   const author = typeof body?.author === 'string' && body.author.trim()
     ? body.author.trim().slice(0, 80)
-    : 'Reviewer';
+    : 'Stylist';
   const itemId = typeof body?.itemId === 'string' && body.itemId.trim() ? body.itemId.trim() : null;
   const feedbackId = crypto.randomUUID();
 
@@ -838,7 +838,7 @@ async function updateBriefFeedback(request: Request, db: any, id: string, feedba
 
   const author = typeof body?.author === 'string' && body.author.trim()
     ? body.author.trim().slice(0, 80)
-    : existing.author || 'Reviewer';
+    : existing.author || 'Stylist';
 
   await db
     .prepare('UPDATE brief_feedback SET author = ?, rating = ?, note = ? WHERE id = ?')

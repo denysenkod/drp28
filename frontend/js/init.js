@@ -50,6 +50,11 @@ function init() {
   });
 
   window.addEventListener("popstate", (event) => {
+    if (state.briefShareSuccessOpen) {
+      window.history.pushState({ view: "complete", shareSuccess: true, previousView: "brief" }, "", "?complete=sent");
+      renderBriefCompletePage();
+      return;
+    }
     if (state.briefPickerOpen || state.briefRefAddOpen) {
       state.briefPickerOpen = false;
       state.briefRefAddOpen = false;

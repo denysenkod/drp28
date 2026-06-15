@@ -110,6 +110,7 @@ svg {
   margin-bottom: 62px;
 }
 
+body[data-view="home"] .topbar,
 body[data-view="quiz"] .topbar,
 body[data-view="shared"] .topbar {
   display: none;
@@ -138,10 +139,9 @@ body[data-view="shared"] .topbar {
 
 .brand-btn {
   background: transparent;
-  font-family: var(--font-serif);
   font-size: 28px;
-  font-style: italic;
-  font-weight: 400;
+  font-style: normal;
+  font-weight: 800;
   padding: 8px 0;
 }
 
@@ -178,10 +178,9 @@ body[data-view="shared"] .topbar {
 
 .brief-btn-label {
   display: inline-block;
-  font-family: var(--font-serif);
   font-size: 26px;
-  font-style: italic;
-  font-weight: 400;
+  font-style: normal;
+  font-weight: 800;
   line-height: 1;
 }
 
@@ -311,4 +310,3 @@ body[data-view="brief"] .app-shell,
 body[data-view="complete"] .app-shell {
   padding-top: 16px;
 }
-

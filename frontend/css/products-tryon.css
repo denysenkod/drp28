@@ -406,8 +406,8 @@
 
 .product-popup h2 {
   margin: 6px 0 12px;
-  font-family: var(--font-serif);
   font-size: 38px;
+  font-weight: 800;
   line-height: 1.06;
 }
 
@@ -471,8 +471,8 @@
 
 .product-howto h3,
 .product-result h3 {
-  font-family: var(--font-serif);
   font-size: 24px;
+  font-weight: 800;
   margin: 0 0 14px;
 }
 

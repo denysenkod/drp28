@@ -754,17 +754,7 @@ test('saves a shareable brief, reads it back, and accepts reviewer feedback', as
         { id: 'item-1', partition: 'me', imageUrl: 'data:image/webp;base64,aaa', rating: 4, annotation: 'current cut' },
         { id: 'item-2', partition: 'references', imageUrl: 'https://example.com/ref.webp', rating: 5, annotation: 'love this' }
       ],
-      details: {
-        colour: 'Platinum blonde',
-        allergies: 'PPD',
-        previousTreatments: 'box dye',
-        chemicalHistory: 'keratin treatment last year',
-        damage: 'dry ends',
-        budgetRange: '$120-$180',
-        desiredMaintenance: 'Low maintenance',
-        salonTime: 'Under 2 hours',
-        notes: 'keep length'
-      }
+      details: { colour: 'Platinum blonde', allergies: 'PPD', previousTreatments: 'box dye', damage: 'dry ends', notes: 'keep length' }
     })
   }), env);
   const saved = await saveResponse.json();
@@ -774,10 +764,6 @@ test('saves a shareable brief, reads it back, and accepts reviewer feedback', as
   assert.equal(saved.item.items.length, 2);
   assert.equal(saved.item.details.colour, 'Platinum blonde');
   assert.equal(saved.item.details.allergies, 'PPD');
-  assert.equal(saved.item.details.chemicalHistory, 'keratin treatment last year');
-  assert.equal(saved.item.details.budgetRange, '$120-$180');
-  assert.equal(saved.item.details.desiredMaintenance, 'Low maintenance');
-  assert.equal(saved.item.details.salonTime, 'Under 2 hours');
   assert.deepEqual(saved.item.feedback, []);
   const briefId = saved.item.id;
   assert.ok(briefId);
@@ -944,8 +930,8 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(app.includes('class="try-on-generated-frame'));
   assert.ok(index.includes('id="detail-try-on"'));
   assert.ok(index.includes('id="try-on-overlay"'));
-  assert.ok(index.includes('styles.css?v=2026-06-15-readable-section-heads'));
-  assert.ok(index.includes('app.js?v=2026-06-12-share-page-notes'));
+  assert.ok(index.includes('styles.css?v=2026-06-15-large-home-brand'));
+  assert.ok(index.includes('app.js?v=2026-06-15-no-home-benefits'));
   assert.ok(app.includes('imageUrl'));
   assert.ok(app.includes('syncStylesForCurrentRoute'));
   assert.ok(!app.includes('isAdminContext'));

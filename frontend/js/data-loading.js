@@ -9,12 +9,14 @@ async function loadGallery() {
       syncStylesForCurrentRoute();
       syncFavouriteReferencesToBrief();
       render();
+      openStyleFromUrl();
       if (!els.favouritesOverlay.hidden) renderFavourites();
     }
   } catch {
     state.galleryLoaded = true;
     state.galleryLoadError = true;
     render();
+    openStyleFromUrl();
     // Regular pages keep bundled fallback styles when the API is unavailable.
   }
 }
@@ -37,4 +39,3 @@ async function loadFavourites() {
   updateFavouriteCount();
   render();
 }
-

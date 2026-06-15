@@ -45,11 +45,14 @@ const state = {
   reviewerName: readStored(REVIEWER_NAME_KEY, ""),
   uploadedPhotoName: null,
   filterPanelOpen: false,
+  feedOnboardingDismissed: readStored(FEED_ONBOARDING_DISMISSED_KEY, false),
   openFilterGroups: new Set(),
   openPreferenceMenu: null,
   openRefineFilter: null,
   refineFilters: { face_shape: new Set(), hair_colour: new Set(), thickness: null },
-  lengthGenderFilter: "masculine"
+  lengthGenderFilter: "masculine",
+  briefCompleteCopyState: "idle",
+  briefShareSuccessOpen: false
 };
 
 const pendingFavouriteOps = new Map();
@@ -173,4 +176,3 @@ function startOver() {
   writeStored(STEP_KEY, state.quizStep);
   setView("home");
 }
-
