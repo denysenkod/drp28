@@ -105,6 +105,7 @@ function defaultBriefDetails() {
     colour: NO_COLOUR_TREATMENT,
     allergies: "",
     previousTreatments: "",
+    chemicalHistory: "",
     damage: "",
     budgetMax: 200,
     timeAtBarber: 60,
@@ -119,7 +120,7 @@ function defaultBriefDetails() {
 function briefDetailsHasContent(details = {}) {
   const d = details || {};
   if (isNoColourTreatment(d.colour)) return false;
-  return ["colour", "allergies", "previousTreatments", "damage"]
+  return ["colour", "allergies", "previousTreatments", "chemicalHistory", "damage"]
     .some((key) => Boolean(String(d[key] || "").trim()));
 }
 

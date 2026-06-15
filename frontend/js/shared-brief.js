@@ -175,6 +175,7 @@ function renderBriefDetailsReview(details) {
     ["Hair colour treatment", isNoColourTreatment(d.colour) ? "" : normalizeBriefColour(d.colour)],
     ["Allergies or sensitivities", d.allergies],
     ["Previous colour treatments", d.previousTreatments],
+    ["Other chemical history", d.chemicalHistory],
     ["Damage or breakage", d.damage]
   ].filter(([, value]) => value && String(value).trim());
 
@@ -956,6 +957,108 @@ function handleProfileShareDirect() {
   openBriefCompletePrompt();
 }
 
+const TREATMENT_DETAIL_OPTIONS = {
+  allergies: [
+    "No known allergies",
+    "Sensitive scalp",
+    "PPD allergy",
+    "Ammonia sensitivity",
+    "Bleach sensitivity",
+    "Fragrance sensitivity",
+    "Latex allergy",
+    "Nickel allergy",
+    "Prone to irritation",
+    "Other"
+  ],
+  previousTreatments: [
+    "No previous colour",
+    "Box dye",
+    "Permanent colour",
+    "Semi-permanent colour",
+    "Demi-permanent colour",
+    "Bleach / lightener",
+    "Highlights",
+    "Balayage",
+    "Toner / gloss",
+    "Henna",
+    "Colour remover",
+    "Root touch-up",
+    "Other"
+  ],
+  chemicalHistory: [
+    "No other chemical services",
+    "Keratin treatment",
+    "Perm",
+    "Relaxer",
+    "Brazilian blowout",
+    "Smoothing treatment",
+    "Japanese straightening",
+    "Rebonding",
+    "Texturizer",
+    "Chemical straightening",
+    "Protein treatment",
+    "Bond repair treatment",
+    "Other"
+  ],
+  damage: [
+    "No noticeable damage",
+    "Dry ends",
+    "Breakage",
+    "Bleach damage",
+    "Heat damage",
+    "Over-processed",
+    "Frizz / rough texture",
+    "Split ends",
+    "Thinning / shedding",
+    "Scalp irritation",
+    "Elastic / gummy hair",
+    "Other"
+  ]
+};
+
+const TREATMENT_DETAIL_FIELDS = [
+  ["Allergies or sensitivities", "allergies", "brief-allergies"],
+  ["Previous colour treatments", "previousTreatments", "brief-previous"],
+  ["Other chemical history", "chemicalHistory", "brief-chemical-history"],
+  ["Damage or breakage", "damage", "brief-damage"]
+];
+
+function treatmentOptionState(key, value) {
+  const options = TREATMENT_DETAIL_OPTIONS[key] || [];
+  const text = String(value || "").trim();
+  const exact = options.includes(text);
+  return {
+    options,
+    selected: exact ? text : text ? "Other" : "",
+    otherValue: exact ? "" : text && text !== "Other" ? text : ""
+  };
+}
+
+function renderAddableTreatmentRow(label, key, id, value, hidden = false) {
+  const text = String(value || "").trim();
+  const { options, selected, otherValue } = treatmentOptionState(key, text);
+  return `
+    <div class="profile-colour-row profile-treatment-row" data-colour-detail-row ${hidden ? 'hidden style="display:none"' : ""}>
+      <span class="profile-colour-key-wrap">
+        <span class="profile-colour-key">${escapeHtml(label)}</span>
+      </span>
+      ${text ? `
+        <span class="profile-treatment-control">
+          <select class="profile-treatment-select" id="${escapeAttr(id)}" data-treatment-key="${escapeAttr(key)}" aria-label="${escapeAttr(label)}">
+            ${options.map((option) => `<option value="${escapeAttr(option)}" ${selected === option ? "selected" : ""}>${escapeHtml(option)}</option>`).join("")}
+          </select>
+          <input class="profile-treatment-other" id="${escapeAttr(id)}-other" data-treatment-other="${escapeAttr(key)}" type="text" placeholder="Add detail" value="${escapeAttr(otherValue)}" ${selected === "Other" ? "" : "hidden"}>
+          <button class="profile-treatment-clear" type="button" data-treatment-clear="${escapeAttr(key)}" aria-label="Remove ${escapeAttr(label)}">&times;</button>
+        </span>
+      ` : `
+        <button class="profile-treatment-add" type="button" data-treatment-add="${escapeAttr(key)}">
+          ${iconPlus()}<span>Add</span>
+        </button>
+      `}
+    </div>
+  `;
+}
+
 // Collapsible hair-colour section: the user can open it if they want to note
 // their colour, treatments, or related care notes, or leave it collapsed if it
 // is not relevant. The fields update state silently on input (no re-render) so
@@ -995,27 +1098,10 @@ function renderBriefDetails() {
               </span>
             </span>
           </label>
-          ${renderProfileTextRow("Allergies or sensitivities", "brief-allergies", d.allergies, "e.g. PPD allergy, sensitive scalp etc", noColourTreatment)}
-          ${renderProfileTextRow("Previous colour treatments", "brief-previous", d.previousTreatments, "e.g. box dye 3 months ago", noColourTreatment)}
-          ${renderProfileTextRow("Damage or breakage", "brief-damage", d.damage, "e.g. dry ends, breakage from bleach", noColourTreatment)}
+          ${TREATMENT_DETAIL_FIELDS.map(([label, key, id]) => renderAddableTreatmentRow(label, key, id, d[key], noColourTreatment)).join("")}
         </div>
       </div>
     </section>
-  `;
-}
-
-function renderProfileTextRow(label, id, value, placeholder, hidden = false) {
-  const helper = id === "brief-allergies"
-    ? `<span class="profile-field-helper">This helps your stylist avoid harmful products.</span>`
-    : "";
-  return `
-    <label class="profile-colour-row" data-colour-detail-row for="${escapeAttr(id)}" ${hidden ? 'hidden style="display:none"' : ""}>
-      <span class="profile-colour-key">${escapeHtml(label)}</span>
-      <span class="profile-colour-field">
-        <textarea class="profile-row-input" id="${escapeAttr(id)}" rows="1" placeholder="${escapeAttr(placeholder)}">${escapeHtml(hidden ? "" : value || "")}</textarea>
-        ${helper}
-      </span>
-    </label>
   `;
 }
 
@@ -1061,8 +1147,10 @@ function wireHairColourSelect() {
       row.hidden = hidden;
       row.style.display = hidden ? "none" : "";
       if (hidden) {
-        const field = row.querySelector("textarea");
-        if (field) field.value = "";
+        row.querySelectorAll("select, input, textarea").forEach((field) => {
+          if (field.tagName === "SELECT") field.selectedIndex = 0;
+          else field.value = "";
+        });
       }
     });
   };
@@ -1077,6 +1165,7 @@ function wireHairColourSelect() {
       colour: normalized,
       allergies: noColourTreatment ? "" : state.briefDetails.allergies,
       previousTreatments: noColourTreatment ? "" : state.briefDetails.previousTreatments,
+      chemicalHistory: noColourTreatment ? "" : state.briefDetails.chemicalHistory,
       damage: noColourTreatment ? "" : state.briefDetails.damage
     });
     valueLabel.textContent = normalized;
@@ -1121,6 +1210,52 @@ function wireHairColourSelect() {
     setSwatch(value || "Other");
     setDetailRowsHidden(false);
     refreshShareButton();
+  });
+}
+
+function wireTreatmentDetailControls() {
+  document.querySelectorAll("[data-treatment-add]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const key = button.dataset.treatmentAdd;
+      const firstOption = (TREATMENT_DETAIL_OPTIONS[key] || []).find((option) => option !== "Other") || "Other";
+      updateBriefDetail(key, firstOption);
+      renderBrief();
+    });
+  });
+
+  document.querySelectorAll("[data-treatment-clear]").forEach((button) => {
+    button.addEventListener("click", () => {
+      updateBriefDetail(button.dataset.treatmentClear, "");
+      renderBrief();
+    });
+  });
+
+  document.querySelectorAll("[data-treatment-key]").forEach((select) => {
+    select.addEventListener("change", () => {
+      const key = select.dataset.treatmentKey;
+      const other = document.querySelector(`[data-treatment-other="${key}"]`);
+      if (select.value === "Other") {
+        if (other) {
+          other.hidden = false;
+          updateBriefDetail(key, other.value.trim() || "Other");
+          other.focus();
+        } else {
+          updateBriefDetail(key, "Other");
+        }
+      } else {
+        if (other) {
+          other.value = "";
+          other.hidden = true;
+        }
+        updateBriefDetail(key, select.value);
+      }
+    });
+  });
+
+  document.querySelectorAll("[data-treatment-other]").forEach((input) => {
+    input.addEventListener("input", () => {
+      updateBriefDetail(input.dataset.treatmentOther, input.value.trim() || "Other");
+    });
   });
 }
 
@@ -1506,16 +1641,8 @@ function wireBrief() {
   }
   // Hair-colour fields update state silently (no re-render) so the current
   // input keeps focus while the user types.
-  const detailFields = [
-    ["brief-allergies", "allergies"],
-    ["brief-previous", "previousTreatments"],
-    ["brief-damage", "damage"],
-    ["brief-notes", "notes"]
-  ];
-  detailFields.forEach(([id, key]) => {
-    const node = $(`#${id}`);
-    if (node) node.addEventListener("input", () => updateBriefDetail(key, node.value));
-  });
+  const notesField = $("#brief-notes");
+  if (notesField) notesField.addEventListener("input", () => updateBriefDetail("notes", notesField.value));
   const budgetRange = $("#brief-budget-range");
   if (budgetRange) {
     budgetRange.addEventListener("input", () => {
@@ -1547,6 +1674,7 @@ function wireBrief() {
     });
   });
   wireHairColourSelect();
+  wireTreatmentDetailControls();
   const colourCareTab = $("#brief-details-accordion");
   if (colourCareTab && colourCareTab.tagName === "DETAILS") {
     colourCareTab.addEventListener("toggle", () => {

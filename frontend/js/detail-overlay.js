@@ -53,10 +53,12 @@ function ensureDetailShareButton() {
 
 function mountDetailHeroButtons(style) {
   const shareButton = ensureDetailShareButton();
+  const card = els.detailOverlay.querySelector(".overlay-card");
   shareButton.dataset.styleId = style.id;
   shareButton.setAttribute("aria-label", `Share ${style.name}`);
   els.closeDetail.classList.add("detail-hero-btn", "detail-close-btn");
-  els.detailImage.append(shareButton, els.closeDetail);
+  els.detailImage.append(shareButton);
+  if (card) card.append(els.closeDetail);
 }
 
 async function shareCurrentStyle() {

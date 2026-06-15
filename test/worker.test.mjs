@@ -930,8 +930,8 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(app.includes('class="try-on-generated-frame'));
   assert.ok(index.includes('id="detail-try-on"'));
   assert.ok(index.includes('id="try-on-overlay"'));
-  assert.ok(index.includes('styles.css?v=2026-06-15-large-home-brand'));
-  assert.ok(index.includes('app.js?v=2026-06-15-no-home-benefits'));
+  assert.ok(index.includes('styles.css?v=2026-06-15-topbar-wordmark'));
+  assert.ok(index.includes('app.js?v=2026-06-15-detail-card-close'));
   assert.ok(app.includes('imageUrl'));
   assert.ok(app.includes('syncStylesForCurrentRoute'));
   assert.ok(!app.includes('isAdminContext'));

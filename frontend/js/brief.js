@@ -97,6 +97,7 @@ function setBriefDetails(next) {
     colour,
     allergies: noColourTreatment ? "" : String(next?.allergies || ""),
     previousTreatments: noColourTreatment ? "" : String(next?.previousTreatments || ""),
+    chemicalHistory: noColourTreatment ? "" : String(next?.chemicalHistory || ""),
     damage: noColourTreatment ? "" : String(next?.damage || ""),
     budgetMax: Number.isFinite(budgetMax) ? Math.max(0, Math.min(200, budgetMax)) : defaults.budgetMax,
     timeAtBarber: Number.isFinite(timeAtBarber) ? Math.max(15, Math.min(180, timeAtBarber)) : defaults.timeAtBarber,

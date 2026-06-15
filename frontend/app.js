@@ -2,7 +2,7 @@
 // sequentially so the classic-script globals keep the same execution order as
 // the previous single-file app.
 const FRONTEND_SCRIPT_FILES = [
-  "/js/storage.js?v=2026-06-15-onboarding-share",
+  "/js/storage.js?v=2026-06-15-treatment-dropdowns",
   "/js/icons.js?v=2026-06-15-home-bottom-rows",
   "/js/fallback-styles.js?v=2026-06-11-brief-persistence",
   "/js/products-and-normalizers.js?v=2026-06-11-brief-persistence",
@@ -11,11 +11,11 @@ const FRONTEND_SCRIPT_FILES = [
   "/js/quiz-filters.js?v=2026-06-11-brief-persistence",
   "/js/rendering.js?v=2026-06-15-no-home-benefits",
   "/js/favourites.js?v=2026-06-11-brief-persistence",
-  "/js/brief.js?v=2026-06-15-no-brief-progress-header",
+  "/js/brief.js?v=2026-06-15-treatment-dropdowns",
   "/js/brief-sharing.js?v=2026-06-11-brief-persistence",
-  "/js/shared-brief.js?v=2026-06-15-onboarding-share",
+  "/js/shared-brief.js?v=2026-06-15-treatment-dropdowns",
   "/js/try-on.js?v=2026-06-12-try-on-flow",
-  "/js/detail-overlay.js?v=2026-06-15-detail-share",
+  "/js/detail-overlay.js?v=2026-06-15-detail-card-close",
   "/js/product-overlay.js?v=2026-06-11-brief-persistence",
   "/js/uploads.js?v=2026-06-11-brief-persistence",
   "/js/utilities.js?v=2026-06-11-brief-persistence",

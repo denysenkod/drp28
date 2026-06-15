@@ -148,7 +148,7 @@ body[data-view="home"] .app-shell {
 
 .home-entry-bar {
   position: fixed;
-  top: clamp(14px, 2.5vw, 28px);
+  top: 100px;
   left: 0;
   right: 0;
   z-index: 5;
@@ -215,7 +215,8 @@ body[data-view="home"] .app-shell {
 }
 
 .home-slogan .animate-word.is-underlined {
-  color: #c89517;
+  color: #c89517
+;
 }
 
 .home-slogan .animate-space {

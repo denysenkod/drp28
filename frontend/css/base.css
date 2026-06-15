@@ -139,9 +139,11 @@ body[data-view="shared"] .topbar {
 
 .brand-btn {
   background: transparent;
-  font-size: 28px;
-  font-style: normal;
-  font-weight: 800;
+  font-family: var(--font-serif);
+  font-size: 36px;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1;
   padding: 8px 0;
 }
 
