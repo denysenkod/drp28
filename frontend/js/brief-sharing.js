@@ -150,10 +150,6 @@ function ensureBriefShareId() {
 }
 
 function ensureShareableBriefLink() {
-  if (!briefHasContent()) {
-    setShareStatus("Add a photo, reference, colour detail, or note before sharing.");
-    return "";
-  }
   ensureBriefShareId();
   const link = briefShareLink();
   setShareStatus("Preparing share URL...", link);

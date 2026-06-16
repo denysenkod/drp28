@@ -41,7 +41,7 @@ async function loadOwnerFeedback() {
     state.ownerBriefs = allBriefs;
     state.ownerFeedback = allBriefs.flatMap((brief) =>
       Array.isArray(brief.feedback)
-        ? brief.feedback.map((entry) => ({ ...entry, briefId: entry.briefId || brief.id }))
+        ? brief.feedback.map((entry) => ownerFeedbackEntry(entry, brief))
         : []
     );
   } catch {
@@ -56,6 +56,119 @@ async function loadOwnerFeedback() {
 
   if (state.view === "brief") renderBrief();
   if (state.view === "messages") renderMessages();
+  updateMessageNavAccent();
+}
+
+function briefItemContext(brief = {}, itemId = "") {
+  const id = String(itemId || "");
+  if (!id || !Array.isArray(brief.items)) return {};
+  const item = brief.items.find((entry) => String(entry?.id || "") === id);
+  if (!item) return {};
+  const partition = itemPartition(item);
+  return {
+    itemName: item.name || (partition === "me" ? "Their hair photo" : "Reference image"),
+    itemImageUrl: item.imageUrl || "",
+    itemPartition: partition
+  };
+}
+
+function ownerFeedbackEntry(entry = {}, brief = {}) {
+  return {
+    ...briefItemContext(brief, entry.itemId),
+    ...entry,
+    briefId: entry.briefId || brief.id
+  };
+}
+
+function upsertOwnerFeedback(entry = {}, markUnread = false) {
+  if (!entry.id) return;
+  const next = ownerFeedbackEntry(entry, state.ownerBriefs.find((brief) => brief.id === entry.briefId) || {});
+  const existingIndex = state.ownerFeedback.findIndex((item) => item.id === next.id);
+  if (existingIndex >= 0) {
+    state.ownerFeedback = state.ownerFeedback.map((item) => (item.id === next.id ? { ...item, ...next } : item));
+  } else {
+    state.ownerFeedback = [next, ...state.ownerFeedback];
+  }
+
+  if (markUnread) {
+    state.unreadMessageIds.add(next.id);
+    persistUnreadMessages();
+  }
+
+  updateMessageNavAccent();
+  if (state.view === "messages") renderMessages();
+  if (state.view === "brief") renderBrief();
+}
+
+function removeOwnerFeedback(id) {
+  if (!id) return;
+  state.ownerFeedback = state.ownerFeedback.filter((entry) => entry.id !== id);
+  state.unreadMessageIds.delete(id);
+  persistUnreadMessages();
+  updateMessageNavAccent();
+  if (state.view === "messages") renderMessages();
+  if (state.view === "brief") renderBrief();
+}
+
+function markMessageRead(id) {
+  if (!id || !state.unreadMessageIds.has(id)) return;
+  state.unreadMessageIds.delete(id);
+  persistUnreadMessages();
+  updateMessageNavAccent();
+}
+
+function messageStreamUrl() {
+  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  return `${protocol}//${window.location.host}${API.messageStream}?sessionId=${encodeURIComponent(state.sessionId)}`;
+}
+
+function handleOwnerMessageEvent(payload) {
+  if (!payload || typeof payload !== "object") return;
+  if (payload.type === "brief_feedback_created") {
+    upsertOwnerFeedback(payload.item, true);
+  } else if (payload.type === "brief_feedback_updated") {
+    upsertOwnerFeedback(payload.item, true);
+  } else if (payload.type === "brief_feedback_deleted") {
+    removeOwnerFeedback(payload.item?.id);
+  }
+}
+
+function startOwnerMessageStream() {
+  if (!("WebSocket" in window) || !state.sessionId) return;
+  if (state.messageSocket && [WebSocket.CONNECTING, WebSocket.OPEN].includes(state.messageSocket.readyState)) return;
+  if (state.messageSocketReconnectTimer) {
+    clearTimeout(state.messageSocketReconnectTimer);
+    state.messageSocketReconnectTimer = null;
+  }
+
+  try {
+    const socket = new WebSocket(messageStreamUrl());
+    state.messageSocket = socket;
+    socket.addEventListener("open", () => {
+      state.messageSocketReconnectAttempts = 0;
+    });
+    socket.addEventListener("message", (event) => {
+      try {
+        handleOwnerMessageEvent(JSON.parse(event.data));
+      } catch {
+        // Ignore keepalives and malformed local-development frames.
+      }
+    });
+    socket.addEventListener("close", scheduleOwnerMessageReconnect);
+    socket.addEventListener("error", () => socket.close());
+  } catch {
+    scheduleOwnerMessageReconnect();
+  }
+}
+
+function scheduleOwnerMessageReconnect() {
+  if (state.messageSocketReconnectTimer) return;
+  const delay = Math.min(1000 * 2 ** state.messageSocketReconnectAttempts, 15000);
+  state.messageSocketReconnectAttempts += 1;
+  state.messageSocketReconnectTimer = setTimeout(() => {
+    state.messageSocketReconnectTimer = null;
+    startOwnerMessageStream();
+  }, delay);
 }
 
 function formatFeedbackDate(value) {
@@ -231,23 +344,48 @@ function renderSelfHairstyleStatus(item, isReadOnly = false) {
 
 function renderSharedItem(item) {
   const isOwnHair = itemPartition(item) === "me";
+  const clientView = Boolean(state.sharedBriefClientView);
+  const comments = (state.sharedBrief?.feedback || []).filter((entry) => String(entry.itemId || "") === String(item.id || ""));
   return `
-    <article class="brief-card brief-card--review">
+    <article class="brief-card brief-card--review" data-shared-item-id="${escapeAttr(item.id || "")}">
       <div class="brief-card-image">
         ${item.imageUrl
           ? `<img src="${escapeAttr(item.imageUrl)}" alt="${escapeAttr(item.name || "Reference image")}" loading="lazy" referrerpolicy="no-referrer">`
           : `<span>${escapeHtml(item.name || "Reference")}</span>`}
       </div>
-      ${isOwnHair
-        ? ""
-        : `<div class="brief-card-body">${renderFirstChoicePill(item)}${item.annotation ? `<p class="brief-owner-note">${escapeHtml(item.annotation)}</p>` : `<p class="brief-owner-note brief-owner-note--empty">No notes from the client.</p>`}</div>`
-      }
+      <div class="brief-card-body brief-card-body--review">
+        ${isOwnHair ? "" : `${renderFirstChoicePill(item)}${item.annotation ? `<p class="brief-owner-note">${escapeHtml(item.annotation)}</p>` : `<p class="brief-owner-note brief-owner-note--empty">No notes from the client.</p>`}`}
+        ${renderImageFeedbackList(comments, clientView)}
+        ${clientView ? "" : renderImageFeedbackForm(item)}
+      </div>
     </article>
   `;
 }
 
-// One high-level summary for the whole brief: any previously-left comments,
-// plus a single box for the stylist to add their overall feedback.
+function renderImageFeedbackList(comments, readOnly = false) {
+  if (!comments.length) return "";
+  return `
+    <div class="brief-image-feedback">
+      <p class="brief-feedback-title">Image reviews</p>
+      <ul class="brief-feedback-list">
+        ${comments.map((entry) => renderFeedbackEntry(entry, readOnly)).join("")}
+      </ul>
+    </div>
+  `;
+}
+
+function renderImageFeedbackForm(item) {
+  const itemName = item.name || (itemPartition(item) === "me" ? "their hair photo" : "this reference");
+  return `
+    <label class="brief-feedback-form brief-image-feedback-form" data-image-feedback-form="${escapeAttr(item.id || "")}">
+      <span class="brief-feedback-title">Add comment</span>
+      <textarea class="brief-annotation" rows="3" data-image-feedback-note="${escapeAttr(item.id || "")}" placeholder="Comment on ${escapeAttr(itemName)}..."></textarea>
+    </label>
+  `;
+}
+
+// One high-level summary for the whole brief, plus image-specific feedback
+// displayed on the matching photo cards above.
 function renderFeedbackEntry(entry, readOnly = false) {
   if (!readOnly && state.editingFeedbackId === entry.id) {
     return `
@@ -277,7 +415,7 @@ function renderFeedbackEntry(entry, readOnly = false) {
 }
 
 function renderStylistSummary() {
-  const comments = state.sharedBrief?.feedback || [];
+  const comments = (state.sharedBrief?.feedback || []).filter((entry) => !entry.itemId);
   const clientView = Boolean(state.sharedBriefClientView);
   const list = comments.length
     ? `<ul class="brief-feedback-list">
@@ -289,7 +427,7 @@ function renderStylistSummary() {
       <div class="brief-partition-head">
         <p class="eyebrow">${clientView ? "Messages" : "Stylist"}</p>
         <h2>${clientView ? "Feedback on this brief" : "Review this brief"}</h2>
-        <p class="brief-partition-copy">${clientView ? "Feedback is read-only here. Return to Messages to view other brief replies." : "Leave a high-level summary for the client. Your review is sent to their Messages tab."}</p>
+        <p class="brief-partition-copy">${clientView ? "Feedback is read-only here. Return to Messages to view other brief replies." : "Add comments to specific images if useful, then send the review once at the end."}</p>
       </div>
       ${list}
       ${clientView ? "" : `<form class="brief-feedback-form brief-summary-form" id="brief-summary-form">
@@ -422,13 +560,51 @@ function wireSharedBrief() {
   }
 }
 
-// Submit one brief-level summary comment (no rating, no per-image target).
+async function submitBriefFeedback(form, payload) {
+  const submitBtn = form.querySelector(".brief-feedback-submit");
+  form.classList.remove("is-invalid");
+  if (submitBtn) submitBtn.disabled = true;
+
+  try {
+    await submitFeedbackPayload(payload);
+    render();
+  } catch {
+    if (submitBtn) submitBtn.disabled = false;
+    form.classList.add("is-invalid");
+  }
+}
+
+function draftImageFeedbackPayloads() {
+  return Array.from(document.querySelectorAll("[data-image-feedback-note]"))
+    .map((noteInput) => ({
+      itemId: noteInput.dataset.imageFeedbackNote,
+      note: noteInput.value.trim()
+    }))
+    .filter((entry) => entry.itemId && entry.note);
+}
+
+async function submitFeedbackPayload(payload) {
+  const data = await apiJson(`${API.briefs}/${encodeURIComponent(state.sharedBriefId)}/feedback`, {
+    method: "POST",
+    body: JSON.stringify({
+      author: state.reviewerName.trim() || "Stylist",
+      ...payload
+    })
+  });
+  if (state.sharedBrief && data.item) {
+    state.sharedBrief.feedback = [...(state.sharedBrief.feedback || []), data.item];
+  }
+  return data.item || null;
+}
+
+// Submit the overall review plus any image comments drafted above.
 async function submitBriefSummary(form) {
   const noteInput = $("#brief-summary-note");
   const note = noteInput ? noteInput.value.trim() : "";
+  const imageFeedback = draftImageFeedbackPayloads();
   const submitBtn = form.querySelector(".brief-feedback-submit");
 
-  if (!note) {
+  if (!note && !imageFeedback.length) {
     form.classList.add("is-invalid");
     return;
   }
@@ -436,15 +612,11 @@ async function submitBriefSummary(form) {
   if (submitBtn) submitBtn.disabled = true;
 
   try {
-    const data = await apiJson(`${API.briefs}/${encodeURIComponent(state.sharedBriefId)}/feedback`, {
-      method: "POST",
-      body: JSON.stringify({
-        author: state.reviewerName.trim() || "Stylist",
-        note
-      })
-    });
-    if (state.sharedBrief && data.item) {
-      state.sharedBrief.feedback = [...(state.sharedBrief.feedback || []), data.item];
+    if (note) {
+      await submitFeedbackPayload({ note });
+    }
+    for (const entry of imageFeedback) {
+      await submitFeedbackPayload(entry);
     }
     render();
   } catch {
@@ -591,18 +763,12 @@ function closeBriefCompletePrompt() {
 async function completeBriefFromPrompt(action = "share") {
   const notes = $("#brief-complete-notes")?.value || "";
   setBriefDetails({ ...state.briefDetails, notes });
-  const completed = action === "copy"
-    ? await handleBriefCopyLink()
-    : await handleBriefUrlShare();
+  const completed = await handleBriefCopyLink();
   if (completed) {
     rememberCompletedBrief();
     loadOwnerFeedback();
-    if (action === "share") {
-      startNewBriefDraft();
-      state.briefShareSuccessOpen = true;
-      window.history.pushState({ view: "complete", shareSuccess: true, previousView: "brief" }, "", "?complete=sent");
-      renderBriefCompletePage();
-    }
+    state.briefCompleteCopyState = "copied";
+    if (state.view === "complete") renderBriefCompletePage();
   }
   return Boolean(completed);
 }
@@ -627,7 +793,7 @@ function renderBrief() {
           <header class="profile-hero">
             <p class="eyebrow">Your profile</p>
             <h1 class="profile-title">Your hair <em>brief</em></h1>
-            <p class="profile-lede">Gather photos of your hair today and the looks you're after, add the colour you have in mind and a few notes, then share one link with your stylist.</p>
+            <p class="profile-lede">Gather photos of your hair today and the looks you're after, add any notes you want, then share one link with your stylist.</p>
           </header>
 
           <div class="profile-work">
@@ -692,8 +858,8 @@ function renderBriefCompletePage() {
       </button>
       <header class="brief-complete-hero">
         <p class="eyebrow">Style brief</p>
-        <h1>Complete profile</h1>
-        <p>Add anything else your stylist should know, then copy or share one link to this brief.</p>
+        <h1>Notes for stylist</h1>
+        <p>Add anything else your stylist should know, then copy the review link.</p>
       </header>
 
       <div class="brief-complete-card" aria-labelledby="brief-complete-title">
@@ -711,8 +877,8 @@ function renderBriefCompletePage() {
           <span>${escapeHtml(state.shareStatus)}</span>
         </div>
         <div class="brief-complete-actions">
-          <button class="secondary-btn brief-complete-copy${copyDone ? " is-copied" : ""}" id="brief-complete-copy" type="button">${copyDone ? iconCheck() : iconClipboard()}<span>${copyDone ? "Copied!" : "Copy link"}</span></button>
-          <button class="primary-btn" id="brief-complete-share" type="button">${iconShare()}<span>Share with stylist</span></button>
+          <button class="secondary-btn brief-complete-copy${copyDone ? " is-copied" : ""}" id="brief-complete-copy" type="button">${copyDone ? iconCheck() : iconClipboard()}<span>${copyDone ? "URL copied" : "Copy link"}</span></button>
+          <button class="primary-btn" id="brief-complete-share" type="button">${copyDone ? iconCheck() : iconShare()}<span>${copyDone ? "URL copied" : "Share with stylist"}</span></button>
         </div>
       </div>
     </section>
@@ -727,7 +893,6 @@ function profileBriefCounts(meItems = briefItemsFor("me"), refItems = briefItems
   const completed = [
     meItems.length > 0,
     refItems.length > 0,
-    colourAdded,
     maintenanceAdded
   ].filter(Boolean).length;
   return {
@@ -736,7 +901,7 @@ function profileBriefCounts(meItems = briefItemsFor("me"), refItems = briefItems
     referenceFavourites: refItems.filter((item) => item.firstChoice).length,
     colourAdded,
     maintenanceAdded,
-    percent: Math.round((completed / 4) * 100)
+    percent: Math.round((completed / 3) * 100)
   };
 }
 
@@ -744,7 +909,6 @@ function profileBriefMissingSections(counts = profileBriefCounts()) {
   return [
     { key: "hair", label: "Your hair", targetId: "profile-section-hair", missing: counts.hair <= 0 },
     { key: "references", label: "References", targetId: "profile-section-references", missing: counts.references <= 0 },
-    { key: "colour", label: "Colour & treatment", targetId: "profile-section-colour", missing: !counts.colourAdded },
     { key: "budget", label: "Budget & maintenance", targetId: "profile-section-budget", missing: !counts.maintenanceAdded }
   ].filter((item) => item.missing);
 }
@@ -765,19 +929,19 @@ function renderProfileBriefAside(counts) {
       <ul class="profile-brief-list">
         ${renderProfileBriefListItem("Your hair", `${counts.hair} ${counts.hair === 1 ? "photo" : "photos"}`, counts.hair > 0, "profile-section-hair")}
         ${renderProfileBriefListItem("References", `${counts.references} ${counts.references === 1 ? "reference" : "references"}`, counts.references > 0, "profile-section-references")}
-        ${renderProfileBriefListItem("Colour & treatment", counts.colourAdded ? "Added" : "Optional", counts.colourAdded, "profile-section-colour")}
+        ${renderProfileBriefListItem("Colour & treatment", counts.colourAdded ? "Added" : "Optional", counts.colourAdded, "profile-section-colour", true)}
         ${renderProfileBriefListItem("Budget & maintenance", counts.maintenanceAdded ? "Added" : "Missing", counts.maintenanceAdded, "profile-section-budget")}
       </ul>
 
       <div class="profile-share-block">
         <p>Ready for your stylist</p>
         <button class="profile-share-btn" id="brief-share-btn" data-brief-share-direct type="button">
-          ${iconCheck()}<span>Complete profile</span>
+          ${iconShare()}<span>Share with stylist</span>
         </button>
         <div class="profile-share-status" id="brief-share-status" ${state.shareStatus ? "" : "hidden"}>
           <span>${escapeHtml(state.shareStatus)}</span>
         </div>
-        <p class="profile-share-note"><span class="profile-share-info-icon" aria-hidden="true">${iconInfo()}</span>Review your brief, then copy or share one link.</p>
+        <p class="profile-share-note"><span class="profile-share-info-icon" aria-hidden="true">${iconInfo()}</span>The review URL is copied to your clipboard when you share.</p>
       </div>
     </aside>
   `;
@@ -815,18 +979,22 @@ function renderMessages() {
         ${!hasBrief ? `
           <section class="messages-empty">
             <h2>No brief shared yet</h2>
-            <p>Create your hairstyle brief, add notes for your stylist, then share the link. Their feedback will land in this tab.</p>
-            <button class="primary-btn" id="messages-open-profile" type="button">${iconCheck()}<span>Complete profile</span></button>
+            <p>Create your hairstyle brief, add anything useful for your stylist, then share the link. Their reviews will land in this tab.</p>
+            <button class="primary-btn" id="messages-open-profile" type="button">${iconShare()}<span>Share profile</span></button>
           </section>
         ` : `
           <ul class="messages-list">
             ${comments.map((entry) => {
               const date = formatFeedbackDate(entry.createdAt);
               const briefId = String(entry.briefId || "");
+              const feedbackId = String(entry.id || "");
+              const unread = state.unreadMessageIds.has(feedbackId);
               const briefHref = briefId ? `?brief=${encodeURIComponent(briefId)}&client=1` : "?brief";
               const stylistName = stylistDisplayName(entry);
+              const itemName = String(entry.itemName || "").trim();
+              const itemImageUrl = String(entry.itemImageUrl || "").trim();
               return `
-                <li class="message-card ${entry.read === false ? "is-unread" : ""}">
+                <li class="message-card ${unread ? "is-unread" : ""}">
                   <div class="message-card-head">
                     <div class="message-author-wrap">
                       ${renderStylistAvatar(entry)}
@@ -834,9 +1002,18 @@ function renderMessages() {
                     </div>
                     ${date ? `<time>${escapeHtml(date)}</time>` : ""}
                   </div>
+                  ${itemName || itemImageUrl ? `
+                    <div class="message-image-context">
+                      ${itemImageUrl ? `<span class="message-image-thumb"><img src="${escapeAttr(itemImageUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer"></span>` : ""}
+                      <span>
+                        <b>${escapeHtml(itemName || "Profile image")}</b>
+                        <small>${entry.itemPartition === "me" ? "Your hair" : "Reference"}</small>
+                      </span>
+                    </div>
+                  ` : ""}
                   ${entry.note ? `<p>${escapeHtml(entry.note)}</p>` : `<p class="message-muted">No written note was included.</p>`}
                   <div class="message-card-actions">
-                    <a class="message-brief-link" href="${escapeAttr(briefHref)}" data-message-brief-link data-brief-id="${escapeAttr(briefId)}">View style brief</a>
+                    <a class="message-brief-link" href="${escapeAttr(briefHref)}" data-message-brief-link data-brief-id="${escapeAttr(briefId)}" data-feedback-id="${escapeAttr(feedbackId)}">View style brief</a>
                   </div>
                 </li>
               `;
@@ -856,6 +1033,7 @@ function renderMessages() {
       const briefId = link.dataset.briefId;
       if (!briefId) return;
       event.preventDefault();
+      markMessageRead(link.dataset.feedbackId);
       state.previousView = state.view;
       writeStored(PREV_VIEW_KEY, state.previousView);
       state.view = "shared";
@@ -949,10 +1127,11 @@ function wireMessagesPullRefresh(enabled) {
   }, { passive: true });
 }
 
-function renderProfileBriefListItem(label, count, done, targetId) {
+function renderProfileBriefListItem(label, count, done, targetId, optional = false) {
+  const stateClass = done ? "is-done" : optional ? "is-optional" : "is-todo";
   return `
-    <li class="${done ? "is-done" : "is-todo"}" data-profile-brief-row="${escapeAttr(targetId)}">
-      <span class="profile-brief-check ${done ? "is-done" : "is-todo"}">${done ? iconCheck() : ""}</span>
+    <li class="${stateClass}" data-profile-brief-row="${escapeAttr(targetId)}">
+      <span class="profile-brief-check ${stateClass}">${done ? iconCheck() : ""}</span>
       <span class="profile-brief-label">${escapeHtml(label)}</span>
       <span class="profile-brief-count">${escapeHtml(count)}</span>
       <button class="profile-brief-row-link" type="button" data-profile-section="${escapeAttr(targetId)}" aria-label="Go to ${escapeAttr(label)}">&rsaquo;</button>
@@ -960,12 +1139,7 @@ function renderProfileBriefListItem(label, count, done, targetId) {
   `;
 }
 
-function handleProfileShareDirect() {
-  const missing = profileBriefMissingSections();
-  if (missing.length) {
-    highlightMissingBriefSections(missing);
-    return;
-  }
+async function handleProfileShareDirect() {
   openBriefCompletePrompt();
 }
 
@@ -1367,7 +1541,7 @@ function renderBriefCompletePanel() {
   return `
     <section class="brief-share brief-share--bottom">
       <button class="primary-btn brief-share-btn" id="brief-share-btn" type="button">
-        ${iconCheck()}<span>Complete profile</span>
+        ${iconShare()}<span>Share with stylist</span>
       </button>
       <div class="brief-share-status" id="brief-share-status" ${state.shareStatus ? "" : "hidden"}>
         <span>${escapeHtml(state.shareStatus)}</span>

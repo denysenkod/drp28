@@ -73,6 +73,7 @@ svg {
 }
 
 .nav-link {
+  position: relative;
   border: 0;
   background: transparent;
   color: var(--ink);
@@ -92,6 +93,22 @@ svg {
 .nav-link.is-active {
   background: var(--accent);
   color: var(--surface);
+}
+
+.nav-link.has-new-message::after,
+.bottom-nav-btn.has-new-message::after {
+  content: "";
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: #d9392e;
+  box-shadow: 0 0 0 3px rgba(217, 57, 46, 0.16);
+}
+
+.nav-link.has-new-message::after {
+  top: 5px;
+  right: 7px;
 }
 
 .brand-zone {

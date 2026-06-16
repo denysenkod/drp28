@@ -7,6 +7,7 @@ interface Env {
     fetch(request: Request): Promise<Response>;
   };
   DB?: any;
+  MESSAGE_HUB?: any;
   OPENAI_API_KEY?: string;
   TRY_ON_GENERATION_LIMIT?: string;
 }
@@ -393,16 +394,84 @@ function rowToBriefFeedback(row: any): Record<string, unknown> {
   };
 }
 
+function briefItemContext(row: any, itemId: unknown): Record<string, unknown> {
+  if (typeof itemId !== 'string' || !itemId.trim()) return {};
+
+  const items = decodeJson(row?.items_json, []);
+  if (!Array.isArray(items)) return {};
+
+  const item = items.find((entry: any) => entry && String(entry.id || '') === itemId);
+  if (!item || typeof item !== 'object') return {};
+
+  const partition = typeof item.partition === 'string' ? item.partition : '';
+  const fallbackName = partition === 'me' ? 'Their hair photo' : 'Reference image';
+  const itemName = typeof item.name === 'string' && item.name.trim() ? item.name.trim() : fallbackName;
+  const itemImageUrl = typeof item.imageUrl === 'string' ? item.imageUrl : '';
+
+  return {
+    itemName,
+    itemImageUrl,
+    itemPartition: partition
+  };
+}
+
+function briefFeedbackWithContext(feedback: Record<string, unknown>, briefRow: any): Record<string, unknown> {
+  return {
+    ...feedback,
+    ...briefItemContext(briefRow, feedback.itemId)
+  };
+}
+
 function rowToStyleBrief(row: any, feedback: any = []): Record<string, unknown> {
   return {
     id: row.id,
     sessionId: row.session_id,
     items: decodeJson(row.items_json, []),
     details: decodeJson(row.details_json, {}),
-    feedback: feedback.map(rowToBriefFeedback),
+    feedback: feedback.map((entry: any) => briefFeedbackWithContext(rowToBriefFeedback(entry), row)),
     createdAt: row.created_at,
     updatedAt: row.updated_at
   };
+}
+
+export class BriefMessageHub {
+  constructor(state) {
+    this.state = state;
+  }
+
+  async fetch(request) {
+    if (request.method === 'POST') {
+      const payload = await request.json().catch(() => null);
+      if (payload) this.broadcast(payload);
+      return json({ ok: true });
+    }
+
+    if (request.headers.get('upgrade')?.toLowerCase() !== 'websocket') {
+      return new Response('Expected WebSocket upgrade.', { status: 426 });
+    }
+
+    const pair = new WebSocketPair();
+    this.state.acceptWebSocket(pair[1]);
+    return new Response(null, { status: 101, webSocket: pair[0] });
+  }
+
+  broadcast(payload) {
+    const message = JSON.stringify(payload);
+    for (const socket of this.state.getWebSockets()) {
+      try {
+        socket.send(message);
+      } catch {
+        // Stale sockets are dropped by the runtime; one bad client should not
+        // stop delivery to the rest of the owner's open tabs.
+      }
+    }
+  }
+
+  async webSocketMessage(ws, message) {
+    if (message === 'ping') {
+      ws.send('pong');
+    }
+  }
 }
 
 async function listGallery(db: any): Promise<Response> {
@@ -772,11 +841,39 @@ async function getBrief(db: any, id: string): Promise<Response> {
   return json({ ok: true, item: rowToStyleBrief(row, results || []) });
 }
 
+async function connectMessageStream(request: Request, env: Env, url: URL): Promise<Response> {
+  const sessionId = url.searchParams.get('sessionId');
+  if (!sessionId || !sessionId.trim()) {
+    return error('Message stream sessionId is required.');
+  }
+
+  if (!env.MESSAGE_HUB) {
+    return error('Realtime messages are not configured.', 503);
+  }
+
+  const stub = env.MESSAGE_HUB.getByName(sessionId.trim());
+  return stub.fetch(request);
+}
+
+async function notifyOwnerFeedback(env: Env, sessionId: string, type: string, item: Record<string, unknown>) {
+  if (!env.MESSAGE_HUB || !sessionId) return;
+
+  try {
+    const stub = env.MESSAGE_HUB.getByName(sessionId);
+    await stub.fetch(new Request('https://drp28.local/message', {
+      method: 'POST',
+      body: JSON.stringify({ type, item })
+    }));
+  } catch (err) {
+    console.error('Owner feedback notification failed', err);
+  }
+}
+
 // A reviewer appends feedback to a shared brief. Stored in its own table so the
 // owner's auto-save never overwrites it. Feedback needs a note, a rating, or both.
-async function addBriefFeedback(request: Request, db: any, id: string): Promise<Response> {
+async function addBriefFeedback(request: Request, env: Env, db: any, id: string): Promise<Response> {
   const brief = await db
-    .prepare('SELECT id FROM style_briefs WHERE id = ?')
+    .prepare('SELECT id, session_id, items_json FROM style_briefs WHERE id = ?')
     .bind(id)
     .first();
 
@@ -812,12 +909,15 @@ async function addBriefFeedback(request: Request, db: any, id: string): Promise<
     .bind(feedbackId)
     .first();
 
-  return json({ ok: true, item: rowToBriefFeedback(row) }, { status: 201 });
+  const item = briefFeedbackWithContext(rowToBriefFeedback(row), brief);
+  await notifyOwnerFeedback(env, brief.session_id, 'brief_feedback_created', item);
+
+  return json({ ok: true, item }, { status: 201 });
 }
 
 // A reviewer edits a piece of feedback they previously left. Like creation,
 // the result must still carry a note, a rating, or both.
-async function updateBriefFeedback(request: Request, db: any, id: string, feedbackId: string): Promise<Response> {
+async function updateBriefFeedback(request: Request, env: Env, db: any, id: string, feedbackId: string): Promise<Response> {
   const existing = await db
     .prepare('SELECT * FROM brief_feedback WHERE id = ? AND brief_id = ?')
     .bind(feedbackId, id)
@@ -850,11 +950,18 @@ async function updateBriefFeedback(request: Request, db: any, id: string, feedba
     .bind(feedbackId)
     .first();
 
-  return json({ ok: true, item: rowToBriefFeedback(row) });
+  const brief = await db
+    .prepare('SELECT id, session_id, items_json FROM style_briefs WHERE id = ?')
+    .bind(id)
+    .first();
+  const item = briefFeedbackWithContext(rowToBriefFeedback(row), brief);
+  if (brief) await notifyOwnerFeedback(env, brief.session_id, 'brief_feedback_updated', item);
+
+  return json({ ok: true, item });
 }
 
 // A reviewer removes a piece of feedback they previously left.
-async function deleteBriefFeedback(db: any, id: string, feedbackId: string): Promise<Response> {
+async function deleteBriefFeedback(env: Env, db: any, id: string, feedbackId: string): Promise<Response> {
   const existing = await db
     .prepare('SELECT id FROM brief_feedback WHERE id = ? AND brief_id = ?')
     .bind(feedbackId, id)
@@ -868,6 +975,17 @@ async function deleteBriefFeedback(db: any, id: string, feedbackId: string): Pro
     .prepare('DELETE FROM brief_feedback WHERE id = ?')
     .bind(feedbackId)
     .run();
+
+  const brief = await db
+    .prepare('SELECT id, session_id, items_json FROM style_briefs WHERE id = ?')
+    .bind(id)
+    .first();
+  if (brief) {
+    await notifyOwnerFeedback(env, brief.session_id, 'brief_feedback_deleted', {
+      id: feedbackId,
+      briefId: id
+    });
+  }
 
   return json({ ok: true, id: feedbackId });
 }
@@ -888,6 +1006,10 @@ async function handleApi(request: Request, env: Env, url: URL): Promise<Response
 
   if (url.pathname === '/api/try-on') {
     if (request.method === 'POST') return createTryOnImage(request, env);
+  }
+
+  if (url.pathname === '/api/messages/stream') {
+    if (request.method === 'GET') return connectMessageStream(request, env, url);
   }
 
   let db: any;
@@ -952,7 +1074,7 @@ async function handleApi(request: Request, env: Env, url: URL): Promise<Response
   const briefFeedbackMatch = url.pathname.match(/^\/api\/briefs\/([^/]+)\/feedback$/);
   if (briefFeedbackMatch) {
     if (request.method === 'POST') {
-      return addBriefFeedback(request, db, decodeURIComponent(briefFeedbackMatch[1]));
+      return addBriefFeedback(request, env, db, decodeURIComponent(briefFeedbackMatch[1]));
     }
   }
 
@@ -961,10 +1083,10 @@ async function handleApi(request: Request, env: Env, url: URL): Promise<Response
     const briefId = decodeURIComponent(briefFeedbackItemMatch[1]);
     const feedbackId = decodeURIComponent(briefFeedbackItemMatch[2]);
     if (request.method === 'PUT' || request.method === 'PATCH') {
-      return updateBriefFeedback(request, db, briefId, feedbackId);
+      return updateBriefFeedback(request, env, db, briefId, feedbackId);
     }
     if (request.method === 'DELETE') {
-      return deleteBriefFeedback(db, briefId, feedbackId);
+      return deleteBriefFeedback(env, db, briefId, feedbackId);
     }
   }
 

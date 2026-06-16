@@ -28,6 +28,10 @@ const state = {
   editingFeedbackId: null,
   ownerBriefs: [],
   ownerFeedback: [],
+  unreadMessageIds: new Set(readStored(MESSAGE_UNREAD_IDS_KEY, [])),
+  messageSocket: null,
+  messageSocketReconnectTimer: null,
+  messageSocketReconnectAttempts: 0,
   tryOn: {
     styleId: null,
     userImageData: "",
@@ -139,6 +143,18 @@ function setView(view) {
   writeStored(VIEW_KEY, view);
   render();
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function persistUnreadMessages() {
+  writeStored(MESSAGE_UNREAD_IDS_KEY, Array.from(state.unreadMessageIds || []));
+}
+
+function updateMessageNavAccent() {
+  const hasUnread = Boolean(state.unreadMessageIds?.size);
+  document.querySelectorAll('[data-nav="messages"]').forEach((btn) => {
+    btn.classList.toggle("has-new-message", hasUnread);
+    btn.setAttribute("aria-label", hasUnread ? "Messages, new replies" : "Messages");
+  });
 }
 
 function fallbackStyles() {

@@ -354,8 +354,26 @@ async function createAssetEnv() {
     assets.set(normalized, await readFrontendText(normalized));
   }));
 
+  const messageHub = {
+    messages: [],
+    getByName(name) {
+      return {
+        async fetch(request) {
+          if (request.method === 'POST') {
+            const payload = await request.json();
+            messageHub.messages.push({ sessionId: name, payload });
+          }
+          return new Response(JSON.stringify({ ok: true }), {
+            headers: { 'content-type': 'application/json; charset=utf-8' }
+          });
+        }
+      };
+    }
+  };
+
   return {
     DB: createMockD1(),
+    MESSAGE_HUB: messageHub,
     ASSETS: {
       async fetch(request) {
         const pathname = new URL(request.url).pathname;
@@ -774,7 +792,7 @@ test('saves a shareable brief, reads it back, and accepts reviewer feedback', as
     body: JSON.stringify({
       id: briefId,
       sessionId: 'session-owner',
-      items: [{ id: 'item-1', partition: 'me', rating: 3, annotation: 'updated' }]
+      items: [{ id: 'item-1', partition: 'me', imageUrl: 'data:image/webp;base64,aaa', rating: 3, annotation: 'updated' }]
     })
   }), env);
   const updated = await updateResponse.json();
@@ -803,7 +821,13 @@ test('saves a shareable brief, reads it back, and accepts reviewer feedback', as
   assert.equal(feedbackResponse.status, 201);
   assert.equal(feedback.item.author, 'Stylist');
   assert.equal(feedback.item.itemId, 'item-1');
+  assert.equal(feedback.item.itemName, 'Their hair photo');
+  assert.equal(feedback.item.itemImageUrl, 'data:image/webp;base64,aaa');
   assert.equal(feedback.item.rating, 4);
+  assert.equal(env.MESSAGE_HUB.messages.length, 1);
+  assert.equal(env.MESSAGE_HUB.messages[0].sessionId, 'session-owner');
+  assert.equal(env.MESSAGE_HUB.messages[0].payload.type, 'brief_feedback_created');
+  assert.equal(env.MESSAGE_HUB.messages[0].payload.item.itemId, 'item-1');
 
   // Reading the brief returns items plus the feedback.
   const getResponse = await worker.fetch(new Request(`https://example.com/api/briefs/${briefId}`), env);
@@ -852,6 +876,8 @@ test('lets a reviewer edit and delete their feedback', async () => {
   const editedBody = await edited.json();
   assert.equal(edited.status, 200);
   assert.equal(editedBody.item.note, 'Revised take');
+  assert.equal(env.MESSAGE_HUB.messages.at(-1).payload.type, 'brief_feedback_updated');
+  assert.equal(env.MESSAGE_HUB.messages.at(-1).payload.item.note, 'Revised take');
 
   // Editing to an empty note is rejected.
   const emptyEdit = await worker.fetch(new Request(`https://example.com/api/briefs/${briefId}/feedback/${feedbackId}`, {
@@ -872,6 +898,8 @@ test('lets a reviewer edit and delete their feedback', async () => {
     method: 'DELETE'
   }), env);
   assert.equal(deleted.status, 200);
+  assert.equal(env.MESSAGE_HUB.messages.at(-1).payload.type, 'brief_feedback_deleted');
+  assert.equal(env.MESSAGE_HUB.messages.at(-1).payload.item.id, feedbackId);
 
   // It no longer comes back with the brief.
   const got = await worker.fetch(new Request(`https://example.com/api/briefs/${briefId}`), env);
@@ -920,6 +948,15 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(app.includes('favorites: "/api/favorites"'));
   assert.ok(app.includes('userPhotos: "/api/user-photos"'));
   assert.ok(app.includes('tryOn: "/api/try-on"'));
+  assert.ok(app.includes('messageStream: "/api/messages/stream"'));
+  assert.ok(app.includes('function startOwnerMessageStream()'));
+  assert.ok(app.includes('data-image-feedback-form'));
+  assert.ok(app.includes('draftImageFeedbackPayloads'));
+  assert.ok(app.includes('data-image-feedback-note='));
+  assert.ok(app.includes('Add comment'));
+  assert.ok(!app.includes('function submitImageFeedback'));
+  assert.ok(!app.includes('data-image-feedback-form].forEach'));
+  assert.ok(app.includes('has-new-message'));
   assert.ok(app.includes('function openTryOn()'));
   assert.ok(app.includes('function applyTryOn()'));
   assert.ok(app.includes('function addTryOnResultToReferences'));
@@ -930,8 +967,16 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(app.includes('class="try-on-generated-frame'));
   assert.ok(index.includes('id="detail-try-on"'));
   assert.ok(index.includes('id="try-on-overlay"'));
-  assert.ok(index.includes('styles.css?v=2026-06-16-refine-stability'));
-  assert.ok(index.includes('app.js?v=2026-06-16-refine-fallbacks'));
+  assert.ok(index.includes('styles.css?v=2026-06-16-share-copy-inline'));
+  assert.ok(index.includes('app.js?v=2026-06-16-share-copy-inline'));
+  assert.ok(app.includes('/js/shared-brief.js?v=2026-06-16-draft-image-comments'));
+  assert.ok(app.includes('handleBriefCopyLink()'));
+  assert.ok(app.includes('openBriefCompletePrompt();'));
+  assert.ok(app.includes('URL copied'));
+  assert.ok(app.includes('Notes for stylist'));
+  assert.ok(app.includes('Share with stylist'));
+  assert.ok(app.includes('is-optional'));
+  assert.ok(!app.includes('Add a photo, reference, colour detail, or note before sharing.'));
   assert.ok(app.includes('imageUrl'));
   assert.ok(app.includes('syncStylesForCurrentRoute'));
   assert.ok(!app.includes('isAdminContext'));
@@ -998,6 +1043,11 @@ test('wrangler deploys the TypeScript worker entry', async () => {
   assert.match(config, /^\[\[d1_databases\]\]$/m);
   assert.match(config, /^binding = "DB"$/m);
   assert.match(config, /^migrations_dir = "migrations"$/m);
+  assert.match(config, /^\[\[durable_objects\.bindings\]\]$/m);
+  assert.match(config, /^name = "MESSAGE_HUB"$/m);
+  assert.match(config, /^class_name = "BriefMessageHub"$/m);
+  assert.match(config, /^\[\[migrations\]\]$/m);
+  assert.match(config, /^new_sqlite_classes = \["BriefMessageHub"\]$/m);
   assert.match(config, /^compatibility_date = "\d{4}-\d{2}-\d{2}"$/m);
 });
 
@@ -1099,5 +1149,7 @@ test('local dev seeds memory gallery and persists shared briefs', async () => {
   assert.ok(localDev.includes('loadLocalStore'));
   assert.ok(localDev.includes('persistLocalStore'));
   assert.ok(localDev.includes('.local-dev-store.json'));
+  assert.ok(localDev.includes('handleMessageStreamUpgrade'));
+  assert.ok(localDev.includes('broadcastMessage'));
   assert.ok(localDev.includes('await seedGalleryFromMigrations()'));
 });

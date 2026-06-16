@@ -25,6 +25,7 @@
   }
 
   .bottom-nav-btn {
+    position: relative;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -46,6 +47,11 @@
 
   .bottom-nav-btn.is-active {
     color: var(--accent);
+  }
+
+  .bottom-nav-btn.has-new-message::after {
+    top: 10px;
+    right: calc(50% - 20px);
   }
 
   /* Label beneath each icon on mobile. */

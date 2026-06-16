@@ -2,7 +2,7 @@ import { createServer } from 'node:http';
 import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 
 const PORT = Number(process.env.PORT || 8787);
 const ROOT = fileURLToPath(new URL('.', import.meta.url));
@@ -25,6 +25,7 @@ const store = {
   briefs: [],
   briefFeedback: []
 };
+const messageClients = new Map();
 
 async function loadLocalStore() {
   try {
@@ -306,6 +307,66 @@ function createItem(data) {
     createdAt: new Date().toISOString(),
     ...data
   };
+}
+
+function briefItemContext(brief, itemId) {
+  const id = typeof itemId === 'string' ? itemId.trim() : '';
+  if (!id || !Array.isArray(brief?.items)) return {};
+  const item = brief.items.find((entry) => String(entry?.id || '') === id);
+  if (!item) return {};
+  const partition = item.partition === 'me' ? 'me' : 'references';
+  return {
+    itemName: item.name || (partition === 'me' ? 'Their hair photo' : 'Reference image'),
+    itemImageUrl: item.imageUrl || '',
+    itemPartition: partition
+  };
+}
+
+function feedbackWithContext(feedback, brief) {
+  return {
+    ...briefItemContext(brief, feedback?.itemId),
+    ...feedback
+  };
+}
+
+function feedbackForBrief(brief) {
+  return store.briefFeedback
+    .filter((item) => item.briefId === brief.id)
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    .map((feedback) => feedbackWithContext(feedback, brief));
+}
+
+function encodeWsFrame(data) {
+  const payload = Buffer.from(String(data));
+  const length = payload.length;
+  if (length < 126) {
+    return Buffer.concat([Buffer.from([0x81, length]), payload]);
+  }
+  if (length < 65536) {
+    const header = Buffer.alloc(4);
+    header[0] = 0x81;
+    header[1] = 126;
+    header.writeUInt16BE(length, 2);
+    return Buffer.concat([header, payload]);
+  }
+  const header = Buffer.alloc(10);
+  header[0] = 0x81;
+  header[1] = 127;
+  header.writeBigUInt64BE(BigInt(length), 2);
+  return Buffer.concat([header, payload]);
+}
+
+function broadcastMessage(sessionId, payload) {
+  const clients = messageClients.get(sessionId);
+  if (!clients?.size) return;
+  const frame = encodeWsFrame(JSON.stringify(payload));
+  for (const socket of clients) {
+    if (socket.destroyed) {
+      clients.delete(socket);
+      continue;
+    }
+    socket.write(frame);
+  }
 }
 
 function decodeJsonList(value) {
@@ -692,9 +753,7 @@ async function handleApi(req, res, url) {
         .sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')))
         .map((brief) => ({
           ...brief,
-          feedback: store.briefFeedback
-            .filter((item) => item.briefId === brief.id)
-            .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+          feedback: feedbackForBrief(brief)
         }));
       sendJson(res, 200, { ok: true, items });
       return true;
@@ -724,9 +783,7 @@ async function handleApi(req, res, url) {
         store.briefs.unshift(brief);
       }
 
-      const feedback = store.briefFeedback
-        .filter((item) => item.briefId === brief.id)
-        .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+      const feedback = feedbackForBrief(brief);
       await persistLocalStore();
       sendJson(res, 201, { ok: true, item: { ...brief, feedback } });
       return true;
@@ -761,7 +818,9 @@ async function handleApi(req, res, url) {
       store.briefFeedback.push(feedback);
 
       await persistLocalStore();
-      sendJson(res, 201, { ok: true, item: feedback });
+      const item = feedbackWithContext(feedback, brief);
+      broadcastMessage(brief.sessionId, { type: 'brief_feedback_created', item });
+      sendJson(res, 201, { ok: true, item });
       return true;
     }
   }
@@ -795,7 +854,10 @@ async function handleApi(req, res, url) {
       existing.note = note;
 
       await persistLocalStore();
-      sendJson(res, 200, { ok: true, item: existing });
+      const brief = store.briefs.find((item) => item.id === id);
+      const item = feedbackWithContext(existing, brief);
+      if (brief) broadcastMessage(brief.sessionId, { type: 'brief_feedback_updated', item });
+      sendJson(res, 200, { ok: true, item });
       return true;
     }
 
@@ -806,6 +868,13 @@ async function handleApi(req, res, url) {
       }
       store.briefFeedback = store.briefFeedback.filter((item) => item.id !== feedbackId);
       await persistLocalStore();
+      const brief = store.briefs.find((item) => item.id === id);
+      if (brief) {
+        broadcastMessage(brief.sessionId, {
+          type: 'brief_feedback_deleted',
+          item: { id: feedbackId, briefId: id }
+        });
+      }
       sendJson(res, 200, { ok: true, id: feedbackId });
       return true;
     }
@@ -821,9 +890,7 @@ async function handleApi(req, res, url) {
         return true;
       }
 
-      const feedback = store.briefFeedback
-        .filter((item) => item.briefId === id)
-        .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+      const feedback = feedbackForBrief(brief);
       sendJson(res, 200, { ok: true, item: { ...brief, feedback } });
       return true;
     }
@@ -856,10 +923,53 @@ async function serveAsset(pathname, res) {
   }
 }
 
+function handleMessageStreamUpgrade(req, socket) {
+  const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+  if (url.pathname !== '/api/messages/stream') return false;
+
+  const sessionId = url.searchParams.get('sessionId')?.trim();
+  const key = req.headers['sec-websocket-key'];
+  if (!sessionId || !key) {
+    socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
+    return true;
+  }
+
+  const accept = createHash('sha1')
+    .update(`${key}258EAFA5-E914-47DA-95CA-C5AB0DC85B11`)
+    .digest('base64');
+  socket.write([
+    'HTTP/1.1 101 Switching Protocols',
+    'Upgrade: websocket',
+    'Connection: Upgrade',
+    `Sec-WebSocket-Accept: ${accept}`,
+    '\r\n'
+  ].join('\r\n'));
+
+  if (!messageClients.has(sessionId)) messageClients.set(sessionId, new Set());
+  const clients = messageClients.get(sessionId);
+  clients.add(socket);
+
+  const cleanup = () => {
+    clients.delete(socket);
+    if (!clients.size) messageClients.delete(sessionId);
+  };
+  socket.on('close', cleanup);
+  socket.on('error', cleanup);
+  socket.on('data', (chunk) => {
+    const opcode = chunk?.[0] & 0x0f;
+    if (opcode === 0x8) {
+      cleanup();
+      socket.end();
+    }
+  });
+
+  return true;
+}
+
 await loadLocalStore();
 await seedGalleryFromMigrations();
 
-createServer(async (req, res) => {
+const server = createServer(async (req, res) => {
   const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
 
   if (await handleApi(req, res, url)) {
@@ -867,6 +977,13 @@ createServer(async (req, res) => {
   }
 
   await serveAsset(url.pathname, res);
-}).listen(PORT, () => {
+});
+
+server.on('upgrade', (req, socket) => {
+  if (handleMessageStreamUpgrade(req, socket)) return;
+  socket.end('HTTP/1.1 404 Not Found\r\n\r\n');
+});
+
+server.listen(PORT, () => {
   console.log(`Local DRP28 server running at http://localhost:${PORT}`);
 });

@@ -21,6 +21,7 @@ function syncNav() {
     const activeView = state.view === "complete" ? "brief" : state.view;
     btn.classList.toggle("is-active", btn.dataset.nav === activeView);
   });
+  updateMessageNavAccent();
 }
 
 function renderAnimatedSlogan(text) {

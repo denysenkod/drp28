@@ -1058,6 +1058,26 @@
   border-color: #c0392b;
 }
 
+.brief-card-body--review {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.brief-image-feedback {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.brief-image-feedback-form {
+  padding-top: 2px;
+}
+
+.brief-image-feedback-form .brief-annotation {
+  min-height: 76px;
+}
+
 /* ----- Colour & consultation ----- */
 .brief-details {
   margin: 28px 0 4px;
@@ -1565,6 +1585,11 @@ body[data-view="complete"] .app-shell {
   padding: 18px 20px;
 }
 
+.message-card.is-unread {
+  border-color: rgba(217, 57, 46, 0.42);
+  box-shadow: 0 10px 30px rgba(217, 57, 46, 0.08);
+}
+
 .message-card.is-unread::before {
   content: "";
   position: absolute;
@@ -1573,7 +1598,7 @@ body[data-view="complete"] .app-shell {
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: var(--accent);
+  background: #d9392e;
   box-shadow: 0 0 0 3px var(--surface);
 }
 
@@ -1583,6 +1608,51 @@ body[data-view="complete"] .app-shell {
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 8px;
+}
+
+.message-image-context {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 8px;
+  padding: 8px;
+  background: rgba(246, 241, 234, 0.72);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.message-image-thumb {
+  width: 48px;
+  height: 58px;
+  flex: 0 0 48px;
+  overflow: hidden;
+  background: var(--accent-soft);
+  border-radius: 6px;
+}
+
+.message-image-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.message-image-context b,
+.message-image-context small {
+  display: block;
+}
+
+.message-image-context b {
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.message-image-context small {
+  margin-top: 1px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .message-author-wrap {
@@ -2440,6 +2510,10 @@ body[data-view="complete"] .app-shell {
   background: rgba(200, 149, 23, 0.08);
 }
 
+.profile-brief-list li.is-optional {
+  background: transparent;
+}
+
 .profile-brief-list li.is-brief-missing-highlight {
   background: rgba(211, 47, 47, 0.1);
   box-shadow: inset 0 0 0 1.5px rgba(211, 47, 47, 0.42);
@@ -2471,6 +2545,10 @@ body[data-view="complete"] .app-shell {
 
 .profile-brief-check.is-todo {
   border: 1.5px dashed #d3c4ae;
+}
+
+.profile-brief-check.is-optional {
+  border: 1.5px solid var(--line);
 }
 
 .profile-brief-label {

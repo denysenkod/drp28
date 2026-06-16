@@ -150,6 +150,7 @@ function init() {
   }
 
   render();
+  startOwnerMessageStream();
   loadGallery();
   loadFavourites();
   if (state.view === "shared") loadSharedBrief(state.sharedBriefId);
