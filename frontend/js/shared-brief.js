@@ -723,8 +723,7 @@ function renderBriefCompletePage() {
 
 function profileBriefCounts(meItems = briefItemsFor("me"), refItems = briefItemsFor("references")) {
   const colourAdded = briefDetailsHasContent(state.briefDetails);
-  const maintenanceQuestion = getQuestionById("maintenance");
-  const maintenanceAdded = maintenanceQuestion ? selectedFor(maintenanceQuestion).length > 0 : Boolean(briefNotesValue());
+  const maintenanceAdded = briefBudgetDetailsHasContent(state.briefDetails);
   const completed = [
     meItems.length > 0,
     refItems.length > 0,
@@ -741,8 +740,16 @@ function profileBriefCounts(meItems = briefItemsFor("me"), refItems = briefItems
   };
 }
 
+function profileBriefMissingSections(counts = profileBriefCounts()) {
+  return [
+    { key: "hair", label: "Your hair", targetId: "profile-section-hair", missing: counts.hair <= 0 },
+    { key: "references", label: "References", targetId: "profile-section-references", missing: counts.references <= 0 },
+    { key: "colour", label: "Colour & treatment", targetId: "profile-section-colour", missing: !counts.colourAdded },
+    { key: "budget", label: "Budget & maintenance", targetId: "profile-section-budget", missing: !counts.maintenanceAdded }
+  ].filter((item) => item.missing);
+}
+
 function renderProfileBriefAside(counts) {
-  const canShare = briefHasContent();
   return `
     <aside class="profile-brief-card">
       <div class="profile-brief-top">
@@ -764,7 +771,7 @@ function renderProfileBriefAside(counts) {
 
       <div class="profile-share-block">
         <p>Ready for your stylist</p>
-        <button class="profile-share-btn" id="brief-share-btn" data-brief-share-direct type="button" ${canShare ? "" : "disabled"}>
+        <button class="profile-share-btn" id="brief-share-btn" data-brief-share-direct type="button">
           ${iconCheck()}<span>Complete profile</span>
         </button>
         <div class="profile-share-status" id="brief-share-status" ${state.shareStatus ? "" : "hidden"}>
@@ -944,7 +951,7 @@ function wireMessagesPullRefresh(enabled) {
 
 function renderProfileBriefListItem(label, count, done, targetId) {
   return `
-    <li class="${done ? "is-done" : "is-todo"}">
+    <li class="${done ? "is-done" : "is-todo"}" data-profile-brief-row="${escapeAttr(targetId)}">
       <span class="profile-brief-check ${done ? "is-done" : "is-todo"}">${done ? iconCheck() : ""}</span>
       <span class="profile-brief-label">${escapeHtml(label)}</span>
       <span class="profile-brief-count">${escapeHtml(count)}</span>
@@ -954,7 +961,38 @@ function renderProfileBriefListItem(label, count, done, targetId) {
 }
 
 function handleProfileShareDirect() {
+  const missing = profileBriefMissingSections();
+  if (missing.length) {
+    highlightMissingBriefSections(missing);
+    return;
+  }
   openBriefCompletePrompt();
+}
+
+function highlightMissingBriefSections(missing) {
+  const first = missing[0];
+  const names = missing.map((item) => item.label).join(", ");
+  setShareStatus(`Complete missing sections: ${names}.`);
+
+  document.querySelectorAll(".profile-brief-list li, .profile-section").forEach((node) => {
+    node.classList.remove("is-brief-missing-highlight");
+  });
+
+  missing.forEach((item) => {
+    const row = document.querySelector(`[data-profile-brief-row="${item.targetId}"]`);
+    const section = document.getElementById(item.targetId);
+    row?.classList.add("is-brief-missing-highlight");
+    section?.classList.add("is-brief-missing-highlight");
+  });
+
+  const target = document.getElementById(first.targetId);
+  if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  window.setTimeout(() => {
+    document.querySelectorAll(".is-brief-missing-highlight").forEach((node) => {
+      node.classList.remove("is-brief-missing-highlight");
+    });
+  }, 2600);
 }
 
 const TREATMENT_DETAIL_OPTIONS = {

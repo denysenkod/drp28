@@ -2440,6 +2440,11 @@ body[data-view="complete"] .app-shell {
   background: rgba(200, 149, 23, 0.08);
 }
 
+.profile-brief-list li.is-brief-missing-highlight {
+  background: rgba(211, 47, 47, 0.1);
+  box-shadow: inset 0 0 0 1.5px rgba(211, 47, 47, 0.42);
+}
+
 .profile-brief-list li:last-child {
   border-bottom: 1px solid var(--line);
 }
@@ -2573,6 +2578,12 @@ body[data-view="complete"] .app-shell {
   color: var(--surface);
   font-size: 15px;
   font-weight: 800;
+}
+
+.profile-section.is-brief-missing-highlight {
+  border-radius: 18px;
+  outline: 2px solid rgba(211, 47, 47, 0.52);
+  outline-offset: 8px;
 }
 
 .profile-share-status {

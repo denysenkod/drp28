@@ -135,6 +135,6 @@ function refreshShareButton() {
   document
     .querySelectorAll("#brief-share-btn, #brief-url-share-btn")
     .forEach((btn) => {
-      btn.disabled = disabled;
+      btn.disabled = btn.dataset.briefShareDirect !== undefined ? false : disabled;
     });
 }
