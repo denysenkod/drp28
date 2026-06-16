@@ -1514,7 +1514,6 @@ function renderBriefNotePanel(item) {
 
 function renderBriefItem(item) {
   const isOwnHair = itemPartition(item) === "me";
-  const isUploadedReference = !isOwnHair && item.source !== "saved";
   const openStyleId = item.styleId || item.referenceStyleId || "";
   const canOpenStyle = openStyleId && state.styles.some((style) => style.id === String(openStyleId));
   return `
@@ -1527,7 +1526,6 @@ function renderBriefItem(item) {
         ${item.imageUrl
           ? `<img src="${escapeAttr(item.imageUrl)}" alt="${escapeAttr(item.name || "Reference image")}" loading="lazy" referrerpolicy="no-referrer">`
           : `<span>${escapeHtml(item.name || "Reference")}</span>`}
-        ${isUploadedReference ? `<span class="profile-ref-uploaded-badge" aria-label="Reference added">${iconCheck()}</span>` : ""}
         <button class="profile-photo-remove brief-remove-btn" type="button" data-brief-remove="${escapeAttr(item.id)}" aria-label="Remove from brief">&times;</button>
       </div>
       ${isOwnHair ? "" : renderReferenceCaption(item)}

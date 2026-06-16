@@ -1826,28 +1826,6 @@ body[data-view="complete"] .app-shell {
   font-weight: 700;
 }
 
-.profile-ref-uploaded-badge {
-  position: absolute;
-  left: 9px;
-  bottom: 9px;
-  z-index: 3;
-  width: 24px;
-  height: 24px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid #fff;
-  border-radius: 999px;
-  background: #2e7d32;
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(31, 25, 18, 0.2);
-}
-
-.profile-ref-uploaded-badge svg {
-  width: 14px;
-  height: 14px;
-}
-
 .profile-add-card {
   position: relative;
   min-height: 0;
