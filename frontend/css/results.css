@@ -349,7 +349,6 @@
   width: min(420px, 100vw);
   padding: 14px 26px calc(14px + env(safe-area-inset-bottom));
   background: linear-gradient(180deg, rgba(255, 250, 242, 0), var(--surface) 22%);
-  border-top: 1px solid rgba(222, 210, 190, 0.72);
 }
 
 .done-filters-btn {
@@ -1090,22 +1089,6 @@
   padding: 20px 24px;
   background: var(--surface);
   overflow: hidden;
-  transform-origin: top;
-  animation: refine-panel-expand 200ms ease-out both;
-}
-
-@keyframes refine-panel-expand {
-  from {
-    max-height: 0;
-    opacity: 0;
-    transform: translateY(-4px) scaleY(0.98);
-  }
-
-  to {
-    max-height: 420px;
-    opacity: 1;
-    transform: translateY(0) scaleY(1);
-  }
 }
 
 .refine-question {
@@ -1122,11 +1105,13 @@
 }
 
 .refine-option {
+  min-height: 40px;
   padding: 9px 18px;
   border-radius: 999px;
   border: 1.5px solid var(--line);
   background: var(--surface);
   font-size: 14px;
+  font-weight: 600;
   color: var(--ink);
   cursor: pointer;
   font-family: var(--font-sans);
@@ -1142,7 +1127,6 @@
   border-color: var(--accent);
   background: var(--accent-soft);
   color: var(--accent);
-  font-weight: 600;
 }
 
 .refine-panel[data-refine-panel="face_shape"] .refine-option.is-on {

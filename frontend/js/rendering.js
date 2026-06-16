@@ -467,25 +467,91 @@ function applyTextSearch(styles) {
 function applyRefineFilters(styles) {
   const faceShapes = state.refineFilters.face_shape;
   if (faceShapes.size > 0) {
-    styles = styles.filter((style) => faceShapes.has(style.faceShape));
+    styles = styles.filter((style) => {
+      const buckets = faceShapeBuckets(style);
+      return [...faceShapes].some((shape) => buckets.has(shape));
+    });
   }
 
   const hairColours = state.refineFilters.hair_colour;
   if (hairColours.size > 0) {
-    styles = styles.filter((style) => hairColours.has(hairColourKey(style.hairColour)));
+    styles = styles.filter((style) => hairColours.has(styleHairColourBucket(style)));
   }
 
   const thickness = state.refineFilters.thickness;
   if (thickness) {
-    styles = styles.filter((style) => style.hairThickness === thickness);
+    styles = styles.filter((style) => styleHairThicknessBucket(style) === thickness);
   }
 
   const maintenance = state.refineFilters.maintenance;
   if (maintenance.size > 0) {
-    styles = styles.filter((style) => maintenance.has(style.maintenanceLevel));
+    styles = styles.filter((style) => maintenance.has(styleMaintenanceBucket(style)));
   }
 
   return styles;
+}
+
+function styleRefineText(style) {
+  return styleHaystack(style);
+}
+
+function faceShapeBuckets(style) {
+  const stored = normalizeFaceShape(style.faceShape);
+  if (stored) return new Set([stored]);
+
+  const text = styleRefineText(style);
+  const buckets = new Set(["oval"]);
+
+  if (/(layer|long|sweep|side|part|curtain|fringe|bang|quiff|pompadour|volume|mod|shag|mullet|pixie|crop|crew|buzz|afro|curl|wave|loc|braid|twist)/.test(text)) {
+    buckets.add("round");
+  }
+  if (/(layer|wave|curl|fringe|bang|side|sweep|shag|mullet|bob|lob|pixie|soft|curtain|mod|long)/.test(text)) {
+    buckets.add("square");
+  }
+  if (/(bob|lob|pixie|fringe|bang|curtain|layer|side|sweep|shag|wave|curl|shoulder|chin)/.test(text)) {
+    buckets.add("heart");
+  }
+  if (/(fringe|bang|bob|lob|layer|wave|curl|side|sweep|shag|shoulder|pixie)/.test(text)) {
+    buckets.add("diamond");
+  }
+  if (/(fringe|bang|curtain|wave|curl|layer|bob|lob|shag|mullet|shoulder|side)/.test(text)) {
+    buckets.add("rectangle");
+  }
+  if (/(volume|layer|pixie|bob|lob|fringe|bang|side|sweep|wave|curl|shag|afro)/.test(text)) {
+    buckets.add("triangle");
+  }
+
+  return buckets;
+}
+
+function styleHairColourBucket(style) {
+  const stored = hairColourKey(style.hairColour);
+  if (stored) return stored;
+
+  const text = styleRefineText(style);
+  if (/(multi coloured|multicoloured|multi colored|pink|blue|green|purple|ombre)/.test(text)) return "other";
+  if (/(grey|gray|silver)/.test(text)) return "grey";
+  if (/(red|auburn|ginger|copper)/.test(text)) return "red";
+  if (/(blonde|blond|platinum|golden|frosted)/.test(text)) return "blonde";
+  if (/(brown|brunette|caramel|chestnut|balayage|espresso)/.test(text)) return "brown";
+  if (/(black|raven|dark)/.test(text)) return "black";
+  return "";
+}
+
+function styleHairThicknessBucket(style) {
+  const stored = String(style.hairThickness || "").trim().toLowerCase();
+  if (stored) return stored;
+
+  const text = styleRefineText(style);
+  if (/(especially thin|very thin|fine|wispy|sparse)/.test(text)) return "thin";
+  if (/(especially thick|very thick|thick|dense|voluminous|afro|coily|loc|braid|twist)/.test(text)) return "thick";
+  return "";
+}
+
+function styleMaintenanceBucket(style) {
+  const stored = normalizeMaintenanceLevel(style.maintenanceLevel);
+  if (stored) return stored;
+  return inferMaintainability(style.name, style.length);
 }
 
 function refinePillLabel(filter) {
@@ -835,10 +901,18 @@ function wireDiscoveryControls() {
     });
   });
   document.querySelectorAll("[data-refine-select][data-refine-value]").forEach((button) => {
+    button.addEventListener("pointerdown", () => {
+      button.dataset.pageScrollX = String(window.scrollX);
+      button.dataset.pageScrollY = String(window.scrollY);
+    });
     button.addEventListener("click", (event) => {
       event.stopPropagation();
       const filterId = button.dataset.refineSelect;
       const value = button.dataset.refineValue;
+      const pageScrollX = Number(button.dataset.pageScrollX || window.scrollX);
+      const pageScrollY = Number(button.dataset.pageScrollY || window.scrollY);
+      delete button.dataset.pageScrollX;
+      delete button.dataset.pageScrollY;
       if (filterId === "thickness") {
         state.refineFilters.thickness = state.refineFilters.thickness === value ? null : value;
       } else {
@@ -846,7 +920,7 @@ function wireDiscoveryControls() {
         if (set.has(value)) set.delete(value);
         else set.add(value);
       }
-      renderCurrentDiscoveryView();
+      renderCurrentDiscoveryView({ pageScrollX, pageScrollY });
     });
   });
   const discoveryScreen = $(".results-screen");
@@ -860,12 +934,14 @@ function wireDiscoveryControls() {
   }
 }
 
-function renderCurrentDiscoveryView({ preserveFilterScroll = false } = {}) {
+function renderCurrentDiscoveryView({ preserveFilterScroll = false, pageScrollX = window.scrollX, pageScrollY = window.scrollY } = {}) {
   const panel = $(".answer-filter-panel");
   const scrollTop = preserveFilterScroll && panel ? panel.scrollTop : null;
   const refineRow = $(".refine-row");
   const refineScrollLeft = refineRow ? refineRow.scrollLeft : 0;
   renderResultsPage();
+  window.scrollTo(pageScrollX, pageScrollY);
+  requestAnimationFrame(() => window.scrollTo(pageScrollX, pageScrollY));
   if (scrollTop !== null) {
     const nextPanel = $(".answer-filter-panel");
     if (nextPanel) nextPanel.scrollTop = scrollTop;

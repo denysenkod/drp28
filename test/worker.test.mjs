@@ -930,8 +930,8 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(app.includes('class="try-on-generated-frame'));
   assert.ok(index.includes('id="detail-try-on"'));
   assert.ok(index.includes('id="try-on-overlay"'));
-  assert.ok(index.includes('styles.css?v=2026-06-16-missing-brief-highlight'));
-  assert.ok(index.includes('app.js?v=2026-06-16-quiz-maintenance-brief'));
+  assert.ok(index.includes('styles.css?v=2026-06-16-refine-stability'));
+  assert.ok(index.includes('app.js?v=2026-06-16-refine-fallbacks'));
   assert.ok(app.includes('imageUrl'));
   assert.ok(app.includes('syncStylesForCurrentRoute'));
   assert.ok(!app.includes('isAdminContext'));
@@ -961,8 +961,10 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(app.includes('optionGroupPasses(style, "hair_colour", (option) => optionHairColourMatch(style, option))'));
   assert.ok(app.includes('optionGroupPasses(style, "hair_thickness", (option) => optionHairThicknessMatch(style, option))'));
   assert.ok(app.includes('const haystack = styleHaystack(style);'));
-  assert.ok(app.includes('hairColours.has(hairColourKey(style.hairColour))'));
-  assert.ok(app.includes('style.hairThickness === thickness'));
+  assert.ok(app.includes('hairColours.has(styleHairColourBucket(style))'));
+  assert.ok(app.includes('styleHairThicknessBucket(style) === thickness'));
+  assert.ok(app.includes('function faceShapeBuckets(style)'));
+  assert.ok(app.includes('function styleMaintenanceBucket(style)'));
   assert.ok(app.includes('function computeResults()'));
   assert.ok(app.includes('return scoredStyles(refined);'));
   assert.ok(app.includes('toggleFavourite'));
