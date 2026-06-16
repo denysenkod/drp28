@@ -133,7 +133,19 @@ function briefBudgetDetailsHasContent(details = state.briefDetails) {
   const defaults = defaultBriefDetails();
   return Number(d.budgetMax ?? defaults.budgetMax) !== defaults.budgetMax
     || Number(d.timeAtBarber ?? defaults.timeAtBarber) !== defaults.timeAtBarber
-    || Boolean(String(d.maintenancePreference || "").trim());
+    || Boolean(briefMaintenancePreferenceValue(d));
+}
+
+function briefQuizMaintenancePreference() {
+  const values = typeof state !== "undefined" && Array.isArray(state.answers?.maintenance)
+    ? state.answers.maintenance
+    : [];
+  return values.find((value) => ["Low", "Medium", "High"].includes(value)) || "";
+}
+
+function briefMaintenancePreferenceValue(details = null) {
+  const d = details || (typeof state !== "undefined" ? state.briefDetails : null) || {};
+  return String(d.maintenancePreference || "").trim() || briefQuizMaintenancePreference();
 }
 
 function briefDetailsShouldShare(details = {}) {
@@ -186,7 +198,7 @@ function briefDetailsPayload() {
   const defaults = defaultBriefDetails();
   const budgetMax = Number(state.briefDetails?.budgetMax ?? defaults.budgetMax);
   const timeAtBarber = Number(state.briefDetails?.timeAtBarber ?? defaults.timeAtBarber);
-  const maintenancePreference = String(state.briefDetails?.maintenancePreference || "").trim();
+  const maintenancePreference = briefMaintenancePreferenceValue(state.briefDetails);
   if (Number.isFinite(budgetMax)) payload.budgetMax = budgetMax;
   if (Number.isFinite(timeAtBarber)) payload.timeAtBarber = timeAtBarber;
   if (maintenancePreference) payload.maintenancePreference = maintenancePreference;

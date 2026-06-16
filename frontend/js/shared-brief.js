@@ -1316,7 +1316,7 @@ function renderBriefNotes() {
   const parsedTimeAtBarber = Number(d.timeAtBarber ?? 60);
   const budgetMax = Number.isFinite(parsedBudgetMax) ? Math.max(0, Math.min(200, parsedBudgetMax)) : 200;
   const timeAtBarber = Number.isFinite(parsedTimeAtBarber) ? Math.max(15, Math.min(180, parsedTimeAtBarber)) : 60;
-  const maintenancePreference = String(d.maintenancePreference || "");
+  const maintenancePreference = briefMaintenancePreferenceValue(d);
   return `
     <section class="profile-section" id="profile-section-budget">
       <div class="profile-section-head">

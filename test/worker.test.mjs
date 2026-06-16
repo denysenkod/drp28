@@ -931,7 +931,7 @@ test('new static frontend is wired to image and database APIs', async () => {
   assert.ok(index.includes('id="detail-try-on"'));
   assert.ok(index.includes('id="try-on-overlay"'));
   assert.ok(index.includes('styles.css?v=2026-06-16-missing-brief-highlight'));
-  assert.ok(index.includes('app.js?v=2026-06-16-missing-brief-highlight-2'));
+  assert.ok(index.includes('app.js?v=2026-06-16-quiz-maintenance-brief'));
   assert.ok(app.includes('imageUrl'));
   assert.ok(app.includes('syncStylesForCurrentRoute'));
   assert.ok(!app.includes('isAdminContext'));
